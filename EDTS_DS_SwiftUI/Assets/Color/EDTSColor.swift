@@ -1,590 +1,492 @@
 //
 //  EDTSColor.swift
-//  EDTS_DS
+//  EDTS_DS_SwiftUI
 //
-//  Created by Rizka Ghinna Auliya on 08/04/26.
+//  Created by Rizka Ghinna Auliya on 07/08/26.
 //
 
-import UIKit
+import SwiftUI
 
 public enum EDTSColorTheme {
     case klikIDM
     case poinku
 }
 
-open class EDTSColor {
-    
+public enum EDTSColor {
+
     // MARK: - Configuration
-    
+
     public static var theme: EDTSColorTheme = .klikIDM
-    
+
     // MARK: - Neutral
-    
-    public class var white: UIColor {
+
+    public static var white: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.white
         case .poinku:  return PoinkuColor.white
         }
     }
-    
-    public class var black: UIColor {
+
+    public static var black: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.black
         case .poinku:  return PoinkuColor.black
         }
     }
-    
+
     // MARK: - Grey
-    
-    public class var grey10: UIColor {
+
+    public static var grey10: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey10
         case .poinku:  return PoinkuColor.grey10
         }
     }
-    
-    public class var grey20: UIColor {
+
+    public static var grey20: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey20
         case .poinku:  return PoinkuColor.grey20
         }
     }
-    
-    public class var grey30: UIColor {
+
+    public static var grey30: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey30
         case .poinku:  return PoinkuColor.grey30
         }
     }
-    
-    public class var grey40: UIColor {
+
+    public static var grey40: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey40
         case .poinku:  return PoinkuColor.grey40
         }
     }
-    
-    public class var grey50: UIColor {
+
+    public static var grey50: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey50
         case .poinku:  return PoinkuColor.grey50
         }
     }
-    
-    public class var grey60: UIColor {
+
+    public static var grey60: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey60
         case .poinku:  return PoinkuColor.grey60
         }
     }
-    
-    public class var grey70: UIColor {
+
+    public static var grey70: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey70
         case .poinku:  return PoinkuColor.grey70
         }
     }
-    
-    public class var grey80: UIColor {
+
+    public static var grey80: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.grey70
         case .poinku:  return PoinkuColor.grey80
         }
     }
-    
+
     // MARK: - Blue
-    
-    public class var blue10: UIColor {
+
+    public static var blue10: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue10
         case .poinku:  return PoinkuColor.blue10
         }
     }
-    
-    public class var blue20: UIColor {
+
+    public static var blue20: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue20
         case .poinku:  return PoinkuColor.blue20
         }
     }
-    
-    public class var blue30: UIColor {
+
+    public static var blue30: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue30
         case .poinku:  return PoinkuColor.blue30
         }
     }
-    
-    public class var blue40: UIColor {
+
+    public static var blue40: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue40
         case .poinku:  return PoinkuColor.blue40
         }
     }
-    
-    public class var blue50: UIColor {
+
+    public static var blue50: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue50
         case .poinku:  return PoinkuColor.blue50
         }
     }
-    
-    public class var blue60: UIColor {
+
+    public static var blue60: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue60
         case .poinku:  return PoinkuColor.blue50
         }
     }
-    
-    public class var blue70: UIColor {
+
+    public static var blue70: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue70
         case .poinku:  return PoinkuColor.blue50
         }
     }
-    
+
     // MARK: - Yellow
-    
-    public class var yellow10: UIColor {
+
+    public static var yellow10: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.yellow10
-        case .poinku:  return UIColor(red: 254.0/255.0, green: 249.0/255.0, blue: 211.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 254.0/255.0, green: 249.0/255.0, blue: 211.0/255.0)
         }
     }
-    
-    public class var yellow20: UIColor {
+
+    public static var yellow20: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.yellow20
-        case .poinku:  return UIColor(red: 253.0/255.0, green: 230.0/255.0, blue: 123.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 253.0/255.0, green: 230.0/255.0, blue: 123.0/255.0)
         }
     }
-    
-    public class var yellow30: UIColor {
+
+    public static var yellow30: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.yellow30
-        case .poinku:  return UIColor(red: 249.0/255.0, green: 202.0/255.0, blue: 36.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 249.0/255.0, green: 202.0/255.0, blue: 36.0/255.0)
         }
     }
-    
-    public class var yellow40: UIColor {
+
+    public static var yellow40: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.yellow40
-        case .poinku:  return UIColor(red: 214.0/255.0, green: 168.0/255.0, blue: 26.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 214.0/255.0, green: 168.0/255.0, blue: 26.0/255.0)
         }
     }
-    
-    public class var yellow50: UIColor {
+
+    public static var yellow50: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.yellow50
-        case .poinku:  return UIColor(red: 179.0/255.0, green: 136.0/255.0, blue: 18.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 179.0/255.0, green: 136.0/255.0, blue: 18.0/255.0)
         }
     }
-    
+
     // MARK: - Red
-    
-    public class var red10: UIColor {
+
+    public static var red10: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.red10
         case .poinku:  return PoinkuColor.red10
         }
     }
-    
-    public class var red20: UIColor {
+
+    public static var red20: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.red20
         case .poinku:  return PoinkuColor.red20
         }
     }
-    
-    public class var red30: UIColor {
+
+    public static var red30: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.red30
         case .poinku:  return PoinkuColor.red30
         }
     }
-    
-    public class var red40: UIColor {
+
+    public static var red40: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.red40
         case .poinku:  return PoinkuColor.red40
         }
     }
-    
-    public class var red50: UIColor {
+
+    public static var red50: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.red50
         case .poinku:  return PoinkuColor.red50
         }
     }
-    
+
     // MARK: - Green
-    
-    public class var green10: UIColor {
+
+    public static var green10: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.green10
-        case .poinku:  return UIColor(red: 235.0/255.0, green: 255.0/255.0, blue: 208.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 235.0/255.0, green: 255.0/255.0, blue: 208.0/255.0)
         }
     }
-    
-    public class var green20: UIColor {
+
+    public static var green20: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.green20
-        case .poinku:  return UIColor(red: 206.0/255.0, green: 238.0/255.0, blue: 142.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 206.0/255.0, green: 238.0/255.0, blue: 142.0/255.0)
         }
     }
-    
-    public class var green30: UIColor {
+
+    public static var green30: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.green30
-        case .poinku:  return UIColor(red: 143.0/255.0, green: 199.0/255.0, blue: 66.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 143.0/255.0, green: 199.0/255.0, blue: 66.0/255.0)
         }
     }
-    
-    public class var green40: UIColor {
+
+    public static var green40: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.green40
-        case .poinku:  return UIColor(red: 114.0/255.0, green: 171.0/255.0, blue: 48.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 114.0/255.0, green: 171.0/255.0, blue: 48.0/255.0)
         }
     }
-    
-    public class var green50: UIColor {
+
+    public static var green50: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.green50
-        case .poinku:  return UIColor(red: 87.0/255.0, green: 143.0/255.0, blue: 33.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 87.0/255.0, green: 143.0/255.0, blue: 33.0/255.0)
         }
     }
-    
+
     // MARK: - Orange
-    
-    public class var orange10: UIColor {
+
+    public static var orange10: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.orange10
         case .poinku:  return PoinkuColor.orange10
         }
     }
-    
-    public class var orange20: UIColor {
+
+    public static var orange20: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.orange20
         case .poinku:  return PoinkuColor.orange20
         }
     }
-    
-    public class var orange30: UIColor {
+
+    public static var orange30: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.orange30
         case .poinku:  return PoinkuColor.orange30
         }
     }
-    
-    public class var orange40: UIColor {
+
+    public static var orange40: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.orange40
         case .poinku:  return PoinkuColor.orange40
         }
     }
-    
-    public class var orange50: UIColor {
+
+    public static var orange50: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.orange50
         case .poinku:  return PoinkuColor.orange50
         }
     }
-    
+
     // MARK: - Button (KlikIDM only)
-    
-    public class var blueDefault: UIColor {
+
+    public static var blueDefault: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blueDefault
         case .poinku:  return PoinkuColor.blue30
         }
     }
-    
-    public class var bluePressed: UIColor {
+
+    public static var bluePressed: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.bluePressed
         case .poinku:  return PoinkuColor.blue40
         }
     }
-    
-    public class var disabled: UIColor {
+
+    public static var disabled: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.disabled
         case .poinku:  return PoinkuColor.grey30
         }
     }
-    
-    public class var greyDefault: UIColor {
+
+    public static var greyDefault: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.greyDefault
         case .poinku:  return PoinkuColor.grey30
         }
     }
-    
-    public class var greyPressed: UIColor {
+
+    public static var greyPressed: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.greyPressed
         case .poinku:  return PoinkuColor.grey50
         }
     }
-    
-    public class var greyText: UIColor {
+
+    public static var greyText: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.greyText
         case .poinku:  return PoinkuColor.grey70
         }
     }
-    
+
     // MARK: - Cart FAB (KlikIDM only)
-    
-    public class var cartDefault: UIColor {
+
+    public static var cartDefault: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.cartDefault
         case .poinku:  return PoinkuColor.orange30
         }
     }
-    
-    public class var cartPressed: UIColor {
+
+    public static var cartPressed: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.cartPressed
         case .poinku:  return PoinkuColor.orange40
         }
     }
-    
+
     // MARK: - Support
-    
-    public class var errorStrong: UIColor {
+
+    public static var errorStrong: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.errorStrong
         case .poinku:  return PoinkuColor.errorStrong
         }
     }
-    
-    public class var errorWeak: UIColor {
+
+    public static var errorWeak: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.errorWeak
         case .poinku:  return PoinkuColor.errorWeak
         }
     }
-    
-    public class var successStrong: UIColor {
+
+    public static var successStrong: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.successStrong
         case .poinku:  return PoinkuColor.successStrong
         }
     }
-    
-    public class var successWeak: UIColor {
+
+    public static var successWeak: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.successWeak
         case .poinku:  return PoinkuColor.successWeak
         }
     }
-    
-    public class var warningStrong: UIColor {
+
+    public static var warningStrong: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.warningStrong
         case .poinku:  return PoinkuColor.warningStrong
         }
     }
-    
-    public class var warningWeak: UIColor {
+
+    public static var warningWeak: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.warningWeak
         case .poinku:  return PoinkuColor.warningWeak
         }
     }
-    
-    public class var primaryStrong: UIColor {
+
+    public static var primaryStrong: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blueDefault
         case .poinku:  return PoinkuColor.primaryStrong
         }
     }
-    
-    public class var primaryWeak: UIColor {
+
+    public static var primaryWeak: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.blue20
         case .poinku:  return PoinkuColor.primaryWeak
         }
     }
-    
-    public class var secondaryStrong: UIColor {
+
+    public static var secondaryStrong: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.orange30
         case .poinku:  return PoinkuColor.secondaryStrong
         }
     }
-    
-    public class var secondaryWeak: UIColor {
+
+    public static var secondaryWeak: Color {
         switch theme {
-        case .klikIDM: return UIColor(red: 254.0/255.0, green: 251.0/255.0, blue: 245.0/255.0, alpha: 1.0)
+        case .klikIDM: return Color(red: 254.0/255.0, green: 251.0/255.0, blue: 245.0/255.0)
         case .poinku:  return PoinkuColor.secondaryWeak
         }
     }
-    
+
     // MARK: - Brand (KlikIDM only)
-    
-    public class var xtra: UIColor {
+
+    public static var xtra: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.xtra
-        case .poinku:  return UIColor(red: 67.0/255.0, green: 158.0/255.0, blue: 37.0/255.0, alpha: 1.0)
+        case .poinku:  return Color(red: 67.0/255.0, green: 158.0/255.0, blue: 37.0/255.0)
         }
     }
-    
-    public class var xpress: UIColor {
+
+    public static var xpress: Color {
         switch theme {
         case .klikIDM: return KlikIDMColor.xpress
         case .poinku:  return PoinkuColor.secondaryStrong
         }
     }
-    
+
     // MARK: KlikIDM Base Gradients
-    
-    public class var sunsetLeading: UIColor {
-        return KlikIDMColor.sunsetLeading
-    }
-    
-    public class var sunsetTrailing: UIColor {
-        return KlikIDMColor.sunsetTrailing
-    }
-    
-    public class var skyblueLeading: UIColor {
-        return KlikIDMColor.skyblueLeading
-    }
-    
-    public class var skyblueTrailing: UIColor {
-        return KlikIDMColor.skyblueTrailing
-    }
-    
-    public class var oceanleafLeading: UIColor {
-        return KlikIDMColor.oceanleafLeading
-    }
-    
-    public class var oceanleafTrailing: UIColor {
-        return KlikIDMColor.oceanleafTrailing
-    }
-    
-    public class var greenforestLeading: UIColor {
-        return KlikIDMColor.greenforestLeading
-    }
-    
-    public class var greenforestTrailing: UIColor {
-        return KlikIDMColor.greenforestTrailing
-    }
-    
-    public class var sunflowerLeading: UIColor {
-        return KlikIDMColor.sunflowerLeading
-    }
-    
-    public class var sunflowerTrailing: UIColor {
-        return KlikIDMColor.sunflowerTrailing
-    }
-    
-    public class var sunriseLeading: UIColor {
-        return KlikIDMColor.sunriseLeading
-    }
-    
-    public class var sunriseTrailing: UIColor {
-        return KlikIDMColor.sunriseTrailing
-    }
-    
+
+    public static var sunsetLeading: Color { KlikIDMColor.sunsetLeading }
+    public static var sunsetTrailing: Color { KlikIDMColor.sunsetTrailing }
+    public static var skyblueLeading: Color { KlikIDMColor.skyblueLeading }
+    public static var skyblueTrailing: Color { KlikIDMColor.skyblueTrailing }
+    public static var oceanleafLeading: Color { KlikIDMColor.oceanleafLeading }
+    public static var oceanleafTrailing: Color { KlikIDMColor.oceanleafTrailing }
+    public static var greenforestLeading: Color { KlikIDMColor.greenforestLeading }
+    public static var greenforestTrailing: Color { KlikIDMColor.greenforestTrailing }
+    public static var sunflowerLeading: Color { KlikIDMColor.sunflowerLeading }
+    public static var sunflowerTrailing: Color { KlikIDMColor.sunflowerTrailing }
+    public static var sunriseLeading: Color { KlikIDMColor.sunriseLeading }
+    public static var sunriseTrailing: Color { KlikIDMColor.sunriseTrailing }
+
     // MARK: Poinku Base Gradients
-    
-    public class var blueLeading: UIColor {
-        return PoinkuColor.blueLeading
-    }
-    
-    public class var blueTrailing: UIColor {
-        return PoinkuColor.blueTrailing
-    }
-    
-    public class var blue2Leading: UIColor {
-        return PoinkuColor.blue2Leading
-    }
-    
-    public class var blue2Trailing: UIColor {
-        return PoinkuColor.blue2Trailing
-    }
-    
-    public class var goldLeading: UIColor {
-        return PoinkuColor.goldLeading
-    }
-    
-    public class var goldTrailing: UIColor {
-        return PoinkuColor.goldTrailing
-    }
-    
-    public class var silverLeading: UIColor {
-        return PoinkuColor.silverLeading
-    }
-    
-    public class var silverTrailing: UIColor {
-        return PoinkuColor.silverTrailing
-    }
-    
-    public class var diamondLeading: UIColor {
-        return PoinkuColor.diamondLeading
-    }
-    
-    public class var diamondTrailing: UIColor {
-        return PoinkuColor.diamondTrailing
-    }
-    
-    public class var redLeading: UIColor {
-        return PoinkuColor.redLeading
-    }
-    
-    public class var redTrailing: UIColor {
-        return PoinkuColor.redTrailing
-    }
-    
+
+    public static var blueLeading: Color { PoinkuColor.blueLeading }
+    public static var blueTrailing: Color { PoinkuColor.blueTrailing }
+    public static var blue2Leading: Color { PoinkuColor.blue2Leading }
+    public static var blue2Trailing: Color { PoinkuColor.blue2Trailing }
+    public static var goldLeading: Color { PoinkuColor.goldLeading }
+    public static var goldTrailing: Color { PoinkuColor.goldTrailing }
+    public static var silverLeading: Color { PoinkuColor.silverLeading }
+    public static var silverTrailing: Color { PoinkuColor.silverTrailing }
+    public static var diamondLeading: Color { PoinkuColor.diamondLeading }
+    public static var diamondTrailing: Color { PoinkuColor.diamondTrailing }
+    public static var redLeading: Color { PoinkuColor.redLeading }
+    public static var redTrailing: Color { PoinkuColor.redTrailing }
+
     // MARK: - Gradient
-    
+
     public struct Gradient {
-        
+
         // MARK: KlikIDM Gradients
-        
-        public static var sunset: KlikIDMColor.UIKitGradient {
-            return KlikIDMColor.Gradient.sunset
-        }
-        
-        public static var skyblue: KlikIDMColor.UIKitGradient {
-            return KlikIDMColor.Gradient.skyblue
-        }
-        
-        public static var greenforest: KlikIDMColor.UIKitGradient {
-            return KlikIDMColor.Gradient.greenforest
-        }
-        
-        public static var sunflower: KlikIDMColor.UIKitGradient {
-            return KlikIDMColor.Gradient.sunflower
-        }
-        
+
+        public static var sunset: KlikIDMColor.SwiftUIGradient { KlikIDMColor.Gradient.sunset }
+        public static var skyblue: KlikIDMColor.SwiftUIGradient { KlikIDMColor.Gradient.skyblue }
+        public static var greenforest: KlikIDMColor.SwiftUIGradient { KlikIDMColor.Gradient.greenforest }
+        public static var sunflower: KlikIDMColor.SwiftUIGradient { KlikIDMColor.Gradient.sunflower }
+
         // MARK: Poinku Gradients
-        
-        public static var blue: PoinkuColor.UIKitGradient {
-            return PoinkuColor.Gradient.blue
-        }
-        
-        public static var blue2: PoinkuColor.UIKitGradient {
-            return PoinkuColor.Gradient.blue2
-        }
-        
-        public static var gold: PoinkuColor.UIKitGradient {
-            return PoinkuColor.Gradient.gold
-        }
-        
-        public static var silver: PoinkuColor.UIKitGradient {
-            return PoinkuColor.Gradient.silver
-        }
-        
-        public static var diamond: PoinkuColor.UIKitGradient {
-            return PoinkuColor.Gradient.diamond
-        }
-        
-        public static var red: PoinkuColor.UIKitGradient {
-            return PoinkuColor.Gradient.red
-        }
+
+        public static var blue: PoinkuColor.SwiftUIGradient { PoinkuColor.Gradient.blue }
+        public static var blue2: PoinkuColor.SwiftUIGradient { PoinkuColor.Gradient.blue2 }
+        public static var gold: PoinkuColor.SwiftUIGradient { PoinkuColor.Gradient.gold }
+        public static var silver: PoinkuColor.SwiftUIGradient { PoinkuColor.Gradient.silver }
+        public static var diamond: PoinkuColor.SwiftUIGradient { PoinkuColor.Gradient.diamond }
+        public static var red: PoinkuColor.SwiftUIGradient { PoinkuColor.Gradient.red }
     }
 }

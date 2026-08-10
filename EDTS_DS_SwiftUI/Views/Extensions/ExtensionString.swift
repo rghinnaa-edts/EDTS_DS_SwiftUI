@@ -1,25 +1,19 @@
 //
 //  ExtensionString.swift
-//  KlikIDM_DS
+//  EDTS_DS_SwiftUI
 //
-//  Created by Rizka Ghinna Auliya on 16/04/26.
+//  Created by Rizka Ghinna Auliya on 07/08/26.
 //
 
-import UIKit
+import SwiftUI
 
 extension String {
     public func strikethrough(
-        style: NSUnderlineStyle = .single,
-        color: UIColor? = nil
-    ) -> NSAttributedString {
-        var attributes: [NSAttributedString.Key: Any] = [
-            .strikethroughStyle: style.rawValue
-        ]
-        
-        if let color = color {
-            attributes[.strikethroughColor] = color
-        }
-        
-        return NSAttributedString(string: self, attributes: attributes)
+        style: Text.LineStyle.Pattern = .solid,
+        color: Color? = nil
+    ) -> AttributedString {
+        var attributedString = AttributedString(self)
+        attributedString.strikethroughStyle = Text.LineStyle(pattern: style, color: color)
+        return attributedString
     }
 }

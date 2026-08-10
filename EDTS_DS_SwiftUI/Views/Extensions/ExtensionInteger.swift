@@ -1,11 +1,11 @@
 //
 //  ExtensionDouble.swift
-//  KlikIDM_DS
+//  EDTS_DS_SwiftUI
 //
-//  Created by Rizka Ghinna Auliya on 16/04/26.
+//  Created by Rizka Ghinna Auliya on 07/08/26.
 //
 
-import UIKit
+import Foundation
 
 extension Int {
     public func formatRupiah() -> String {
