@@ -38,9 +38,9 @@ public struct EDTSBadge: View {
     // MARK: - Init
     public init(
         label: String,
-        icon: Image? = nil,
         labelColor: Color = EDTSColor.grey70,
         labelFont: Font = EDTSFont.Klik.B4.Regular.font,
+        icon: Image? = nil,
         iconTint: Color? = nil,
         iconPadding: CGFloat = 2.0,
         bgColor: Color = EDTSColor.grey20,
@@ -58,9 +58,9 @@ public struct EDTSBadge: View {
         isSkeleton: Bool = false
     ) {
         self.label = label
-        self.icon = icon
         self.labelColor = labelColor
         self.labelFont = labelFont
+        self.icon = icon
         self.iconTint = iconTint
         self.iconPadding = iconPadding
         self.bgColor = bgColor

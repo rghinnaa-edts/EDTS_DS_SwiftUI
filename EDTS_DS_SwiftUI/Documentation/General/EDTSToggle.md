@@ -20,14 +20,23 @@ The `EDTSToggle` component is a lightweight, animated on/off switch built for **
 | `with icon` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_150/v1782803703/WhatsApp_GIF_2026-06-30_at_14.05.08_rkqjry.gif) |
 
 ---
-
+ 
 ## Installation
-
-Add to your project:
-- `EDTSToggle.swift`
-
-This relies on the design token types already available in the project (`EDTSColor`, `EDTSFont`).
-
+ 
+Add to your `Podfile`:
+ 
+```ruby
+pod 'EDTS_DS_SwiftUI/Toggle'
+```
+ 
+Then import it wherever you use the component:
+ 
+```swift
+import EDTS_DS_SwiftUI
+```
+ 
+This relies on the design token types already available in the pod (`EDTSColor`, `EDTSFont`)
+ 
 ---
 
 ## Usage
@@ -64,8 +73,6 @@ EDTSToggle(
     iconPadding: 2
 )
 ```
-
-Icons render inside a frame sized `indicatorSize x indicatorSize` — there's no separate icon-size control. `iconPadding` insets the icon within that frame, so increasing it shrinks the icon relative to the indicator (see [Sizing](#sizing) below).
 
 ### Custom Sizing
 
