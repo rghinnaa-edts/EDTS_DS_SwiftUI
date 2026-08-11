@@ -258,9 +258,9 @@ public struct EDTSToggle: View {
                 isActive: $isOn,
                 title: "Title Here",
                 desc: "Body text",
-                icon: Image(systemName: "bell.fill"),
+                icon: Image(systemName: "bell"),
                 iconActive: Image(systemName: "bell.fill"),
-                iconTintColor: EDTSColor.red50,
+                iconTintColor: EDTSColor.grey50,
                 iconActiveTintColor: EDTSColor.blue50,
                 iconPadding: 2
             )

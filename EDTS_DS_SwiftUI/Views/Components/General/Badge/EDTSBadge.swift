@@ -112,8 +112,8 @@ public struct EDTSBadge: View {
 
 #Preview {
     VStack(spacing: 12) {
-        EDTSBadge(label: "New")
-        EDTSBadge(label: "Promo", icon: Image(systemName: "tag.fill"))
+        EDTSBadge(label: "Label")
+        EDTSBadge(label: "Label", icon: Image(systemName: "tag.fill"))
     }
     .padding()
 }

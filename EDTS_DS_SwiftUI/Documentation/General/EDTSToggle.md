@@ -16,8 +16,9 @@ The `EDTSToggle` component is a lightweight, animated on/off switch built for **
 
 | Type | Preview |
 |---|---|
-| `default` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_150/v1782803702/WhatsApp_GIF_2026-06-30_at_14.03.36_mfqfss.gif) |
-| `with icon` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_150/v1782803703/WhatsApp_GIF_2026-06-30_at_14.05.08_rkqjry.gif) |
+| `default` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_100/v1786442330/toggle_vakt7v.gif) |
+| `with label` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_150/v1786442330/toggle_with_text_chhtpa.gif) |
+| `with icon` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_150/v1786442329/toggle_with_icon_mjrqgu.gif) |
 
 ---
  

@@ -13,6 +13,15 @@ The `EDTSBadge` component is a small, compact label used to surface status, cate
 
 ---
 
+## Preview
+
+| Type | Preview |
+|---|---|
+| `default` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_80/v1786441559/badge_rscpxc.jpg) |
+| `with icon` | ![With Icon Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_80/v1786441559/badge_with_icon_eoqzgl.jpg) |
+
+---
+
 ## Installation
 
 Add to your `Podfile`:
