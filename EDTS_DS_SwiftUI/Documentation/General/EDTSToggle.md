@@ -14,10 +14,6 @@ The `EDTSToggle` component is a lightweight, animated on/off switch built for **
 
 ---
 
-## Preview
-
-### By State
-
 | Type | Preview |
 |---|---|
 | `default` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,h_150/v1782803702/WhatsApp_GIF_2026-06-30_at_14.03.36_mfqfss.gif) |
@@ -64,11 +60,12 @@ EDTSToggle(
     icon: Image("ic_moon"),
     iconActive: Image("ic_sun"),
     iconTintColor: EDTSColor.white,
-    iconActiveTintColor: EDTSColor.white
+    iconActiveTintColor: EDTSColor.white,
+    iconPadding: 2
 )
 ```
 
-Icons render at `indicatorSize x indicatorSize` — there's no separate icon-size control (see [Sizing](#sizing) below).
+Icons render inside a frame sized `indicatorSize x indicatorSize` — there's no separate icon-size control. `iconPadding` insets the icon within that frame, so increasing it shrinks the icon relative to the indicator (see [Sizing](#sizing) below).
 
 ### Custom Sizing
 
@@ -160,6 +157,7 @@ EDTSToggle(isActive: $isOn) { newValue in
 | `indicatorSize` | `CGFloat` | `16` | Width and height of the indicator (knob), and of any icon rendered inside it |
 | `indicatorPadding` | `CGFloat` | `2` | Inset between the indicator and the edge of the track. Also used to derive the track's height (`indicatorSize + indicatorPadding * 2`) |
 | `cornerRadius` | `CGFloat?` | `nil` | Corner radius applied to the track. When `nil`, it's derived automatically as `(indicatorSize + indicatorPadding * 2) / 2` (i.e. half the track height), producing a fully rounded pill |
+| `iconPadding` | `CGFloat` | `0` | Inset applied to the icon (`icon`/`iconActive`) within its `indicatorSize x indicatorSize` frame. Larger values shrink the icon relative to the indicator |
 
 ### Shadow
 

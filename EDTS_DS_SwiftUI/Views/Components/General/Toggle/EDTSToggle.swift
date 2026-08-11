@@ -41,6 +41,7 @@ public struct EDTSToggle: View {
     private var iconActive: Image?
     private var iconTintColor: Color
     private var iconActiveTintColor: Color
+    private var iconPadding: CGFloat
 
     // MARK: - Shadow
 
@@ -81,6 +82,7 @@ public struct EDTSToggle: View {
         iconActive: Image? = nil,
         iconTintColor: Color = EDTSColor.white,
         iconActiveTintColor: Color = EDTSColor.white,
+        iconPadding: CGFloat = 0,
         cornerRadius: CGFloat? = nil,
         shadowColor: Color = .black,
         shadowOpacity: Double = 0.0,
@@ -108,6 +110,7 @@ public struct EDTSToggle: View {
         self.iconActive = iconActive
         self.iconTintColor = iconTintColor
         self.iconActiveTintColor = iconActiveTintColor
+        self.iconPadding = iconPadding
         self.cornerRadius = cornerRadius
         self.shadowColor = shadowColor
         self.shadowOpacity = shadowOpacity
@@ -183,6 +186,7 @@ public struct EDTSToggle: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .foregroundColor(isActive ? iconActiveTintColor : iconTintColor)
+                        .padding(iconPadding)
                         .frame(width: indicatorSize, height: indicatorSize)
                 }
             }
@@ -220,6 +224,17 @@ public struct EDTSToggle: View {
 
 // MARK: - Preview
 
+#Preview("Track only") {
+    struct PreviewWrapper: View {
+        @State private var isOn = true
+        var body: some View {
+            EDTSToggle(isActive: $isOn)
+                .padding()
+        }
+    }
+    return PreviewWrapper()
+}
+
 #Preview("With label") {
     struct PreviewWrapper: View {
         @State private var isOn = false
@@ -235,13 +250,23 @@ public struct EDTSToggle: View {
     return PreviewWrapper()
 }
 
-#Preview("Track only") {
+#Preview("With system image icon") {
     struct PreviewWrapper: View {
-        @State private var isOn = true
+        @State private var isOn = false
         var body: some View {
-            EDTSToggle(isActive: $isOn)
-                .padding()
+            EDTSToggle(
+                isActive: $isOn,
+                title: "Title Here",
+                desc: "Body text",
+                icon: Image(systemName: "bell.fill"),
+                iconActive: Image(systemName: "bell.fill"),
+                iconTintColor: EDTSColor.red50,
+                iconActiveTintColor: EDTSColor.blue50,
+                iconPadding: 2
+            )
+            .padding()
         }
     }
     return PreviewWrapper()
 }
+
