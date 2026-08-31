@@ -352,4 +352,8 @@ extension View {
             .background(shape.fill(fill))
             .clipShape(shape)
     }
+    
+    public func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
 }
