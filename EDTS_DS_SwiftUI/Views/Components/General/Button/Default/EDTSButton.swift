@@ -212,6 +212,18 @@ public struct EDTSButton: View {
         var tempShadowColor: Color?
     }
     
+    private var customFont: Font? {
+        guard !fontName.isEmpty || fontSize != .zero else { return nil }
+        let resolvedSize = fontSize == .zero ? 16 : fontSize
+        var font: Font = fontName.isEmpty
+            ? .system(size: resolvedSize)
+            : .custom(fontName, size: resolvedSize)
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+        return font
+    }
+    
     // MARK: - Body
     public var body: some View {
         let values = setupBtnType()
@@ -261,7 +273,7 @@ public struct EDTSButton: View {
                     Text(label ?? "Button")
                 }
             }
-            .edtsFont(setupFontStyle)
+            .modifier(FontModifier(customFont: customFont, fallbackStyle: setupFontStyle))
             .foregroundColor(values.tempLabelColor)
             .multilineTextAlignment(.center)
             
@@ -578,4 +590,17 @@ public struct EDTSButton: View {
         }
     }
     return PreviewWrapper()
+}
+
+public struct FontModifier: ViewModifier {
+    let customFont: Font?
+    let fallbackStyle: EDTSFont.FontStyle
+    
+    public func body(content: Content) -> some View {
+        if let customFont {
+            content.font(customFont)
+        } else {
+            content.edtsFont(fallbackStyle)
+        }
+    }
 }
