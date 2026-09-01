@@ -30,30 +30,19 @@ struct BadgeView: View {
 }
 
 // MARK: - Reusable Progress Bar Component
-//
-// A "reward path" style progress bar:
-// - The track fills with a gradient up to the current progress.
-// - A small 8x8 gradient dot rides right at the leading edge of the fill.
-// - A 16x16 gradient badge (e.g. "x1") sits pinned at the trailing end.
-// - Once progress reaches 1.0, the gradient fill finishes growing to 100%
-//   FIRST, then a solid blue30 overlay crossfades in on top.
-// - Whenever `multiplier` changes (a new lap starts), the fill always
-//   resets to 0 and animates forward — it never slides backward from a
-//   previous lap's higher fill percentage.
 
 struct ProgressBarView: View {
-    /// Progress within the current tier, 0...1. 1 means this tier is complete.
     let progress: CGFloat
-    /// Shown inside the trailing badge, e.g. 1 -> "x1". Changing this also
-    /// resets the fill animation to start fresh from 0 (see LapFillView).
     var multiplier: Int = 1
+    var badgeMultiplier: Int = 0
+    var showBadge: Bool = false
 
     var trackColor: Color = EDTSColor.grey20
     var completedTrackColor: Color = EDTSColor.blue30
 
     private let indicatorSize: CGFloat = 8
     private let badgeSize: CGFloat = 16
-    private let trackHeight: CGFloat = 8
+    private let trackHeight: CGFloat = 6
     private let trackFillPadding: CGFloat = 1
 
     private var gradient: LinearGradient {
@@ -66,22 +55,14 @@ struct ProgressBarView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            // Track runs all the way to the badge's CENTER, so the badge
-            // visually overlaps the last half of the track.
             let trackWidth = max(0, geometry.size.width - badgeSize / 2)
             let clampedProgress = max(0, min(progress, 1))
 
             ZStack(alignment: .leading) {
-                // Base track background — always grey20 underneath.
                 Capsule()
                     .fill(trackColor)
                     .frame(width: trackWidth, height: trackHeight)
 
-                // Fill + indicator + completed overlay for the current lap.
-                // Direction-aware: increasing (more qty, or a new higher
-                // lap) always animates forward; decreasing (minus qty, or
-                // dropping back a lap) animates a genuine backward slide
-                // rather than resetting instantly.
                 LapFillView(
                     targetProgress: clampedProgress,
                     multiplier: multiplier,
@@ -90,30 +71,32 @@ struct ProgressBarView: View {
                     trackFillPadding: trackFillPadding,
                     indicatorSize: indicatorSize,
                     gradient: gradient,
-                    completedTrackColor: completedTrackColor
+                    completedTrackColor: completedTrackColor,
+                    showBadge: showBadge
                 )
 
-                // Trailing multiplier badge — offset so its center lands
-                // exactly on the track's right edge.
-                ZStack {
-                    Circle()
-                        .fill(gradient)
-                        .frame(width: badgeSize, height: badgeSize)
+                if showBadge {
+                    ZStack {
+                        Circle()
+                            .fill(gradient)
+                            .frame(width: badgeSize, height: badgeSize)
 
-                    Text("x\(multiplier)")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundColor(.white)
+                        Text("x\(badgeMultiplier)")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .offset(x: trackWidth - badgeSize / 2)
+                    .transition(.opacity)
                 }
-                .offset(x: trackWidth - badgeSize / 2)
             }
             .frame(width: geometry.size.width, height: badgeSize)
+            .animation(.easeInOut(duration: 0.2), value: showBadge)
         }
         .frame(height: badgeSize)
     }
 }
 
-// MARK: - Lap Fill (internal — handles the forward-only grow + staged
-// completion crossfade for a single lap of ProgressBarView)
+// MARK: - Lap Fill (internal — grows the current lap's gradient fill
 
 private struct LapFillView: View {
     let targetProgress: CGFloat
@@ -124,63 +107,56 @@ private struct LapFillView: View {
     let indicatorSize: CGFloat
     let gradient: LinearGradient
     let completedTrackColor: Color
+    let showBadge: Bool
 
     @State private var displayProgress: CGFloat = 0
-    @State private var showCompletedOverlay = false
     @State private var lastHandledProgress: CGFloat = -1
     @State private var lastHandledMultiplier: Int = -1
 
     private let growDuration = 0.3
     private let shrinkDuration = 0.25
-    private let completeFadeDuration = 0.25
+    private let overlayFadeDuration = 0.2
+
+    private var showCompletedOverlay: Bool {
+        showBadge && displayProgress > 0
+    }
 
     var body: some View {
-        let fillWidth = trackWidth * displayProgress
+        let innerWidth = max(0, trackWidth - trackFillPadding * 2)
+        let innerHeight = max(0, trackHeight - trackFillPadding * 2)
+        let fillWidth = innerWidth * displayProgress
 
         ZStack(alignment: .leading) {
             Capsule()
+                .fill(completedTrackColor)
+                .frame(width: innerWidth, height: innerHeight)
+                .opacity(showCompletedOverlay ? 1 : 0)
+                .animation(.easeInOut(duration: overlayFadeDuration), value: showCompletedOverlay)
+
+            Capsule()
                 .fill(gradient)
-                .frame(
-                    width: max(0, fillWidth - trackFillPadding * 2),
-                    height: trackHeight - trackFillPadding * 2
-                )
-                .padding(trackFillPadding)
+                .frame(width: fillWidth, height: innerHeight)
 
             Circle()
                 .fill(gradient)
                 .frame(width: indicatorSize, height: indicatorSize)
                 .offset(x: max(0, fillWidth - indicatorSize / 2))
-                .opacity(showCompletedOverlay ? 0 : 1)
-
-            // Solid "completed" overlay — only crossfades in AFTER the
-            // gradient fill above has finished animating to 100%. Same
-            // 1pt inset as the gradient fill, so both sit flush inside
-            // the base track rather than covering it edge-to-edge.
-            Capsule()
-                .fill(completedTrackColor)
-                .frame(width: trackWidth, height: trackHeight)
-                .padding(trackFillPadding)
-                .opacity(showCompletedOverlay ? 1 : 0)
+                .opacity(displayProgress >= 1 ? 0 : 1)
         }
+        .padding(trackFillPadding)
         .onAppear {
             lastHandledMultiplier = multiplier
             advance(to: targetProgress)
         }
-        // iOS 13-compatible stand-in for .onChange(of:) (iOS 14+).
-        // Handles the LAP boundary specifically: going to a higher lap
-        // resets to 0 and grows forward; going to a lower lap slides the
-        // current fill back down to 0 first, then settles into the new lap.
         .onReceive(Just(multiplier)) { newMultiplier in
             guard newMultiplier != lastHandledMultiplier else { return }
             let didIncreaseLap = newMultiplier > lastHandledMultiplier
             lastHandledMultiplier = newMultiplier
 
             if didIncreaseLap {
-                showCompletedOverlay = false
                 displayProgress = 0
                 advance(to: targetProgress)
             } else {
-                showCompletedOverlay = false
                 withAnimation(.easeInOut(duration: shrinkDuration)) {
                     displayProgress = 0
                 }
@@ -189,9 +165,6 @@ private struct LapFillView: View {
                 }
             }
         }
-        // Same-lap progress changes (both increases and decreases) —
-        // decreases here animate as a normal backward slide since
-        // `displayProgress` just interpolates directly to the new value.
         .onReceive(Just(targetProgress)) { newProgress in
             guard multiplier == lastHandledMultiplier else { return }
             guard newProgress != lastHandledProgress else { return }
@@ -201,19 +174,8 @@ private struct LapFillView: View {
 
     private func advance(to newProgress: CGFloat) {
         lastHandledProgress = newProgress
-
         withAnimation(.easeInOut(duration: growDuration)) {
             displayProgress = newProgress
-        }
-
-        if newProgress >= 1 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + growDuration) {
-                withAnimation(.easeInOut(duration: completeFadeDuration)) {
-                    showCompletedOverlay = true
-                }
-            }
-        } else {
-            showCompletedOverlay = false
         }
     }
 }
@@ -224,59 +186,39 @@ struct DetailPromoView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isGridView: Bool = false
-
-    // Floating bar hide-on-scroll state
     @State private var isFloatingBarHidden: Bool = false
     @State private var hideBarWorkItem: DispatchWorkItem?
-    /// Minimum finger travel (points) before the bar hides. Keeps small,
-    /// accidental nudges from triggering it — only a deliberate scroll does.
     private let scrollHideThreshold: CGFloat = 100
-
-    // Approximate scroll offset, built purely from DragGesture deltas —
-    // same mechanism as the floating bar above, no GeometryReader/
-    // PreferenceKey stream involved (that doesn't fire reliably here).
-    // `lastDragTranslationY` lets us compute the delta *since the
-    // previous onChanged callback* (not since the gesture began), so we
-    // can accumulate it persistently across separate drag gestures.
     @State private var lastDragTranslationY: CGFloat = 0
     @State private var approximateScrollOffset: CGFloat = 0
-
-    // Progress is now driven by real product quantities rather than a
-    // fixed value. Business rule: each unit of quantity across all
-    // product cards contributes `pointsPerUnit` points; the bar fills
-    // per "lap" of `pointsPerBar`; the whole path caps at `progressLimit`
-    // (i.e. `progressLimit / pointsPerBar` laps total).
     @State private var totalProductQuantity: Int = 0
     private let pointsPerUnit = 40
     private let pointsPerBar = 100
     private let progressLimit = 300
 
-    /// (which lap's badge to show, how full that lap's bar currently is).
-    /// Example with the values above: qty 1 -> 40/100 in lap "x1"; qty 3
-    /// -> 120 total -> lap "x2" at 20/100; qty 8 -> 320 capped to 300 ->
-    /// lap "x3" fully complete (progress == 1).
-    private var promoProgressState: (multiplier: Int, progress: CGFloat) {
+    private var promoProgressState: (multiplier: Int, progress: CGFloat, badgeMultiplier: Int, showBadge: Bool) {
         let totalPoints = min(totalProductQuantity * pointsPerUnit, progressLimit)
 
         guard totalPoints > 0 else {
-            return (multiplier: 1, progress: 0)
+            return (multiplier: 1, progress: 0, badgeMultiplier: 0, showBadge: false)
         }
 
         let remainder = totalPoints % pointsPerBar
         if remainder == 0 {
-            // Landed exactly on a lap boundary — that lap is fully complete.
             let lap = totalPoints / pointsPerBar
-            return (multiplier: lap, progress: 1)
+            return (multiplier: lap, progress: 1, badgeMultiplier: lap, showBadge: lap >= 1)
         } else {
             let lap = totalPoints / pointsPerBar + 1
-            return (multiplier: lap, progress: CGFloat(remainder) / CGFloat(pointsPerBar))
+            let completedLaps = lap - 1
+            return (
+                multiplier: lap,
+                progress: CGFloat(remainder) / CGFloat(pointsPerBar),
+                badgeMultiplier: completedLaps,
+                showBadge: completedLaps >= 1
+            )
         }
     }
 
-    // Sticky header visibility — shown once the scroll offset has passed
-    // nestedCard's bottom edge, hidden again once nestedCard is back in
-    // view. The threshold is measured once via .onAppear (a lifecycle
-    // event, not a continuous preference update).
     @State private var showStickyHeader: Bool = false
     @State private var nestedCardBottomThreshold: CGFloat = .greatestFiniteMagnitude
 
@@ -306,10 +248,6 @@ struct DetailPromoView: View {
                             GeometryReader { geo in
                                 Color.clear
                                     .onAppear {
-                                        // Captured once, at initial layout (offset
-                                        // == 0), so this equals exactly the scroll
-                                        // distance needed to bring nestedCard's
-                                        // bottom edge to the top of the viewport.
                                         nestedCardBottomThreshold = geo.frame(in: .named("promoScroll")).maxY
                                     }
                             }
@@ -329,16 +267,6 @@ struct DetailPromoView: View {
                 }
             }
             .coordinateSpace(name: "promoScroll")
-            // Detect active scrolling directly via drag updates on the
-            // ScrollView itself. Floating-bar hide is gated on
-            // `translation` (cumulative distance since the finger touched
-            // down) so a tiny nudge doesn't immediately hide it — only a
-            // real, deliberate scroll does. The sticky header's
-            // visibility is driven separately, by comparing the
-            // accumulated approximate offset against nestedCard's
-            // precomputed threshold — no gating needed there since it's
-            // a straightforward position check, not a "is scrolling"
-            // detection.
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
@@ -366,21 +294,12 @@ struct DetailPromoView: View {
 
     // MARK: - Scroll handling
 
-    /// Accumulates an approximate absolute scroll offset purely from
-    /// DragGesture deltas (delta since the *previous* callback, not since
-    /// the gesture began), so it persists correctly across separate drags.
     private func updateApproximateScrollOffset(with value: DragGesture.Value) {
         let deltaSinceLastCallback = value.translation.height - lastDragTranslationY
         lastDragTranslationY = value.translation.height
         approximateScrollOffset -= deltaSinceLastCallback
     }
 
-    /// Called on every drag update while the user's finger is moving on the
-    /// ScrollView. Hides the floating bar immediately once movement passes
-    /// `scrollHideThreshold`, then (re)schedules a debounced timer that
-    /// brings it back after scrolling/dragging has been idle for a short
-    /// pause. The timer also covers the momentum-scroll tail after the
-    /// finger lifts, since DragGesture alone can't observe that.
     private func handleFloatingBarVisibility(for value: DragGesture.Value) {
         guard abs(value.translation.height) > scrollHideThreshold else { return }
 
@@ -395,10 +314,7 @@ struct DetailPromoView: View {
         hideBarWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: workItem)
     }
-
-    /// Shows the sticky header once the approximate scroll offset has
-    /// passed nestedCard's bottom edge, hides it once scrolled back above
-    /// that point — animated as a slide-down-from-top reveal / reverse.
+    
     private func handleStickyHeaderVisibility() {
         let shouldShowSticky = approximateScrollOffset > nestedCardBottomThreshold
         guard shouldShowSticky != showStickyHeader else { return }
@@ -429,7 +345,6 @@ struct DetailPromoView: View {
             Spacer()
 
             Button(action: {
-                // handle search action
             }) {
                 Image("ic_search")
                     .renderingMode(.template)
@@ -439,7 +354,6 @@ struct DetailPromoView: View {
             }
 
             Button(action: {
-                // handle share action
             }) {
                 Image("ic_share")
                     .renderingMode(.template)
@@ -462,12 +376,6 @@ struct DetailPromoView: View {
     }
 
     // MARK: - Nested Promo Card (top + bottom stacked)
-    //
-    // FIX: instead of measuring topCard's height at runtime via
-    // GeometryReader + PreferenceKey (unreliable, reported 0 inside
-    // ScrollView), we use a VStack with negative spacing so the two
-    // cards overlap by exactly 12pt automatically. zIndex ensures
-    // nestedCardTop draws above the hidden portion of nestedCardBottom.
     private var nestedCard: some View {
         VStack(spacing: -12) {
             nestedCardTop
@@ -478,7 +386,6 @@ struct DetailPromoView: View {
         }
     }
 
-    // First card: badges, info icon, progress bar, helper text
     private var nestedCardTop: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 4) {
@@ -506,7 +413,9 @@ struct DetailPromoView: View {
 
             ProgressBarView(
                 progress: promoProgressState.progress,
-                multiplier: promoProgressState.multiplier
+                multiplier: promoProgressState.multiplier,
+                badgeMultiplier: promoProgressState.badgeMultiplier,
+                showBadge: promoProgressState.showBadge
             )
 
             Text("Tambah produk dulu, yuk!")
@@ -522,10 +431,6 @@ struct DetailPromoView: View {
         )
     }
 
-    // Second card: product image list
-    // NOTE: top padding is 8 (not 20) — the extra 12pt gap is now
-    // provided by nestedCard's negative spacing overlap, not by this
-    // card's own internal padding.
     private var nestedCardBottom: some View {
         HStack(spacing: 8) {
             HStack(spacing: 8) {
@@ -693,18 +598,6 @@ struct DetailPromoView: View {
 }
 
 extension DetailPromoView {
-    // IMPORTANT: this must be `static let`, not a computed `var`.
-    // ProductCardModel.id is `let id = UUID()`, generated fresh inside its
-    // initializer — so a computed `var` here would build brand-new
-    // ProductCardModel instances (with brand-new random UUIDs) every time
-    // it's accessed. Since `body` re-reads this on every re-render (e.g.
-    // whenever `totalProductQuantity` changes from tapping a stepper),
-    // that constantly handed ProductStaggeredListView products with
-    // different ids than before — which made its `quantities` dictionary
-    // and `activeProductID` (both keyed by id) stop matching anything,
-    // so every stepper appeared to reset even though nothing was actually
-    // cleared. `static let` computes this array exactly once for the
-    // lifetime of the app, so ids stay stable across re-renders.
     static let sampleProducts: [ProductCardModel] = [
         ProductCardModel(
             image: "img_filma",
