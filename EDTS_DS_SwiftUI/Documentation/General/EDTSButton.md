@@ -137,6 +137,7 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
+| `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font`; when set, it's used as-is and `fontName`, `fontSize`, and `fontWeight` are ignored entirely |
 | `fontName` | `String` | `System font` | Custom font name (falls back to system font if not found) |
 | `fontSize` | `CGFloat` | `Size-dependent` | Font size for title text |
 | `fontWeight` | `String?` | `Size-dependent` | Font weight (ultralight, thin, light, regular, medium, semibold, bold, heavy, black) |
