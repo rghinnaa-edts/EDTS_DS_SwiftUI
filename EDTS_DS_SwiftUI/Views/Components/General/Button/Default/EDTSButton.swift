@@ -28,61 +28,62 @@ public enum BtnSize: String {
 
 public struct EDTSButton: View {
     // MARK: - Properties
-    private var btnType: BtnType
-    private var btnSize: BtnSize
-    private var btnState: BtnState
+    public var btnType: BtnType
+    public var btnSize: BtnSize
+    public var btnState: BtnState
 
-    private let label: String?
-    private let labelAttributed: AttributedString?
-    private var labelColor: Color?
-    private var labelDangerColor: Color?
-    private var labelDisabledColor: Color?
+    public let label: String?
+    public let labelAttributed: AttributedString?
+    public var labelColor: Color?
+    public var labelDangerColor: Color?
+    public var labelDisabledColor: Color?
     
-    private var fontName: String
-    private var fontSize: CGFloat
-    private var fontWeight: String?
+    public var fontStyle: Font?
+    public var fontName: String
+    public var fontSize: CGFloat
+    public var fontWeight: String?
     
-    private var bgColor: Color?
-    private var bgDangerColor: Color?
-    private var bgDisabledColor: Color?
-    private var bgColorStart: Color?
-    private var bgColorEnd: Color?
-    private var bgColorOrientation: Orientation?
+    public var bgColor: Color?
+    public var bgDangerColor: Color?
+    public var bgDisabledColor: Color?
+    public var bgColorStart: Color?
+    public var bgColorEnd: Color?
+    public var bgColorOrientation: Orientation?
     
-    private var rippleColor: Color?
-    private var cornerRadius: CGFloat
+    public var rippleColor: Color?
+    public var cornerRadius: CGFloat
     
-    private let iconLeading: Image?
-    private var iconTintColorLeading: Color?
-    private var iconDangerTintColorLeading: Color?
-    private var iconDisabledTintColorLeading: Color?
+    public let iconLeading: Image?
+    public var iconTintColorLeading: Color?
+    public var iconDangerTintColorLeading: Color?
+    public var iconDisabledTintColorLeading: Color?
     
-    private let iconTrailing: Image?
-    private var iconTintColorTrailing: Color?
-    private var iconDangerTintColorTrailing: Color?
-    private var iconDisabledTintColorTrailing: Color?
+    public let iconTrailing: Image?
+    public var iconTintColorTrailing: Color?
+    public var iconDangerTintColorTrailing: Color?
+    public var iconDisabledTintColorTrailing: Color?
     
-    private var iconSpacing: CGFloat
-    private var iconSize: CGFloat
+    public var iconSpacing: CGFloat
+    public var iconSize: CGFloat
     
-    private var borderWidth: CGFloat
-    private var borderColor: Color?
-    private var borderDangerColor: Color?
-    private var borderDisabledColor: Color?
+    public var borderWidth: CGFloat
+    public var borderColor: Color?
+    public var borderDangerColor: Color?
+    public var borderDisabledColor: Color?
     
-    private var shadowOpacity: Double
-    private var shadowRadius: CGFloat
-    private var shadowOffset: CGSize
-    private var shadowColor: Color?
-    private var shadowDangerColor: Color?
-    private var shadowDisabledColor: Color?
+    public var shadowOpacity: Double
+    public var shadowRadius: CGFloat
+    public var shadowOffset: CGSize
+    public var shadowColor: Color?
+    public var shadowDangerColor: Color?
+    public var shadowDisabledColor: Color?
     
-    private var paddingTop: CGFloat
-    private var paddingBottom: CGFloat
-    private var paddingLeading: CGFloat
-    private var paddingTrailing: CGFloat
+    public var paddingTop: CGFloat
+    public var paddingBottom: CGFloat
+    public var paddingLeading: CGFloat
+    public var paddingTrailing: CGFloat
     
-    private var action: () -> Void
+    public var action: () -> Void
     
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
@@ -98,6 +99,7 @@ public struct EDTSButton: View {
         labelColor: Color? = nil,
         labelDangerColor: Color? = nil,
         labelDisabledColor: Color? = nil,
+        fontStyle: Font? = nil,
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String? = nil,
@@ -143,6 +145,7 @@ public struct EDTSButton: View {
         self.labelColor = labelColor
         self.labelDangerColor = labelDangerColor
         self.labelDisabledColor = labelDisabledColor
+        self.fontStyle = fontStyle
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
@@ -213,6 +216,7 @@ public struct EDTSButton: View {
     }
     
     private var customFont: Font? {
+        if let fontStyle { return fontStyle }
         guard !fontName.isEmpty || fontSize != .zero else { return nil }
         let resolvedSize = fontSize == .zero ? 16 : fontSize
         var font: Font = fontName.isEmpty
@@ -223,6 +227,8 @@ public struct EDTSButton: View {
         }
         return font
     }
+    
+    private let dragCancelThreshold: CGFloat = 44
     
     // MARK: - Body
     public var body: some View {
@@ -251,7 +257,7 @@ public struct EDTSButton: View {
             .scaleEffect(tempResolvedButtonState != nil ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: tempResolvedButtonState)
             .contentShape(Rectangle())
-            .simultaneousGesture(SetupPressGesture())
+            .simultaneousGesture(setupPressGesture())
     }
     
     @ViewBuilder
@@ -273,7 +279,7 @@ public struct EDTSButton: View {
                     Text(label ?? "Button")
                 }
             }
-            .modifier(FontModifier(customFont: customFont, fallbackStyle: setupFontStyle))
+            .edtsFont(setupFontStyle, custom: customFont)
             .foregroundColor(values.tempLabelColor)
             .multilineTextAlignment(.center)
             
@@ -533,7 +539,7 @@ public struct EDTSButton: View {
     }
     
     // MARK: - Gesture
-    private func SetupPressGesture() -> some Gesture {
+    private func setupPressGesture() -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { _ in
                 guard resolvedButtonState != .disabled else { return }
@@ -545,7 +551,7 @@ public struct EDTSButton: View {
                 guard resolvedButtonState != .disabled else { return }
                 tempResolvedButtonState = nil
                 
-                let withinBounds = abs(value.translation.width) < 44 && abs(value.translation.height) < 44
+                let withinBounds = abs(value.translation.width) < dragCancelThreshold && abs(value.translation.height) < dragCancelThreshold
                 if withinBounds {
                     action()
                 }
@@ -590,17 +596,4 @@ public struct EDTSButton: View {
         }
     }
     return PreviewWrapper()
-}
-
-public struct FontModifier: ViewModifier {
-    let customFont: Font?
-    let fallbackStyle: EDTSFont.FontStyle
-    
-    public func body(content: Content) -> some View {
-        if let customFont {
-            content.font(customFont)
-        } else {
-            content.edtsFont(fallbackStyle)
-        }
-    }
 }
