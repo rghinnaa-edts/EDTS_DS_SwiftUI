@@ -20,9 +20,12 @@ public enum EDTSTooltipDirection {
 // MARK: - Style
 
 public struct EDTSTooltipStyle {
-    public var labelColor: Color
-    public var font: Font
-    public var backgroundColor: Color
+    public var textColor: Color
+    public var fontStyle: Font?
+    public var fontName: String
+    public var fontSize: CGFloat
+    public var fontWeight: String?
+    public var bgColor: Color
     public var cornerRadius: CGFloat
     public var shadowColor: Color
     public var shadowOpacity: Double
@@ -35,9 +38,12 @@ public struct EDTSTooltipStyle {
     public var containerMargin: CGFloat
 
     public init(
-        labelColor: Color = .white,
-        font: Font = .system(size: 12),
-        backgroundColor: Color = .black,
+        textColor: Color = .white,
+        fontStyle: Font? = nil,
+        fontName: String = "",
+        fontSize: CGFloat = .zero,
+        fontWeight: String? = nil,
+        bgColor: Color = .black,
         cornerRadius: CGFloat = 4,
         shadowColor: Color = Color(.sRGB, white: 0.5, opacity: 1),
         shadowOpacity: Double = 0.18,
@@ -49,9 +55,12 @@ public struct EDTSTooltipStyle {
         arrowSize: CGSize = CGSize(width: 12, height: 8),
         containerMargin: CGFloat = 8
     ) {
-        self.labelColor = labelColor
-        self.font = font
-        self.backgroundColor = backgroundColor
+        self.textColor = textColor
+        self.fontStyle = fontStyle
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.fontWeight = fontWeight
+        self.bgColor = bgColor
         self.cornerRadius = cornerRadius
         self.shadowColor = shadowColor
         self.shadowOpacity = shadowOpacity
@@ -152,8 +161,8 @@ private struct EDTSTooltipBubble: View {
                 Text(item.text ?? "")
             }
         }
-        .font(item.style.font)
-        .foregroundColor(item.style.labelColor)
+        .font(item.style.fontStyle)
+        .foregroundColor(item.style.textColor)
         .padding(item.style.padding)
         .modifier(EDTSTooltipTextSizing(maxWidth: effectiveMaxWidth, needsWrap: needsWrap))
         .background(
@@ -182,7 +191,7 @@ private struct EDTSTooltipBubble: View {
                     arrowSize: item.style.arrowSize,
                     arrowTip: arrowTip(in: g.size, direction: direction, bubbleFrame: layout)
                 )
-                .fill(item.style.backgroundColor)
+                .fill(item.style.bgColor)
                 .shadow(
                     color: item.style.shadowColor.opacity(item.style.shadowOpacity),
                     radius: item.style.shadowRadius,
@@ -292,7 +301,6 @@ private struct EDTSTooltipBubble: View {
             origin = CGPoint(x: target.midX - size.width / 2, y: idealY)
             origin.x = clampCrossAxis(origin.x, length: size.width, containerLength: containerSize.width)
         case .leading:
-            // `size.width` already includes the arrow's reserved space.
             let idealX = target.minX - spacing - size.width
             origin = CGPoint(x: idealX, y: target.midY - size.height / 2)
             origin.y = clampCrossAxis(origin.y, length: size.height, containerLength: containerSize.height)
