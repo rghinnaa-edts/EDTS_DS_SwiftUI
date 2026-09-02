@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-private struct AnyShape: Shape {
+private struct EDTSShape: Shape {
     private let pathBuilder: (CGRect) -> Path
 
     init<S: Shape>(_ shape: S) {
@@ -20,43 +20,100 @@ private struct AnyShape: Shape {
 }
 
 public struct EDTSSignifier: View {
+    // MARK: - Properties
+    public let label: String?
+    public let labelAttributed: AttributedString?
+    public var labelColor: Color?
+    public var fontStyle: Font?
+    public var fontName: String
+    public var fontSize: CGFloat
+    public var fontWeight: String?
 
-    private let label: String?
-    private let labelAttributed: AttributedString?
+    public var bgColor: Color?
+    public var cornerRadius: CGFloat?
+    public var borderWidth: CGFloat
+    public var borderColor: Color?
+    
+    public var shadowOpacity: Float
+    public var shadowOffset: CGSize
+    public var shadowRadius: CGFloat
+    public var shadowColor: Color?
 
-    private var labelFontName: String
-    private var labelFontSize: CGFloat
-    private var labelFontWeight: String
+    public var paddingTop: CGFloat?
+    public var paddingBottom: CGFloat?
+    public var paddingLeading: CGFloat
+    public var paddingTrailing: CGFloat
 
-    private var labelColor: Color?
+    public var offsetY: CGFloat
+    public var offsetX: CGFloat
 
-    private var bgColor: Color?
-    private var cornerRadius: CGFloat?
-    private var borderWidth: CGFloat
-    private var borderColor: Color?
-    private var shadowOpacity: Float
-    private var shadowOffset: CGSize
-    private var shadowRadius: CGFloat
-    private var shadowColor: Color?
-
-    private var paddingTop: CGFloat?
-    private var paddingBottom: CGFloat?
-    private var paddingLeading: CGFloat
-    private var paddingTrailing: CGFloat
-
-    public var topOffset: CGFloat
-    public var trailingOffset: CGFloat
-
-    private var isSkeleton: Bool
-    private var isIndicator: Bool
-
-    // MARK: - Init
+    public var isSkeleton: Bool
+    public var isIndicator: Bool
+    
+    // MARK: - Private Variable
+    private var customFont: Font? {
+        if let fontStyle { return fontStyle }
+        guard !fontName.isEmpty || fontSize != .zero else { return nil }
+        let resolvedSize = fontSize == .zero ? 16 : fontSize
+        var font: Font = fontName.isEmpty
+        ? .system(size: resolvedSize)
+        : .custom(fontName, size: resolvedSize)
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+        return font
+    }
+    
+    private var resolvedHeight: CGFloat {
+        if isIndicator {
+            return EDTSColor.theme == .poinku ? 12 : 8
+        } else {
+            return EDTSColor.theme == .poinku ? 12 : 16
+        }
+    }
+    
+    private var resolvedLabelColor: Color {
+        labelColor ?? EDTSColor.white
+    }
+    
+    private var resolvedFontStyle: EDTSFont.FontStyle {
+        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B5.Medium : EDTSFont.Klik.B4.Semibold
+    }
+    
+    private var resolvedBgColor: Color {
+        bgColor ?? EDTSColor.red30
+    }
+    
+    private var resolvedBorderColor: Color {
+        if let borderColor { return borderColor }
+        return EDTSColor.theme == .poinku ? EDTSColor.white : .clear
+    }
+    
+    private var resolvedPaddingTop: CGFloat {
+        if let paddingTop { return paddingTop }
+        return EDTSColor.theme == .poinku ? 0 : 1
+    }
+    
+    private var resolvedPaddingBottom: CGFloat {
+        if let paddingBottom { return paddingBottom }
+        return EDTSColor.theme == .poinku ? 0 : 1
+    }
+    
+    private var resolvedShape: EDTSShape {
+        if let cornerRadius {
+            return EDTSShape(RoundedRectangle(cornerRadius: cornerRadius))
+        }
+        return EDTSShape(Capsule())
+    }
+    
+    // MARK: - Initializers
     public init(
         label: String? = "0",
         labelAttributed: AttributedString? = nil,
-        labelFontName: String = "",
-        labelFontSize: CGFloat = .zero,
-        labelFontWeight: String = "",
+        fontStyle: Font? = nil,
+        fontName: String = "",
+        fontSize: CGFloat = .zero,
+        fontWeight: String? = nil,
         labelColor: Color? = nil,
         bgColor: Color? = nil,
         cornerRadius: CGFloat? = nil,
@@ -70,16 +127,17 @@ public struct EDTSSignifier: View {
         paddingBottom: CGFloat? = nil,
         paddingLeading: CGFloat = 2,
         paddingTrailing: CGFloat = 2,
-        topOffset: CGFloat = .zero,
-        trailingOffset: CGFloat = .zero,
+        offsetY: CGFloat = .zero,
+        offsetX: CGFloat = .zero,
         isSkeleton: Bool = false,
         isIndicator: Bool = false
     ) {
         self.label = labelAttributed == nil ? (label ?? "0") : nil
         self.labelAttributed = labelAttributed
-        self.labelFontName = labelFontName
-        self.labelFontSize = labelFontSize
-        self.labelFontWeight = labelFontWeight
+        self.fontStyle = fontStyle
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.fontWeight = fontWeight
         self.labelColor = labelColor
         self.bgColor = bgColor
         self.cornerRadius = cornerRadius
@@ -93,59 +151,10 @@ public struct EDTSSignifier: View {
         self.paddingBottom = paddingBottom
         self.paddingLeading = paddingLeading
         self.paddingTrailing = paddingTrailing
-        self.topOffset = topOffset
-        self.trailingOffset = trailingOffset
+        self.offsetY = offsetY
+        self.offsetX = offsetX
         self.isSkeleton = isSkeleton
         self.isIndicator = isIndicator
-    }
-
-    private var resolvedSignifierHeight: CGFloat {
-        if isIndicator {
-            return EDTSColor.theme == .poinku ? 12 : 8
-        } else {
-            return EDTSColor.theme == .poinku ? 12 : 16
-        }
-    }
-
-    private var resolvedBgColor: Color {
-        bgColor ?? EDTSColor.red30
-    }
-
-    private var resolvedLabelColor: Color {
-        labelColor ?? EDTSColor.white
-    }
-
-    private var resolvedPaddingTop: CGFloat {
-        if let paddingTop { return paddingTop }
-        return EDTSColor.theme == .poinku ? 0 : 1
-    }
-
-    private var resolvedPaddingBottom: CGFloat {
-        if let paddingBottom { return paddingBottom }
-        return EDTSColor.theme == .poinku ? 0 : 1
-    }
-
-    private var resolvedFontStyle: EDTSFont.FontStyle {
-        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B5.Medium : EDTSFont.Klik.B4.Semibold
-    }
-
-    private var hasCustomFont: Bool {
-        !labelFontName.isEmpty || labelFontSize != .zero || !labelFontWeight.isEmpty
-    }
-
-    private var customFont: Font {
-        let weight = setupFontWeight(from: labelFontWeight)
-        if !labelFontName.isEmpty {
-            return .custom(labelFontName, size: labelFontSize == .zero ? 12 : labelFontSize)
-        }
-        return .system(size: labelFontSize == .zero ? 12 : labelFontSize, weight: weight)
-    }
-
-    private var resolvedShape: AnyShape {
-        if let cornerRadius {
-            return AnyShape(RoundedRectangle(cornerRadius: cornerRadius))
-        }
-        return AnyShape(Capsule())
     }
 
     // MARK: - Body
@@ -168,10 +177,10 @@ public struct EDTSSignifier: View {
             .padding(.bottom, resolvedPaddingBottom)
             .padding(.leading, paddingLeading)
             .padding(.trailing, paddingTrailing)
-            .frame(minWidth: resolvedSignifierHeight, minHeight: resolvedSignifierHeight)
+            .frame(minWidth: resolvedHeight, minHeight: resolvedHeight)
             .background(resolvedBgColor)
             .clipShape(resolvedShape)
-            .overlay(resolvedShape.stroke(borderColor ?? .clear, lineWidth: borderWidth))
+            .overlay(resolvedShape.stroke(resolvedBorderColor ?? .clear, lineWidth: borderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -191,19 +200,15 @@ public struct EDTSSignifier: View {
         }
         .multilineTextAlignment(.center)
         .foregroundColor(resolvedLabelColor)
-        .modifier(LabelFontModifier(
-            hasCustomFont: hasCustomFont,
-            customFont: customFont,
-            defaultStyle: resolvedFontStyle
-        ))
+        .edtsFont(resolvedFontStyle, custom: customFont)
     }
 
     @ViewBuilder
     private var indicatorView: some View {
         resolvedShape
             .fill(resolvedBgColor)
-            .overlay(resolvedShape.stroke(borderColor ?? .clear, lineWidth: borderWidth))
-            .frame(width: resolvedSignifierHeight, height: resolvedSignifierHeight)
+            .overlay(resolvedShape.stroke(resolvedBorderColor ?? .clear, lineWidth: borderWidth))
+            .frame(width: resolvedHeight, height: resolvedHeight)
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -214,31 +219,8 @@ public struct EDTSSignifier: View {
 
     @ViewBuilder
     private var skeletonView: some View {
-        EDTSSkeleton(cornerRadius: resolvedSignifierHeight / 2)
-            .frame(width: resolvedSignifierHeight, height: resolvedSignifierHeight)
-    }
-}
-
-private struct LabelFontModifier: ViewModifier {
-    let hasCustomFont: Bool
-    let customFont: Font
-    let defaultStyle: EDTSFont.FontStyle
-
-    func body(content: Content) -> some View {
-        if hasCustomFont {
-            content.font(customFont)
-        } else {
-            content.edtsFont(defaultStyle)
-        }
-    }
-}
-
-extension View {
-    public func edtsSignifier(_ signifier: EDTSSignifier) -> some View {
-        self.overlay(alignment: .topTrailing) {
-            signifier
-                .offset(x: signifier.trailingOffset, y: -signifier.topOffset)
-        }
+        EDTSSkeleton(cornerRadius: resolvedHeight / 2)
+            .frame(width: resolvedHeight, height: resolvedHeight)
     }
 }
 
@@ -248,7 +230,6 @@ extension View {
         EDTSSignifier(label: "0")
         EDTSSignifier(label: "9")
         EDTSSignifier(label: "99+")
-        EDTSSignifier(label: "New", labelColor: EDTSColor.white, bgColor: EDTSColor.green30)
         EDTSSignifier(isIndicator: true)
         EDTSSignifier(bgColor: EDTSColor.green30, isIndicator: true)
         EDTSSignifier(bgColor: EDTSColor.grey40, isIndicator: true)
@@ -259,10 +240,6 @@ extension View {
             .scaledToFit()
             .frame(width: 32, height: 32)
             .foregroundColor(EDTSColor.greyText)
-            .padding(24)
-            .edtsSignifier(EDTSSignifier(label: "3", topOffset: -14, trailingOffset: -14))
-            .background(Color.pink)
+            .edtsSignifier(EDTSSignifier(label: "3", offsetY: 4, offsetX: 2))
     }
-    .padding()
-    .background(Color.blue)
 }

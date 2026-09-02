@@ -70,7 +70,13 @@ public struct GradientBackgroundModifier: ViewModifier {
 }
 
 extension View {
-
+    public func edtsSignifier(_ signifier: EDTSSignifier) -> some View {
+        self.overlay(alignment: .topTrailing) {
+            signifier
+                .offset(x: signifier.offsetX, y: -signifier.offsetY)
+        }
+    }
+    
     public func gradientBackground(
         _ gradient: [Color],
         orientation: Orientation = .horizontal,
