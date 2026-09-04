@@ -134,6 +134,10 @@ public struct RippleModifier: ViewModifier {
 
     @State private var ripples: [RippleInstance] = []
     @State private var containerSize: CGSize = .zero
+    @State private var isRippleActive: Bool = false
+    @State private var activeRippleID: UUID?
+    @State private var releasedRippleIDs: Set<UUID> = []
+    @State private var rippleStartTime: Date?
 
     public func body(content: Content) -> some View {
         content
@@ -141,8 +145,16 @@ public struct RippleModifier: ViewModifier {
                 GeometryReader { geo in
                     ZStack {
                         ForEach(ripples) { ripple in
-                            RippleShapeView(color: color, maxRadius: ripple.maxRadius)
-                                .position(ripple.point)
+                            RippleShapeView(
+                                color: color,
+                                maxRadius: ripple.maxRadius,
+                                isReleased: releasedRippleIDs.contains(ripple.id),
+                                onFadeOutComplete: {
+                                    ripples.removeAll { $0.id == ripple.id }
+                                    releasedRippleIDs.remove(ripple.id)
+                                }
+                            )
+                            .position(ripple.point)
                         }
                     }
                     .onAppear { containerSize = geo.size }
@@ -154,8 +166,22 @@ public struct RippleModifier: ViewModifier {
             .contentShape(Rectangle())
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
-                    .onEnded { value in
+                    .onChanged { value in
+                        guard !isRippleActive else { return }
+                        isRippleActive = true
                         addRipple(at: value.location)
+                    }
+                    .onEnded { _ in
+                        isRippleActive = false
+                        if let activeRippleID {
+                            let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
+                            let growDuration = 0.40
+                            let remaining = max(growDuration - elapsed, 0)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
+                                releasedRippleIDs.insert(activeRippleID)
+                            }
+                        }
+                        activeRippleID = nil
                     }
             )
     }
@@ -164,10 +190,8 @@ public struct RippleModifier: ViewModifier {
         let radius = maxCornerDistance(from: point, in: containerSize)
         let ripple = RippleInstance(point: point, maxRadius: radius)
         ripples.append(ripple)
-        let lifetime = 0.62
-        DispatchQueue.main.asyncAfter(deadline: .now() + lifetime) {
-            ripples.removeAll { $0.id == ripple.id }
-        }
+        activeRippleID = ripple.id
+        rippleStartTime = Date()
     }
 
     private func maxCornerDistance(from point: CGPoint, in size: CGSize) -> CGFloat {
@@ -185,6 +209,8 @@ public struct RippleModifier: ViewModifier {
 private struct RippleShapeView: View {
     let color: Color
     let maxRadius: CGFloat
+    let isReleased: Bool
+    let onFadeOutComplete: () -> Void
 
     @State private var scale: CGFloat = 0.01
     @State private var opacity: Double = 0
@@ -203,8 +229,14 @@ private struct RippleShapeView: View {
                 withAnimation(.easeOut(duration: 0.40)) {
                     scale = max(maxRadius, 0.02)
                 }
-                withAnimation(.easeOut(duration: 0.22).delay(0.40)) {
+            }
+            .onChange(of: isReleased) { released in
+                guard released else { return }
+                withAnimation(.easeOut(duration: 0.22)) {
                     opacity = 0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                    onFadeOutComplete()
                 }
             }
     }
