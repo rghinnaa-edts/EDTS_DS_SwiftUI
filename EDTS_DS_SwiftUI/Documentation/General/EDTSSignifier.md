@@ -24,7 +24,7 @@ Then import it wherever you use the component:
 import EDTS_DS_SwiftUI
 ```
 
-This relies on the design token types already available in the pod (`EDTSColor`, `EDTSFont`) and the shared `edtsSkeleton(active:cornerRadius:)` view modifier used for the loading state.
+This relies on the design token types already available in the pod (`EDTSColor`, `EDTSFont`) and the shared `EDTSSkeleton` view, which is instantiated directly (`EDTSSkeleton(cornerRadius:)`) to render the loading placeholder.
 
 ---
 
@@ -93,17 +93,20 @@ EDTSSignifier(label: nil, labelAttributed: attributed)
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override; takes precedence over `fontName`/`fontSize`/`fontWeight` and the theme default |
-| `fontName` | `String` | `""` | Custom font family name; used only if `fontStyle` is `nil` or `fontSize` is non-default |
-| `fontSize` | `CGFloat` | `0` | Custom font size; resolves to `16` if left at `0` |
-| `fontWeight` | `String?` | `nil` | Custom font weight keyword, applied via `setupFontWeight(from:)` |
+| `fontName` | `String` | `""` | Custom font family name; only takes effect when `fontStyle` is `nil` and either `fontName` or `fontSize` is set |
+| `fontSize` | `CGFloat` | `0` | Custom font size; resolves to `16` if left at `0` (only takes effect under the same condition as `fontName` above) |
+| `fontWeight` | `String?` | `nil` | Custom font weight keyword, applied via `setupFontWeight(from:)` — **has no effect on its own**: it's only applied when `fontStyle` is `nil` and either `fontName` or `fontSize` is also set, since otherwise the custom font is never built |
 
 > When none of `fontStyle`, `fontName`, `fontSize`, `fontWeight` are customized, the label uses the theme default: `EDTSFont.Poinku.B5.Medium` (poinku) or `EDTSFont.Klik.B4.Semibold` (klikIDM).
 
-### Background & Shape
+### Background
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `bgColor` | `Color?` | `EDTSColor.red30` | Fill color of the signifier |
+| `bgColor` | `Color?` | `EDTSColor.red30` | Solid fill color of the signifier; used when no gradient start/end is set |
+| `bgColorStart` | `Color?` | `nil` | Gradient start color; setting either start or end switches the background to a gradient |
+| `bgColorEnd` | `Color?` | `nil` | Gradient end color; setting either start or end switches the background to a gradient |
+| `bgColorOrientation` | `Orientation?` | `.horizontal` | Gradient direction: `.horizontal` (leading→trailing) or `.vertical` (top→bottom) |
 | `cornerRadius` | `CGFloat?` | `nil` | Corner radius of the signifier |
 
 ### Border
@@ -111,7 +114,7 @@ EDTSSignifier(label: nil, labelAttributed: attributed)
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `borderWidth` | `CGFloat` | `0` | Stroke width of the signifier |
-| `borderColor` | `Color?` | `EDTSColor.white` (poinku) / `.clear` (klikIDM) — badge & indicator use slightly different fallback logic, see Notes | Stroke color |
+| `borderColor` | `Color?` | `EDTSColor.white` (poinku) / `.clear` (klikIDM) | Stroke color, via the `resolvedBorderColor` computed property — used identically by both the badge and indicator views |
 
 ### Shadow
 
@@ -155,7 +158,7 @@ EDTSSignifier(label: nil, labelAttributed: attributed)
 ## Notes
 
 - The badge view uses `.frame(minWidth:minHeight:)` (label can grow the badge horizontally for multi-character text like `"99+"`), while the indicator view uses a fixed `.frame(width:height:)` since it has no label content.
-- Border color fallback differs slightly by mode: the badge's `resolvedBorderColor` computed property resolves `nil` to `EDTSColor.white` (poinku) or `.clear` (klikIDM), while the indicator view reads `borderColor` directly and falls back to `.clear` regardless of theme.
+- Border color fallback is the same for both modes: badge and indicator both use the `resolvedBorderColor` computed property, which resolves `nil` to `EDTSColor.white` (poinku) or `.clear` (klikIDM).
 - `EDTSShape` is a small type-erasing wrapper around any SwiftUI `Shape`, letting `resolvedShape` return either a `Capsule` or a `RoundedRectangle` from a single computed property.
 - This view has no built-in animation; state changes (e.g. toggling `isSkeleton` or updating `label`) render immediately unless wrapped in an external `withAnimation` by the caller.
 

@@ -8,7 +8,7 @@
 import SwiftUI
 
 private struct EDTSShape: Shape {
-    private let pathBuilder: (CGRect) -> Path
+    private let pathBuilder: @Sendable (CGRect) -> Path
 
     init<S: Shape>(_ shape: S) {
         self.pathBuilder = { rect in shape.path(in: rect) }
@@ -30,6 +30,9 @@ public struct EDTSSignifier: View {
     public var fontWeight: String?
 
     public var bgColor: Color?
+    public var bgColorStart: Color?
+    public var bgColorEnd: Color?
+    public var bgColorOrientation: Orientation?
     public var cornerRadius: CGFloat?
     public var borderWidth: CGFloat
     public var borderColor: Color?
@@ -116,6 +119,9 @@ public struct EDTSSignifier: View {
         fontWeight: String? = nil,
         labelColor: Color? = nil,
         bgColor: Color? = nil,
+        bgColorStart: Color? = nil,
+        bgColorEnd: Color? = nil,
+        bgColorOrientation: Orientation? = nil,
         cornerRadius: CGFloat? = nil,
         borderWidth: CGFloat = .zero,
         borderColor: Color? = nil,
@@ -140,6 +146,9 @@ public struct EDTSSignifier: View {
         self.fontWeight = fontWeight
         self.labelColor = labelColor
         self.bgColor = bgColor
+        self.bgColorStart = bgColorStart
+        self.bgColorEnd = bgColorEnd
+        self.bgColorOrientation = bgColorOrientation
         self.cornerRadius = cornerRadius
         self.borderWidth = borderWidth
         self.borderColor = borderColor
@@ -155,6 +164,21 @@ public struct EDTSSignifier: View {
         self.offsetX = offsetX
         self.isSkeleton = isSkeleton
         self.isIndicator = isIndicator
+    }
+    
+    // MARK: - Setup & Styling
+    @ViewBuilder
+    private func setupBackground() -> some View {
+        if bgColorStart != nil || bgColorEnd != nil {
+            let orientation = bgColorOrientation ?? .horizontal
+            LinearGradient(
+                colors: [bgColorStart ?? .clear, bgColorEnd ?? .clear],
+                startPoint: orientation == .horizontal ? .leading : .top,
+                endPoint: orientation == .horizontal ? .trailing : .bottom
+            )
+        } else {
+            resolvedBgColor
+        }
     }
 
     // MARK: - Body
@@ -178,9 +202,9 @@ public struct EDTSSignifier: View {
             .padding(.leading, paddingLeading)
             .padding(.trailing, paddingTrailing)
             .frame(minWidth: resolvedHeight, minHeight: resolvedHeight)
-            .background(resolvedBgColor)
+            .background(setupBackground())
             .clipShape(resolvedShape)
-            .overlay(resolvedShape.stroke(resolvedBorderColor ?? .clear, lineWidth: borderWidth))
+            .overlay(resolvedShape.stroke(resolvedBorderColor, lineWidth: borderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -205,10 +229,11 @@ public struct EDTSSignifier: View {
 
     @ViewBuilder
     private var indicatorView: some View {
-        resolvedShape
-            .fill(resolvedBgColor)
-            .overlay(resolvedShape.stroke(resolvedBorderColor ?? .clear, lineWidth: borderWidth))
+        Color.clear
             .frame(width: resolvedHeight, height: resolvedHeight)
+            .background(setupBackground())
+            .clipShape(resolvedShape)
+            .overlay(resolvedShape.stroke(resolvedBorderColor, lineWidth: borderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -235,6 +260,7 @@ public struct EDTSSignifier: View {
         EDTSSignifier(bgColor: EDTSColor.grey40, isIndicator: true)
         EDTSSignifier(isSkeleton: true)
         EDTSSignifier(isSkeleton: true, isIndicator: true)
+        EDTSSignifier(bgColorStart: EDTSColor.orange50, bgColorEnd: EDTSColor.grey80)
         Image(systemName: "bell.fill")
             .resizable()
             .scaledToFit()
