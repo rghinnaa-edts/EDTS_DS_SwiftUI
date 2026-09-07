@@ -166,21 +166,6 @@ public struct EDTSSignifier: View {
         self.isIndicator = isIndicator
     }
     
-    // MARK: - Setup & Styling
-    @ViewBuilder
-    private func setupBackground() -> some View {
-        if bgColorStart != nil || bgColorEnd != nil {
-            let orientation = bgColorOrientation ?? .horizontal
-            LinearGradient(
-                colors: [bgColorStart ?? .clear, bgColorEnd ?? .clear],
-                startPoint: orientation == .horizontal ? .leading : .top,
-                endPoint: orientation == .horizontal ? .trailing : .bottom
-            )
-        } else {
-            resolvedBgColor
-        }
-    }
-
     // MARK: - Body
     public var body: some View {
         Group {
@@ -246,6 +231,21 @@ public struct EDTSSignifier: View {
     private var skeletonView: some View {
         EDTSSkeleton(cornerRadius: resolvedHeight / 2)
             .frame(width: resolvedHeight, height: resolvedHeight)
+    }
+    
+    // MARK: - Setup & Styling
+    @ViewBuilder
+    private func setupBackground() -> some View {
+        if bgColorStart != nil || bgColorEnd != nil {
+            let orientation = bgColorOrientation ?? .horizontal
+            LinearGradient(
+                colors: [bgColorStart ?? .clear, bgColorEnd ?? .clear],
+                startPoint: orientation == .horizontal ? .leading : .top,
+                endPoint: orientation == .horizontal ? .trailing : .bottom
+            )
+        } else {
+            resolvedBgColor
+        }
     }
 }
 
