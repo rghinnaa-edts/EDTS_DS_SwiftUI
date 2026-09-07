@@ -250,7 +250,7 @@ public struct EDTSSignifier: View {
 }
 
 // MARK: - Preview
-#Preview("Badge") {
+#Preview("Preview") {
     VStack(spacing: 24) {
         EDTSSignifier(label: "0")
         EDTSSignifier(label: "9")
