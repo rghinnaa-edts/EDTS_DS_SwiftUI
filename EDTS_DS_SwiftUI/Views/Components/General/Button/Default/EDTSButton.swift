@@ -334,17 +334,19 @@ public struct EDTSButton: View {
             if EDTSColor.theme == .poinku {
                 values.tempPaddingLeading = paddingLeading == defaultValue ? 8 : paddingLeading
                 values.tempPaddingTrailing = paddingTrailing == defaultValue ? 8 : paddingTrailing
+                values.tempPaddingTop = paddingTop == defaultValue ? 4 : paddingTop
+                values.tempPaddingBottom = paddingBottom == defaultValue ? 4 : paddingBottom
                 values.tempCornerRadius = cornerRadius == defaultValue ? 4 : cornerRadius
             } else {
                 values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
                 values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
+                values.tempPaddingTop = paddingTop == defaultValue ? 6 : paddingTop
+                values.tempPaddingBottom = paddingBottom == defaultValue ? 6 : paddingBottom
                 values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
             }
             
             values.tempIconSize = iconSize == .zero ? 16 : iconSize
             values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
-            values.tempPaddingTop = paddingTop == defaultValue ? 6 : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? 6 : paddingBottom
             
         case .medium:
             if EDTSColor.theme == .poinku {
