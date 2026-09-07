@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-private struct EDTSShape: Shape {
+public struct EDTSShape: Shape {
     private let pathBuilder: @Sendable (CGRect) -> Path
 
     init<S: Shape>(_ shape: S) {
         self.pathBuilder = { rect in shape.path(in: rect) }
     }
 
-    func path(in rect: CGRect) -> Path {
+    public func path(in rect: CGRect) -> Path {
         pathBuilder(rect)
     }
 }
