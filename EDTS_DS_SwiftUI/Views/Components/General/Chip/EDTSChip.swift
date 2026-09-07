@@ -9,11 +9,11 @@ import SwiftUI
 
 public struct EDTSShape: Shape {
     private let pathBuilder: @Sendable (CGRect) -> Path
-
+    
     init<S: Shape>(_ shape: S) {
         self.pathBuilder = { rect in shape.path(in: rect) }
     }
-
+    
     public func path(in rect: CGRect) -> Path {
         pathBuilder(rect)
     }
@@ -37,27 +37,27 @@ public struct EDTSChip: View {
     public var labelColorActive: Color?
     public var bgColor: Color?
     public var bgColorActive: Color?
-
+    
     public var iconLeading: Image?
     public var iconTintColorLeading: Color?
     public var iconTintColorLeadingActive: Color?
     public var iconBgColorLeading: Color?
     public var iconBgColorLeadingActive: Color?
-
+    
     public var iconTrailing: Image?
     public var iconTintColorTrailing: Color?
     public var iconTintColorTrailingActive: Color?
     public var iconBgColorTrailing: Color?
     public var iconBgColorTrailingActive: Color?
-
+    
     public var iconSize: CGFloat
     public var iconSpacing: CGFloat
-
+    
     public var cornerRadius: CGFloat
     public var borderWidth: CGFloat
     public var borderColor: Color?
     public var borderColorActive: Color?
-
+    
     public var shadowOpacity: Float
     public var shadowOpacityActive: Float
     public var shadowRadius: CGFloat
@@ -66,23 +66,19 @@ public struct EDTSChip: View {
     public var shadowOffsetActive: CGSize
     public var shadowColor: Color?
     public var shadowColorActive: Color?
-
+    
     public var paddingTop: CGFloat?
     public var paddingBottom: CGFloat?
     public var paddingLeading: CGFloat?
     public var paddingTrailing: CGFloat?
-
+    
     public var isActive: Bool
-
+    
     // MARK: - Delegate
     public var onTapChip: (() -> Void)?
     public var onTapLeadingIcon: (() -> Void)?
     public var onTapTrailingIcon: (() -> Void)?
-
-    // MARK: - State
-    @State private var isLeadingIconPressed = false
-    @State private var isTrailingIconPressed = false
-
+    
     // MARK: - Initializers
     public init(
         label: String? = "Chip",
@@ -169,29 +165,8 @@ public struct EDTSChip: View {
         self.onTapLeadingIcon = onTapLeadingIcon
         self.onTapTrailingIcon = onTapTrailingIcon
     }
-
+    
     // MARK: - Private Variable
-    private var resolvedIconSize: CGFloat {
-        if iconSize != .zero { return iconSize }
-        return EDTSColor.theme == .poinku ? 16 : 20
-    }
-
-    private var resolvedIconSpacing: CGFloat {
-        iconSpacing != .zero ? iconSpacing : 4
-    }
-
-    private var resolvedPaddingTop: CGFloat { paddingTop ?? 4 }
-    private var resolvedPaddingBottom: CGFloat { paddingBottom ?? 4 }
-    private var resolvedPaddingLeading: CGFloat { paddingLeading ?? 8 }
-    private var resolvedPaddingTrailing: CGFloat { paddingTrailing ?? 8 }
-    private var resolvedFontStyle: EDTSFont.FontStyle {
-        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Heavy /*semibold*/ : EDTSFont.Klik.B3.Semibold
-    }
-
-    private var hasCustomFont: Bool {
-        !fontName.isEmpty || fontSize != .zero || !fontWeight.isEmpty
-    }
-
     private var customFont: Font {
         let weight = setupFontWeight(from: fontWeight)
         if !fontName.isEmpty {
@@ -199,15 +174,35 @@ public struct EDTSChip: View {
         }
         return .system(size: fontSize == .zero ? 12 : fontSize, weight: weight)
     }
-
+    
+    private var hasCustomFont: Bool {
+        !fontName.isEmpty || fontSize != .zero || !fontWeight.isEmpty
+    }
+    
+    private var resolvedIconSize: CGFloat {
+        if iconSize != .zero { return iconSize }
+        return EDTSColor.theme == .poinku ? 16 : 20
+    }
+    
+    private var resolvedIconSpacing: CGFloat {
+        iconSpacing != .zero ? iconSpacing : 4
+    }
+    
+    private var resolvedPaddingTop: CGFloat { paddingTop ?? 4 }
+    private var resolvedPaddingBottom: CGFloat { paddingBottom ?? 4 }
+    private var resolvedPaddingLeading: CGFloat { paddingLeading ?? 8 }
+    private var resolvedPaddingTrailing: CGFloat { paddingTrailing ?? 8 }
+    private var resolvedFontStyle: EDTSFont.FontStyle {
+        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Heavy /*semibold*/ : EDTSFont.Klik.B3.Semibold
+    }
+    
     private var resolvedShape: EDTSShape {
         if cornerRadius != .zero {
             return EDTSShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
         return EDTSShape(Capsule())
     }
-
-    // MARK: - Resolved style (mirrors animateChip(_:animated:))
+    
     private struct ResolvedValues {
         var iconTintLeading: Color
         var iconBgLeading: Color
@@ -221,7 +216,7 @@ public struct EDTSChip: View {
         var shadowOffset: CGSize
         var shadowColor: Color
     }
-
+    
     private var resolvedStyle: ResolvedValues {
         let state: ChipState = isActive ? .active : .inactive
         switch state {
@@ -255,7 +250,7 @@ public struct EDTSChip: View {
                     shadowColor: shadowColor ?? .clear
                 )
             }
-
+            
         case .active:
             if EDTSColor.theme == .poinku {
                 return ResolvedValues(
@@ -288,30 +283,28 @@ public struct EDTSChip: View {
             }
         }
     }
-
+    
     // MARK: - Body
     public var body: some View {
         let v = resolvedStyle
-
+        
         HStack(spacing: resolvedIconSpacing) {
             if let iconLeading {
                 iconBadge(
                     icon: iconLeading,
                     tint: v.iconTintLeading,
                     bg: v.iconBgLeading,
-                    isPressed: $isLeadingIconPressed,
                     onTap: onTapLeadingIcon
                 )
             }
-
+            
             labelView(color: v.labelColor)
-
+            
             if let iconTrailing {
                 iconBadge(
                     icon: iconTrailing,
                     tint: v.iconTintTrailing,
                     bg: v.iconBgTrailing,
-                    isPressed: $isTrailingIconPressed,
                     onTap: onTapTrailingIcon
                 )
             }
@@ -335,7 +328,7 @@ public struct EDTSChip: View {
         .onTapGesture { onTapChip?() }
         .animation(.easeInOut(duration: 0.25), value: isActive)
     }
-
+    
     @ViewBuilder
     private func labelView(color: Color) -> some View {
         Group {
@@ -346,19 +339,14 @@ public struct EDTSChip: View {
             }
         }
         .foregroundColor(color)
-        .modifier(ChipFontModifier(
-            hasCustomFont: hasCustomFont,
-            customFont: customFont,
-            defaultStyle: resolvedFontStyle
-        ))
+        .edtsFont(resolvedFontStyle, custom: fontStyle ?? (hasCustomFont ? customFont : nil))
     }
-
+    
     @ViewBuilder
     private func iconBadge(
         icon: Image,
         tint: Color,
         bg: Color,
-        isPressed: Binding<Bool>,
         onTap: (() -> Void)?
     ) -> some View {
         icon
@@ -370,50 +358,27 @@ public struct EDTSChip: View {
             .padding(2)
             .background(bg)
             .clipShape(Circle())
-            .circularRippleEffect(isActive: isPressed, size: resolvedIconSize + 8, color: Color.black.opacity(0.22))
+            .circularRippleEffect(size: resolvedIconSize + 8, color: Color.black.opacity(0.22))
             .highPriorityGesture(
                 DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if !isPressed.wrappedValue {
-                            isPressed.wrappedValue = true
-                        }
-                    }
                     .onEnded { _ in
-                        isPressed.wrappedValue = false
                         onTap?()
                     }
             )
     }
 }
 
-// MARK: - Font Modifier
-
-private struct ChipFontModifier: ViewModifier {
-    let hasCustomFont: Bool
-    let customFont: Font
-    let defaultStyle: EDTSFont.FontStyle
-
-    func body(content: Content) -> some View {
-        if hasCustomFont {
-            content.font(customFont)
-        } else {
-            content.edtsFont(defaultStyle)
-        }
-    }
-}
-
 // MARK: - Preview
-
-#Preview("Inactive / Active") {
+#Preview("Preview") {
     struct PreviewWrapper: View {
         @State private var isActive = false
-
+        
         var body: some View {
             VStack(spacing: 24) {
                 EDTSChip(label: "Chip", isActive: isActive, onTapChip: {
                     isActive.toggle()
                 })
-
+                
                 EDTSChip(
                     label: "With icons",
                     iconLeading: Image(systemName: "star.fill"),
@@ -423,7 +388,7 @@ private struct ChipFontModifier: ViewModifier {
                     onTapLeadingIcon: { print("leading icon tapped") },
                     onTapTrailingIcon: { print("trailing icon tapped") }
                 )
-
+                
                 EDTSChip(label: "Always active", isActive: true, onTapChip: {})
             }
             .padding()
