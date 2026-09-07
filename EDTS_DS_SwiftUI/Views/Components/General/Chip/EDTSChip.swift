@@ -79,93 +79,6 @@ public struct EDTSChip: View {
     public var onTapLeadingIcon: (() -> Void)?
     public var onTapTrailingIcon: (() -> Void)?
     
-    // MARK: - Initializers
-    public init(
-        label: String? = "Chip",
-        labelAttributed: AttributedString? = nil,
-        fontName: String = "",
-        fontSize: CGFloat = .zero,
-        fontWeight: String = "",
-        labelColor: Color? = nil,
-        labelColorActive: Color? = nil,
-        bgColor: Color? = nil,
-        bgColorActive: Color? = nil,
-        iconLeading: Image? = nil,
-        iconTintColorLeading: Color? = nil,
-        iconTintColorLeadingActive: Color? = nil,
-        iconBgColorLeading: Color? = nil,
-        iconBgColorLeadingActive: Color? = nil,
-        iconTrailing: Image? = nil,
-        iconTintColorTrailing: Color? = nil,
-        iconTintColorTrailingActive: Color? = nil,
-        iconBgColorTrailing: Color? = nil,
-        iconBgColorTrailingActive: Color? = nil,
-        iconSize: CGFloat = .zero,
-        iconSpacing: CGFloat = .zero,
-        cornerRadius: CGFloat = .zero,
-        borderWidth: CGFloat = .zero,
-        borderColor: Color? = nil,
-        borderColorActive: Color? = nil,
-        shadowOpacity: Float = .zero,
-        shadowOpacityActive: Float = .zero,
-        shadowRadius: CGFloat = .zero,
-        shadowRadiusActive: CGFloat = .zero,
-        shadowOffset: CGSize = .zero,
-        shadowOffsetActive: CGSize = .zero,
-        shadowColor: Color? = nil,
-        shadowColorActive: Color? = nil,
-        paddingTop: CGFloat? = nil,
-        paddingBottom: CGFloat? = nil,
-        paddingLeading: CGFloat? = nil,
-        paddingTrailing: CGFloat? = nil,
-        isActive: Bool = false,
-        onTapChip: (() -> Void)? = nil,
-        onTapLeadingIcon: (() -> Void)? = nil,
-        onTapTrailingIcon: (() -> Void)? = nil
-    ) {
-        self.label = labelAttributed == nil ? (label ?? "Chip") : nil
-        self.labelAttributed = labelAttributed
-        self.fontName = fontName
-        self.fontSize = fontSize
-        self.fontWeight = fontWeight
-        self.labelColor = labelColor
-        self.labelColorActive = labelColorActive
-        self.bgColor = bgColor
-        self.bgColorActive = bgColorActive
-        self.iconLeading = iconLeading
-        self.iconTintColorLeading = iconTintColorLeading
-        self.iconTintColorLeadingActive = iconTintColorLeadingActive
-        self.iconBgColorLeading = iconBgColorLeading
-        self.iconBgColorLeadingActive = iconBgColorLeadingActive
-        self.iconTrailing = iconTrailing
-        self.iconTintColorTrailing = iconTintColorTrailing
-        self.iconTintColorTrailingActive = iconTintColorTrailingActive
-        self.iconBgColorTrailing = iconBgColorTrailing
-        self.iconBgColorTrailingActive = iconBgColorTrailingActive
-        self.iconSize = iconSize
-        self.iconSpacing = iconSpacing
-        self.cornerRadius = cornerRadius
-        self.borderWidth = borderWidth
-        self.borderColor = borderColor
-        self.borderColorActive = borderColorActive
-        self.shadowOpacity = shadowOpacity
-        self.shadowOpacityActive = shadowOpacityActive
-        self.shadowRadius = shadowRadius
-        self.shadowRadiusActive = shadowRadiusActive
-        self.shadowOffset = shadowOffset
-        self.shadowOffsetActive = shadowOffsetActive
-        self.shadowColor = shadowColor
-        self.shadowColorActive = shadowColorActive
-        self.paddingTop = paddingTop
-        self.paddingBottom = paddingBottom
-        self.paddingLeading = paddingLeading
-        self.paddingTrailing = paddingTrailing
-        self.isActive = isActive
-        self.onTapChip = onTapChip
-        self.onTapLeadingIcon = onTapLeadingIcon
-        self.onTapTrailingIcon = onTapTrailingIcon
-    }
-    
     // MARK: - Private Variable
     private var customFont: Font {
         let weight = setupFontWeight(from: fontWeight)
@@ -284,27 +197,114 @@ public struct EDTSChip: View {
         }
     }
     
+    // MARK: - Initializers
+    public init(
+        label: String? = "Chip",
+        labelAttributed: AttributedString? = nil,
+        fontName: String = "",
+        fontSize: CGFloat = .zero,
+        fontWeight: String = "",
+        labelColor: Color? = nil,
+        labelColorActive: Color? = nil,
+        bgColor: Color? = nil,
+        bgColorActive: Color? = nil,
+        iconLeading: Image? = nil,
+        iconTintColorLeading: Color? = nil,
+        iconTintColorLeadingActive: Color? = nil,
+        iconBgColorLeading: Color? = nil,
+        iconBgColorLeadingActive: Color? = nil,
+        iconTrailing: Image? = nil,
+        iconTintColorTrailing: Color? = nil,
+        iconTintColorTrailingActive: Color? = nil,
+        iconBgColorTrailing: Color? = nil,
+        iconBgColorTrailingActive: Color? = nil,
+        iconSize: CGFloat = .zero,
+        iconSpacing: CGFloat = .zero,
+        cornerRadius: CGFloat = .zero,
+        borderWidth: CGFloat = .zero,
+        borderColor: Color? = nil,
+        borderColorActive: Color? = nil,
+        shadowOpacity: Float = .zero,
+        shadowOpacityActive: Float = .zero,
+        shadowRadius: CGFloat = .zero,
+        shadowRadiusActive: CGFloat = .zero,
+        shadowOffset: CGSize = .zero,
+        shadowOffsetActive: CGSize = .zero,
+        shadowColor: Color? = nil,
+        shadowColorActive: Color? = nil,
+        paddingTop: CGFloat? = nil,
+        paddingBottom: CGFloat? = nil,
+        paddingLeading: CGFloat? = nil,
+        paddingTrailing: CGFloat? = nil,
+        isActive: Bool = false,
+        onTapChip: (() -> Void)? = nil,
+        onTapLeadingIcon: (() -> Void)? = nil,
+        onTapTrailingIcon: (() -> Void)? = nil
+    ) {
+        self.label = labelAttributed == nil ? (label ?? "Chip") : nil
+        self.labelAttributed = labelAttributed
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.fontWeight = fontWeight
+        self.labelColor = labelColor
+        self.labelColorActive = labelColorActive
+        self.bgColor = bgColor
+        self.bgColorActive = bgColorActive
+        self.iconLeading = iconLeading
+        self.iconTintColorLeading = iconTintColorLeading
+        self.iconTintColorLeadingActive = iconTintColorLeadingActive
+        self.iconBgColorLeading = iconBgColorLeading
+        self.iconBgColorLeadingActive = iconBgColorLeadingActive
+        self.iconTrailing = iconTrailing
+        self.iconTintColorTrailing = iconTintColorTrailing
+        self.iconTintColorTrailingActive = iconTintColorTrailingActive
+        self.iconBgColorTrailing = iconBgColorTrailing
+        self.iconBgColorTrailingActive = iconBgColorTrailingActive
+        self.iconSize = iconSize
+        self.iconSpacing = iconSpacing
+        self.cornerRadius = cornerRadius
+        self.borderWidth = borderWidth
+        self.borderColor = borderColor
+        self.borderColorActive = borderColorActive
+        self.shadowOpacity = shadowOpacity
+        self.shadowOpacityActive = shadowOpacityActive
+        self.shadowRadius = shadowRadius
+        self.shadowRadiusActive = shadowRadiusActive
+        self.shadowOffset = shadowOffset
+        self.shadowOffsetActive = shadowOffsetActive
+        self.shadowColor = shadowColor
+        self.shadowColorActive = shadowColorActive
+        self.paddingTop = paddingTop
+        self.paddingBottom = paddingBottom
+        self.paddingLeading = paddingLeading
+        self.paddingTrailing = paddingTrailing
+        self.isActive = isActive
+        self.onTapChip = onTapChip
+        self.onTapLeadingIcon = onTapLeadingIcon
+        self.onTapTrailingIcon = onTapTrailingIcon
+    }
+    
     // MARK: - Body
     public var body: some View {
-        let v = resolvedStyle
+        let values = resolvedStyle
         
         HStack(spacing: resolvedIconSpacing) {
             if let iconLeading {
                 iconBadge(
                     icon: iconLeading,
-                    tint: v.iconTintLeading,
-                    bg: v.iconBgLeading,
+                    tint: values.iconTintLeading,
+                    bg: values.iconBgLeading,
                     onTap: onTapLeadingIcon
                 )
             }
             
-            labelView(color: v.labelColor)
+            labelView(color: values.labelColor)
             
             if let iconTrailing {
                 iconBadge(
                     icon: iconTrailing,
-                    tint: v.iconTintTrailing,
-                    bg: v.iconBgTrailing,
+                    tint: values.iconTintTrailing,
+                    bg: values.iconBgTrailing,
                     onTap: onTapTrailingIcon
                 )
             }
@@ -313,14 +313,14 @@ public struct EDTSChip: View {
         .padding(.bottom, resolvedPaddingBottom)
         .padding(.leading, resolvedPaddingLeading)
         .padding(.trailing, resolvedPaddingTrailing)
-        .background(v.bgColor)
+        .background(values.bgColor)
         .clipShape(resolvedShape)
-        .overlay(resolvedShape.stroke(v.borderColor, lineWidth: borderWidth))
+        .overlay(resolvedShape.stroke(values.borderColor, lineWidth: borderWidth))
         .shadow(
-            color: v.shadowColor.opacity(Double(v.shadowOpacity)),
-            radius: v.shadowRadius,
-            x: v.shadowOffset.width,
-            y: v.shadowOffset.height
+            color: values.shadowColor.opacity(Double(values.shadowOpacity)),
+            radius: values.shadowRadius,
+            x: values.shadowOffset.width,
+            y: values.shadowOffset.height
         )
         
         .rippleEffect(color: Color.black.opacity(0.12), cornerRadius: cornerRadius != .zero ? cornerRadius : 999)
