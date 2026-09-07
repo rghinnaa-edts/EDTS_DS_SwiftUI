@@ -9,9 +9,11 @@ import SwiftUI
 
 // MARK: - Orientation
 
-public enum Orientation {
-    case horizontal
-    case vertical
+public enum Orientation: String {
+    case horizontal = "horizontal"
+    case vertical = "vertical"
+    case diagonalUp = "diagonalup"
+    case diagonalDown = "diagonaldown"
 }
 
 // MARK: - Rounded Corner Shape (per-corner radius, mirrors UIRectCorner)
@@ -102,20 +104,40 @@ extension View {
     public func applyGrayscale(_ isGrayscale: Bool) -> some View {
         grayscale(isGrayscale ? 1.0 : 0.0)
     }
+    
+    public func rippleEffect(
+        color: Color = Color.black.opacity(0.12),
+        cornerRadius: CGFloat = 0
+    ) -> some View {
+        modifier(RippleModifier(color: color, cornerRadius: cornerRadius))
+    }
+    
+    public func circularRippleEffect(
+        isActive: Binding<Bool>,
+        size: CGFloat = 32,
+        color: Color = Color.black.opacity(0.22)
+    ) -> some View {
+        modifier(CircularRippleModifier(isActive: isActive, size: size, color: color))
+    }
 }
 
-// MARK: - Ripple Animation (tap-driven, replaces showRipple/hideRipple)
-
-private struct RippleData: Identifiable {
+// MARK: - Ripple Animation
+private struct RippleInstance: Identifiable {
     let id = UUID()
     let point: CGPoint
+    let maxRadius: CGFloat
 }
 
 public struct RippleModifier: ViewModifier {
     var color: Color = Color.black.opacity(0.12)
     var cornerRadius: CGFloat = 0
 
-    @State private var ripples: [RippleData] = []
+    @State private var ripples: [RippleInstance] = []
+    @State private var containerSize: CGSize = .zero
+    @State private var isRippleActive: Bool = false
+    @State private var activeRippleID: UUID?
+    @State private var releasedRippleIDs: Set<UUID> = []
+    @State private var rippleStartTime: Date?
 
     public func body(content: Content) -> some View {
         content
@@ -123,65 +145,75 @@ public struct RippleModifier: ViewModifier {
                 GeometryReader { geo in
                     ZStack {
                         ForEach(ripples) { ripple in
-                            RippleShapeView(center: ripple.point, size: geo.size, color: color)
+                            RippleShapeView(
+                                color: color,
+                                maxRadius: ripple.maxRadius,
+                                isReleased: releasedRippleIDs.contains(ripple.id),
+                                onFadeOutComplete: {
+                                    ripples.removeAll { $0.id == ripple.id }
+                                    releasedRippleIDs.remove(ripple.id)
+                                }
+                            )
+                            .position(ripple.point)
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-                    .allowsHitTesting(false)
+                    .onAppear { containerSize = geo.size }
+                    .onChange(of: geo.size) { containerSize = $0 }
                 }
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .allowsHitTesting(false)
             )
             .contentShape(Rectangle())
-            .background(
-                Group {
-                    if #available(iOS 16.0, *) {
-                        Color.clear
-                            .simultaneousGesture(
-                                SpatialTapGesture(coordinateSpace: .local)
-                                    .onEnded { value in
-                                        let ripple = RippleData(point: value.location)
-                                        ripples.append(ripple)
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.62) {
-                                            ripples.removeAll { $0.id == ripple.id }
-                                        }
-                                    }
-                            )
-                    } else {
-                        Color.clear
-                            .simultaneousGesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onEnded { value in
-                                        let location = value.location
-                                        let ripple = RippleData(point: location)
-                                        ripples.append(ripple)
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.62) {
-                                            ripples.removeAll { $0.id == ripple.id }
-                                        }
-                                    }
-                            )
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        guard !isRippleActive else { return }
+                        isRippleActive = true
+                        addRipple(at: value.location)
                     }
-                }
+                    .onEnded { _ in
+                        isRippleActive = false
+                        if let activeRippleID {
+                            let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
+                            let growDuration = 0.40
+                            let remaining = max(growDuration - elapsed, 0)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
+                                releasedRippleIDs.insert(activeRippleID)
+                            }
+                        }
+                        activeRippleID = nil
+                    }
             )
     }
-}
 
-private struct RippleShapeView: View {
-    let center: CGPoint
-    let size: CGSize
-    let color: Color
+    private func addRipple(at point: CGPoint) {
+        let radius = maxCornerDistance(from: point, in: containerSize)
+        let ripple = RippleInstance(point: point, maxRadius: radius)
+        ripples.append(ripple)
+        activeRippleID = ripple.id
+        rippleStartTime = Date()
+    }
 
-    @State private var scale: CGFloat = 0.01
-    @State private var opacity: Double = 0
-
-    private var maxRadius: CGFloat {
+    private func maxCornerDistance(from point: CGPoint, in size: CGSize) -> CGFloat {
         let corners = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: size.width, y: 0),
             CGPoint(x: 0, y: size.height),
             CGPoint(x: size.width, y: size.height)
         ]
-        return corners.map { hypot(center.x - $0.x, center.y - $0.y) }.max()
+        return corners.map { hypot(point.x - $0.x, point.y - $0.y) }.max()
             ?? max(size.width, size.height)
     }
+}
+
+private struct RippleShapeView: View {
+    let color: Color
+    let maxRadius: CGFloat
+    let isReleased: Bool
+    let onFadeOutComplete: () -> Void
+
+    @State private var scale: CGFloat = 0.01
+    @State private var opacity: Double = 0
 
     var body: some View {
         Circle()
@@ -189,32 +221,28 @@ private struct RippleShapeView: View {
             .frame(width: 2, height: 2)
             .scaleEffect(scale)
             .opacity(opacity)
-            .position(center)
+            .allowsHitTesting(false)
             .onAppear {
                 withAnimation(.easeOut(duration: 0.10)) {
                     opacity = 1
                 }
                 withAnimation(.easeOut(duration: 0.40)) {
-                    scale = maxRadius // circle starts at diameter 2, so scale ≈ target radius
+                    scale = max(maxRadius, 0.02)
                 }
-                withAnimation(.easeOut(duration: 0.22).delay(0.40)) {
+            }
+            .onChange(of: isReleased) { released in
+                guard released else { return }
+                withAnimation(.easeOut(duration: 0.22)) {
                     opacity = 0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                    onFadeOutComplete()
                 }
             }
     }
 }
 
-extension View {
-    public func rippleEffect(
-        color: Color = Color.black.opacity(0.12),
-        cornerRadius: CGFloat = 0
-    ) -> some View {
-        modifier(RippleModifier(color: color, cornerRadius: cornerRadius))
-    }
-}
-
-// MARK: - Circular Ripple (state-driven, replaces showRippleCircular/hideRippleCircular)
-
+// MARK: - Circular Ripple
 public struct CircularRippleModifier: ViewModifier {
     @Binding var isActive: Bool
     var size: CGFloat = 32
@@ -242,16 +270,6 @@ public struct CircularRippleModifier: ViewModifier {
                     withAnimation(.easeOut(duration: 0.22)) { opacity = 0 }
                 }
             }
-    }
-}
-
-extension View {
-    public func circularRippleEffect(
-        isActive: Binding<Bool>,
-        size: CGFloat = 32,
-        color: Color = Color.black.opacity(0.22)
-    ) -> some View {
-        modifier(CircularRippleModifier(isActive: isActive, size: size, color: color))
     }
 }
 

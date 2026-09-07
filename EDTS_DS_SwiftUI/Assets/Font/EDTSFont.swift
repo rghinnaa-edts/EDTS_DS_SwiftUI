@@ -32,17 +32,27 @@ public struct EDTSFont {
 
 public struct EDTSFontModifier: ViewModifier {
     let style: EDTSFont.FontStyle
+    let custom: Font?
+
+    public init(style: EDTSFont.FontStyle, custom: Font? = nil) {
+        self.style = style
+        self.custom = custom
+    }
 
     public func body(content: Content) -> some View {
-        content
-            .font(style.font)
-            .lineSpacing(style.lineSpacing)
+        if let custom {
+            content.font(custom)
+        } else {
+            content
+                .font(style.font)
+                .lineSpacing(style.lineSpacing)
+        }
     }
 }
 
 public extension View {
-    func edtsFont(_ style: EDTSFont.FontStyle) -> some View {
-        self.modifier(EDTSFontModifier(style: style))
+    func edtsFont(_ style: EDTSFont.FontStyle, custom: Font? = nil) -> some View {
+        self.modifier(EDTSFontModifier(style: style, custom: custom))
     }
 }
 
