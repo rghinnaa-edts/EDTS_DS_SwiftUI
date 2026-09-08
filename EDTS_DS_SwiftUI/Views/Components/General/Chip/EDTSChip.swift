@@ -7,18 +7,6 @@
 
 import SwiftUI
 
-public struct EDTSShape: Shape {
-    private let pathBuilder: @Sendable (CGRect) -> Path
-    
-    init<S: Shape>(_ shape: S) {
-        self.pathBuilder = { rect in shape.path(in: rect) }
-    }
-    
-    public func path(in rect: CGRect) -> Path {
-        pathBuilder(rect)
-    }
-}
-
 public enum ChipState: String {
     case inactive = "inactive"
     case active = "active"
@@ -55,6 +43,7 @@ public struct EDTSChip: View {
     
     public var cornerRadius: CGFloat
     public var borderWidth: CGFloat
+    public var borderWidthActive: CGFloat
     public var borderColor: Color?
     public var borderColorActive: Color?
     
@@ -128,10 +117,14 @@ public struct EDTSChip: View {
         return EDTSShape(Capsule())
     }
     
-    private func resolvedBorderWidth(isActive: Bool) -> CGFloat {
+    private var resolvedInactiveBorderWidth: CGFloat {
+        borderWidth != .zero ? borderWidth : 0
+    }
+
+    private var resolvedActiveBorderWidth: CGFloat {
+        if borderWidthActive != .zero { return borderWidthActive }
         if borderWidth != .zero { return borderWidth }
-        guard EDTSColor.theme == .poinku else { return 0 }
-        return isActive ? 1 : 0
+        return EDTSColor.theme == .poinku ? 1 : 0
     }
     
     private struct ResolvedValues {
@@ -162,7 +155,7 @@ public struct EDTSChip: View {
                     iconBgTrailing: iconBgColorTrailing ?? .clear,
                     bgColor: bgColor ?? EDTSColor.grey20,
                     borderColor: borderColor ?? .clear,
-                    borderWidth: resolvedBorderWidth(isActive: false),
+                    borderWidth: resolvedInactiveBorderWidth,
                     shadowOpacity: shadowOpacity != .zero ? shadowOpacity : .zero,
                     shadowRadius: shadowRadius != .zero ? shadowRadius : .zero,
                     shadowOffset: shadowOffset != .zero ? shadowOffset : .zero,
@@ -177,7 +170,7 @@ public struct EDTSChip: View {
                     iconBgTrailing: iconBgColorTrailing ?? .clear,
                     bgColor: bgColor ?? EDTSColor.grey20,
                     borderColor: borderColor ?? .clear,
-                    borderWidth: resolvedBorderWidth(isActive: false),
+                    borderWidth: resolvedInactiveBorderWidth,
                     shadowOpacity: shadowOpacity != .zero ? shadowOpacity : .zero,
                     shadowRadius: shadowRadius != .zero ? shadowRadius : .zero,
                     shadowOffset: shadowOffset != .zero ? shadowOffset : .zero,
@@ -195,7 +188,7 @@ public struct EDTSChip: View {
                     iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? .clear),
                     bgColor: bgColorActive ?? (bgColor ?? EDTSColor.blue30),
                     borderColor: borderColorActive ?? (borderColor ?? EDTSColor.blue40),
-                    borderWidth: resolvedBorderWidth(isActive: true),
+                    borderWidth: resolvedActiveBorderWidth,
                     shadowOpacity: shadowOpacityActive != .zero ? shadowOpacityActive : (shadowOpacity != .zero ? shadowOpacity : .zero),
                     shadowRadius: shadowRadiusActive != .zero ? shadowRadiusActive : (shadowRadius != .zero ? shadowRadius : .zero),
                     shadowOffset: shadowOffsetActive != .zero ? shadowOffsetActive : (shadowOffset != .zero ? shadowOffset : .zero),
@@ -210,7 +203,7 @@ public struct EDTSChip: View {
                     iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? EDTSColor.grey20),
                     bgColor: bgColorActive ?? (bgColor ?? EDTSColor.blue50),
                     borderColor: borderColorActive ?? (borderColor ?? .clear),
-                    borderWidth: resolvedBorderWidth(isActive: true),
+                    borderWidth: resolvedActiveBorderWidth,
                     shadowOpacity: shadowOpacityActive != .zero ? shadowOpacityActive : (shadowOpacity != .zero ? shadowOpacity : .zero),
                     shadowRadius: shadowRadiusActive != .zero ? shadowRadiusActive : (shadowRadius != .zero ? shadowRadius : .zero),
                     shadowOffset: shadowOffsetActive != .zero ? shadowOffsetActive : (shadowOffset != .zero ? shadowOffset : .zero),
@@ -245,6 +238,7 @@ public struct EDTSChip: View {
         iconSpacing: CGFloat = .zero,
         cornerRadius: CGFloat = .zero,
         borderWidth: CGFloat = .zero,
+        borderWidthActive: CGFloat = .zero,
         borderColor: Color? = nil,
         borderColorActive: Color? = nil,
         shadowOpacity: Float = .zero,
@@ -287,6 +281,7 @@ public struct EDTSChip: View {
         self.iconSpacing = iconSpacing
         self.cornerRadius = cornerRadius
         self.borderWidth = borderWidth
+        self.borderWidthActive = borderWidthActive
         self.borderColor = borderColor
         self.borderColorActive = borderColorActive
         self.shadowOpacity = shadowOpacity
