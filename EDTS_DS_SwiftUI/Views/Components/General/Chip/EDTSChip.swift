@@ -80,6 +80,17 @@ public struct EDTSChip: View {
     public var onTapTrailingIcon: (() -> Void)?
     
     // MARK: - Private Variable
+    private let iconBadgePadding: CGFloat = 2
+    private let iconBadgeRippleBleed: CGFloat = 2
+
+    private var iconBadgeDiameter: CGFloat {
+        resolvedIconSize + (iconBadgePadding * 2)
+    }
+
+    private var iconBadgeRippleSize: CGFloat {
+        iconBadgeDiameter + (iconBadgeRippleBleed * 2)
+    }
+    
     private var customFont: Font {
         let weight = setupFontWeight(from: fontWeight)
         if !fontName.isEmpty {
@@ -94,7 +105,7 @@ public struct EDTSChip: View {
     
     private var resolvedIconSize: CGFloat {
         if iconSize != .zero { return iconSize }
-        return EDTSColor.theme == .poinku ? 16 : 20
+        return 16
     }
     
     private var resolvedIconSpacing: CGFloat {
@@ -105,8 +116,9 @@ public struct EDTSChip: View {
     private var resolvedPaddingBottom: CGFloat { paddingBottom ?? 4 }
     private var resolvedPaddingLeading: CGFloat { paddingLeading ?? 8 }
     private var resolvedPaddingTrailing: CGFloat { paddingTrailing ?? 8 }
+
     private var resolvedFontStyle: EDTSFont.FontStyle {
-        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Heavy /*semibold*/ : EDTSFont.Klik.B3.Semibold
+        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Light : EDTSFont.Klik.B3.Semibold
     }
     
     private var resolvedShape: EDTSShape {
@@ -114,6 +126,12 @@ public struct EDTSChip: View {
             return EDTSShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
         return EDTSShape(Capsule())
+    }
+    
+    private func resolvedBorderWidth(isActive: Bool) -> CGFloat {
+        if borderWidth != .zero { return borderWidth }
+        guard EDTSColor.theme == .poinku else { return 0 }
+        return isActive ? 1 : 0
     }
     
     private struct ResolvedValues {
@@ -124,6 +142,7 @@ public struct EDTSChip: View {
         var iconBgTrailing: Color
         var bgColor: Color
         var borderColor: Color
+        var borderWidth: CGFloat
         var shadowOpacity: Float
         var shadowRadius: CGFloat
         var shadowOffset: CGSize
@@ -143,6 +162,7 @@ public struct EDTSChip: View {
                     iconBgTrailing: iconBgColorTrailing ?? .clear,
                     bgColor: bgColor ?? EDTSColor.grey20,
                     borderColor: borderColor ?? .clear,
+                    borderWidth: resolvedBorderWidth(isActive: false),
                     shadowOpacity: shadowOpacity != .zero ? shadowOpacity : .zero,
                     shadowRadius: shadowRadius != .zero ? shadowRadius : .zero,
                     shadowOffset: shadowOffset != .zero ? shadowOffset : .zero,
@@ -151,12 +171,13 @@ public struct EDTSChip: View {
             } else {
                 return ResolvedValues(
                     iconTintLeading: iconTintColorLeading ?? EDTSColor.blue50,
-                    iconBgLeading: iconBgColorLeading ?? EDTSColor.white,
+                    iconBgLeading: iconBgColorLeading ?? .clear,
                     labelColor: labelColor ?? EDTSColor.blue50,
                     iconTintTrailing: iconTintColorTrailing ?? EDTSColor.blue50,
-                    iconBgTrailing: iconBgColorTrailing ?? EDTSColor.white,
+                    iconBgTrailing: iconBgColorTrailing ?? .clear,
                     bgColor: bgColor ?? EDTSColor.grey20,
                     borderColor: borderColor ?? .clear,
+                    borderWidth: resolvedBorderWidth(isActive: false),
                     shadowOpacity: shadowOpacity != .zero ? shadowOpacity : .zero,
                     shadowRadius: shadowRadius != .zero ? shadowRadius : .zero,
                     shadowOffset: shadowOffset != .zero ? shadowOffset : .zero,
@@ -174,6 +195,7 @@ public struct EDTSChip: View {
                     iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? .clear),
                     bgColor: bgColorActive ?? (bgColor ?? EDTSColor.blue30),
                     borderColor: borderColorActive ?? (borderColor ?? EDTSColor.blue40),
+                    borderWidth: resolvedBorderWidth(isActive: true),
                     shadowOpacity: shadowOpacityActive != .zero ? shadowOpacityActive : (shadowOpacity != .zero ? shadowOpacity : .zero),
                     shadowRadius: shadowRadiusActive != .zero ? shadowRadiusActive : (shadowRadius != .zero ? shadowRadius : .zero),
                     shadowOffset: shadowOffsetActive != .zero ? shadowOffsetActive : (shadowOffset != .zero ? shadowOffset : .zero),
@@ -182,12 +204,13 @@ public struct EDTSChip: View {
             } else {
                 return ResolvedValues(
                     iconTintLeading: iconTintColorLeadingActive ?? (iconTintColorLeading ?? EDTSColor.blue50),
-                    iconBgLeading: iconBgColorLeadingActive ?? (iconBgColorLeading ?? EDTSColor.white),
+                    iconBgLeading: iconBgColorLeadingActive ?? (iconBgColorLeading ?? EDTSColor.grey20),
                     labelColor: labelColorActive ?? (labelColor ?? EDTSColor.white),
                     iconTintTrailing: iconTintColorTrailingActive ?? (iconTintColorTrailing ?? EDTSColor.blue50),
-                    iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? EDTSColor.white),
+                    iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? EDTSColor.grey20),
                     bgColor: bgColorActive ?? (bgColor ?? EDTSColor.blue50),
                     borderColor: borderColorActive ?? (borderColor ?? .clear),
+                    borderWidth: resolvedBorderWidth(isActive: true),
                     shadowOpacity: shadowOpacityActive != .zero ? shadowOpacityActive : (shadowOpacity != .zero ? shadowOpacity : .zero),
                     shadowRadius: shadowRadiusActive != .zero ? shadowRadiusActive : (shadowRadius != .zero ? shadowRadius : .zero),
                     shadowOffset: shadowOffsetActive != .zero ? shadowOffsetActive : (shadowOffset != .zero ? shadowOffset : .zero),
@@ -290,7 +313,7 @@ public struct EDTSChip: View {
         
         HStack(spacing: resolvedIconSpacing) {
             if let iconLeading {
-                iconBadge(
+                iconBadgeView(
                     icon: iconLeading,
                     tint: values.iconTintLeading,
                     bg: values.iconBgLeading,
@@ -301,7 +324,7 @@ public struct EDTSChip: View {
             labelView(color: values.labelColor)
             
             if let iconTrailing {
-                iconBadge(
+                iconBadgeView(
                     icon: iconTrailing,
                     tint: values.iconTintTrailing,
                     bg: values.iconBgTrailing,
@@ -315,7 +338,7 @@ public struct EDTSChip: View {
         .padding(.trailing, resolvedPaddingTrailing)
         .background(values.bgColor)
         .clipShape(resolvedShape)
-        .overlay(resolvedShape.stroke(values.borderColor, lineWidth: borderWidth))
+        .overlay(resolvedShape.stroke(values.borderColor, lineWidth: values.borderWidth))
         .shadow(
             color: values.shadowColor.opacity(Double(values.shadowOpacity)),
             radius: values.shadowRadius,
@@ -323,9 +346,11 @@ public struct EDTSChip: View {
             y: values.shadowOffset.height
         )
         
-        .rippleEffect(color: Color.black.opacity(0.12), cornerRadius: cornerRadius != .zero ? cornerRadius : 999)
-        .contentShape(Rectangle())
-        .onTapGesture { onTapChip?() }
+        .rippleEffect(
+            color: Color.black.opacity(0.12),
+            cornerRadius: cornerRadius != .zero ? cornerRadius : 999,
+            onTap: onTapChip
+        )
         .animation(.easeInOut(duration: 0.25), value: isActive)
     }
     
@@ -343,7 +368,7 @@ public struct EDTSChip: View {
     }
     
     @ViewBuilder
-    private func iconBadge(
+    private func iconBadgeView(
         icon: Image,
         tint: Color,
         bg: Color,
@@ -355,10 +380,10 @@ public struct EDTSChip: View {
             .scaledToFit()
             .frame(width: resolvedIconSize, height: resolvedIconSize)
             .foregroundColor(tint)
-            .padding(2)
+            .padding(iconBadgePadding)
             .background(bg)
             .clipShape(Circle())
-            .circularRippleEffect(size: resolvedIconSize + 8, color: Color.black.opacity(0.22))
+            .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(0.22))
             .highPriorityGesture(
                 DragGesture(minimumDistance: 0)
                     .onEnded { _ in

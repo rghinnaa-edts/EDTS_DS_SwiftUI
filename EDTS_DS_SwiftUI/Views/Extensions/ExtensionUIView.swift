@@ -107,9 +107,10 @@ extension View {
     
     public func rippleEffect(
         color: Color = Color.black.opacity(0.12),
-        cornerRadius: CGFloat = 0
+        cornerRadius: CGFloat = 0,
+        onTap: (() -> Void)? = nil
     ) -> some View {
-        modifier(RippleModifier(color: color, cornerRadius: cornerRadius))
+        modifier(RippleModifier(color: color, cornerRadius: cornerRadius, onTap: onTap))
     }
     
     public func circularRippleEffect(
@@ -130,6 +131,7 @@ private struct RippleInstance: Identifiable {
 public struct RippleModifier: ViewModifier {
     var color: Color = Color.black.opacity(0.12)
     var cornerRadius: CGFloat = 0
+    var onTap: (() -> Void)? = nil
 
     @State private var ripples: [RippleInstance] = []
     @State private var containerSize: CGSize = .zero
@@ -181,6 +183,7 @@ public struct RippleModifier: ViewModifier {
                             }
                         }
                         activeRippleID = nil
+                        onTap?()
                     }
             )
     }
