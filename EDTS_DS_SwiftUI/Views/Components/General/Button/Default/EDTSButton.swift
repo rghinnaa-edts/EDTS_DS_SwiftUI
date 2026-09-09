@@ -87,6 +87,52 @@ public struct EDTSButton: View {
     
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
+    
+    // MARK: - Private Variable
+    private var resolvedButtonSize: BtnSize {
+        btnSize
+    }
+    
+    private var resolvedButtonType: BtnType {
+        btnType
+    }
+    
+    private var resolvedButtonState: BtnState {
+        btnState
+    }
+    
+    private struct ResolvedValues {
+        var tempIconTintColorLeading: Color?
+        var tempIconTintColorTrailing: Color?
+        var tempLabelColor: Color?
+        var tempBgColor: Color?
+        var tempRippleColor: Color?
+        var tempBorderColor: Color?
+        var tempBorderWidth: CGFloat = .zero
+        var tempIconSize: CGFloat = .zero
+        var tempCornerRadius: CGFloat = -1.0
+        var tempIconSpacing: CGFloat = .zero
+        var tempPaddingTop: CGFloat = -1.0
+        var tempPaddingBottom: CGFloat = -1.0
+        var tempPaddingLeading: CGFloat = -1.0
+        var tempPaddingTrailing: CGFloat = -1.0
+        var tempShadowColor: Color?
+    }
+    
+    private var customFont: Font? {
+        if let fontStyle { return fontStyle }
+        guard !fontName.isEmpty || fontSize != .zero else { return nil }
+        let resolvedSize = fontSize == .zero ? 16 : fontSize
+        var font: Font = fontName.isEmpty
+            ? .system(size: resolvedSize)
+            : .custom(fontName, size: resolvedSize)
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+        return font
+    }
+    
+    private let dragCancelThreshold: CGFloat = 44
     private let defaultValue: CGFloat = -1.0
     
     // MARK: - Initializers
@@ -183,52 +229,6 @@ public struct EDTSButton: View {
         self.paddingTrailing = paddingTrailing
         self.action = action
     }
-    
-    // MARK: - Private Variable
-    private var resolvedButtonSize: BtnSize {
-        btnSize
-    }
-    
-    private var resolvedButtonType: BtnType {
-        btnType
-    }
-    
-    private var resolvedButtonState: BtnState {
-        btnState
-    }
-    
-    private struct ResolvedValues {
-        var tempIconTintColorLeading: Color?
-        var tempIconTintColorTrailing: Color?
-        var tempLabelColor: Color?
-        var tempBgColor: Color?
-        var tempRippleColor: Color?
-        var tempBorderColor: Color?
-        var tempBorderWidth: CGFloat = .zero
-        var tempIconSize: CGFloat = .zero
-        var tempCornerRadius: CGFloat = -1.0
-        var tempIconSpacing: CGFloat = .zero
-        var tempPaddingTop: CGFloat = -1.0
-        var tempPaddingBottom: CGFloat = -1.0
-        var tempPaddingLeading: CGFloat = -1.0
-        var tempPaddingTrailing: CGFloat = -1.0
-        var tempShadowColor: Color?
-    }
-    
-    private var customFont: Font? {
-        if let fontStyle { return fontStyle }
-        guard !fontName.isEmpty || fontSize != .zero else { return nil }
-        let resolvedSize = fontSize == .zero ? 16 : fontSize
-        var font: Font = fontName.isEmpty
-            ? .system(size: resolvedSize)
-            : .custom(fontName, size: resolvedSize)
-        if let fontWeight {
-            font = font.weight(setupFontWeight(from: fontWeight))
-        }
-        return font
-    }
-    
-    private let dragCancelThreshold: CGFloat = 44
     
     // MARK: - Body
     public var body: some View {
