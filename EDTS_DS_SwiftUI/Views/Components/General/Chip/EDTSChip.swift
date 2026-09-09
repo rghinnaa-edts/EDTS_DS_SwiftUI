@@ -24,7 +24,13 @@ public struct EDTSChip: View {
     public var labelColor: Color?
     public var labelColorActive: Color?
     public var bgColor: Color?
+    public var bgColorStart: Color?
+    public var bgColorEnd: Color?
+    public var bgColorOrientation: Orientation?
     public var bgColorActive: Color?
+    public var bgColorActiveStart: Color?
+    public var bgColorActiveEnd: Color?
+    public var bgColorActiveOrientation: Orientation?
     
     public var iconLeading: Image?
     public var iconTintColorLeading: Color?
@@ -217,13 +223,20 @@ public struct EDTSChip: View {
     public init(
         label: String? = "Chip",
         labelAttributed: AttributedString? = nil,
+        fontStyle: Font? = nil,
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String = "",
         labelColor: Color? = nil,
         labelColorActive: Color? = nil,
         bgColor: Color? = nil,
+        bgColorStart: Color? = nil,
+        bgColorEnd: Color? = nil,
+        bgColorOrientation: Orientation? = nil,
         bgColorActive: Color? = nil,
+        bgColorActiveStart: Color? = nil,
+        bgColorActiveEnd: Color? = nil,
+        bgColorActiveOrientation: Orientation? = nil,
         iconLeading: Image? = nil,
         iconTintColorLeading: Color? = nil,
         iconTintColorLeadingActive: Color? = nil,
@@ -260,13 +273,20 @@ public struct EDTSChip: View {
     ) {
         self.label = labelAttributed == nil ? (label ?? "Chip") : nil
         self.labelAttributed = labelAttributed
+        self.fontStyle = fontStyle
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
         self.labelColor = labelColor
         self.labelColorActive = labelColorActive
         self.bgColor = bgColor
+        self.bgColorStart = bgColorStart
+        self.bgColorEnd = bgColorEnd
+        self.bgColorOrientation = bgColorOrientation
         self.bgColorActive = bgColorActive
+        self.bgColorActiveStart = bgColorActiveStart
+        self.bgColorActiveEnd = bgColorActiveEnd
+        self.bgColorActiveOrientation = bgColorActiveOrientation
         self.iconLeading = iconLeading
         self.iconTintColorLeading = iconTintColorLeading
         self.iconTintColorLeadingActive = iconTintColorLeadingActive
@@ -331,7 +351,11 @@ public struct EDTSChip: View {
         .padding(.bottom, resolvedPaddingBottom)
         .padding(.leading, resolvedPaddingLeading)
         .padding(.trailing, resolvedPaddingTrailing)
-        .background(values.bgColor)
+        .background(
+            isActive
+                ? setupBackground(solid: values.bgColor, start: bgColorActiveStart, end: bgColorActiveEnd, orientation: bgColorActiveOrientation)
+                : setupBackground(solid: values.bgColor, start: bgColorStart, end: bgColorEnd, orientation: bgColorOrientation)
+        )
         .clipShape(resolvedShape)
         .overlay(resolvedShape.stroke(values.borderColor, lineWidth: values.borderWidth))
         .shadow(
@@ -385,6 +409,26 @@ public struct EDTSChip: View {
                         onTap?()
                     }
             )
+    }
+    
+    // MARK: - Setup & Styling
+    @ViewBuilder
+    private func setupBackground(
+        solid: Color,
+        start: Color?,
+        end: Color?,
+        orientation: Orientation?
+    ) -> some View {
+        if start != nil || end != nil {
+            let resolvedOrientation = orientation ?? .horizontal
+            LinearGradient(
+                colors: [start ?? .clear, end ?? .clear],
+                startPoint: resolvedOrientation == .horizontal ? .leading : .top,
+                endPoint: resolvedOrientation == .horizontal ? .trailing : .bottom
+            )
+        } else {
+            solid
+        }
     }
 }
 
