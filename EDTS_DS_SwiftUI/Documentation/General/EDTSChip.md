@@ -1,5 +1,31 @@
 # EDTSChip
 
+`EDTSChip` is a SwiftUI toggle-style chip with an `inactive`/`active` state, an optional leading and/or trailing icon (each independently tappable), a full-chip tap ripple, and per-icon circular ripples. Every visual property — label color, background, icon tint/background, border, and shadow — has a separate `*Active` override that's used only when `isActive == true`, with automatic fallback to the inactive value and then to a theme default (`klikIDM` vs `poinku`). The background additionally supports an independent linear gradient for each state.
+
+---
+
+## Enum
+
+```swift
+public enum ChipState: String {
+    case inactive = "inactive"
+    case active = "active"
+}
+```
+
+`ChipState` models the two visual states internally; `EDTSChip` itself is driven by the `isActive: Bool` property rather than taking a `ChipState` directly.
+
+---
+
+## Preview
+
+| Feature / Variation | Preview |
+| ------------------- | ------- |
+| **Basic Chip** |![Default Chip](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1781077809/chip_default_active_nps4ik.gif)|
+| **Chip With Icon** |![Chip With iconLeading, iconTrailing, iconBgColorLeading and iconBgColorTrailing](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1770101059/chip_with_icon_njdzk1.png)|
+
+---
+
 ## Installation
 
 Add to your `Podfile`:
@@ -17,28 +43,6 @@ import EDTS_DS_SwiftUI
 This relies on the design token types already available in the pod (`EDTSColor`, `EDTSFont`)
 
 ---
-
-## Overview
-
-`EDTSChip` is a SwiftUI toggle-style chip with an `inactive`/`active` state, an optional leading and/or trailing icon (each independently tappable), a full-chip tap ripple, and per-icon circular ripples. Every visual property — label color, background, icon tint/background, border, and shadow — has a separate `*Active` override that's used only when `isActive == true`, with automatic fallback to the inactive value and then to a theme default (`klikIDM` vs `poinku`).
-
-## Enum
-
-```swift
-public enum ChipState: String {
-    case inactive, active
-}
-```
-
-`ChipState` models the two visual states internally; `EDTSChip` itself is driven by the `isActive: Bool` property rather than taking a `ChipState` directly.
-
-## Preview
-
-| Feature / Variation | Preview |
-| -------------------- | ------- |
-| **Inactive / Active** | *(add preview asset)* |
-| **With Leading & Trailing Icons** | *(add preview asset)* |
-| **Tap to Toggle** | *(add preview asset)* |
 
 ## Basic Usage
 
@@ -72,11 +76,30 @@ EDTSChip(
 
 Each icon has its own tap target (`onTapLeadingIcon` / `onTapTrailingIcon`) that takes priority over the chip's own tap (`onTapChip`), so tapping an icon doesn't also toggle the chip.
 
-### 3. Always-Active Chip (non-interactive display)
+### 3. Gradient Background
+
+```swift
+EDTSChip(
+    label: "Gradient",
+    bgColorStart: EDTSColor.skyblueLeading,
+    bgColorEnd: EDTSColor.skyblueTrailing,
+    bgColorOrientation: .horizontal,
+    bgColorActiveStart: EDTSColor.blue40,
+    bgColorActiveEnd: EDTSColor.blue50,
+    isActive: isActive,
+    onTapChip: { isActive.toggle() }
+)
+```
+
+The inactive and active gradients are configured independently — set only `bgColorStart`/`bgColorEnd` for a gradient while inactive, only `bgColorActiveStart`/`bgColorActiveEnd` for one while active, or both.
+
+### 4. Always-Active Chip (non-interactive display)
 
 ```swift
 EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 ```
+
+---
 
 ## Properties Reference
 
@@ -104,8 +127,14 @@ EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `bgColor` | `Color?` | theme default | Chip background when `isActive == false` |
-| `bgColorActive` | `Color?` | falls back to `bgColor`, then theme default | Chip background when `isActive == true` |
+| `bgColor` | `Color?` | theme default | Solid chip background when `isActive == false` |
+| `bgColorStart` | `Color?` | `nil` | Gradient start color for the inactive background; setting either start or end switches the inactive background to a gradient |
+| `bgColorEnd` | `Color?` | `nil` | Gradient end color for the inactive background; setting either start or end switches the inactive background to a gradient |
+| `bgColorOrientation` | `Orientation?` | `.horizontal` | Gradient direction when inactive: `.horizontal` (leading→trailing) or `.vertical` (top→bottom) |
+| `bgColorActive` | `Color?` | falls back to `bgColor`, then theme default | Solid chip background when `isActive == true` |
+| `bgColorActiveStart` | `Color?` | `nil` | Gradient start color for the active background; setting either start or end switches the active background to a gradient |
+| `bgColorActiveEnd` | `Color?` | `nil` | Gradient end color for the active background; setting either start or end switches the active background to a gradient |
+| `bgColorActiveOrientation` | `Orientation?` | `.horizontal` | Gradient direction when active: `.horizontal` (leading→trailing) or `.vertical` (top→bottom) |
 
 ### Icon Leading
 
@@ -175,6 +204,8 @@ EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 | `onTapLeadingIcon` | `(() -> Void)?` | `nil` | Called when the leading icon badge is tapped |
 | `onTapTrailingIcon` | `(() -> Void)?` | `nil` | Called when the trailing icon badge is tapped |
 
+---
+
 ## Theme Defaults (Inactive / Active)
 
 | Token | klikIDM inactive | klikIDM active | poinku inactive | poinku active |
@@ -185,6 +216,8 @@ EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 | Border | `.clear` | `.clear` | `.clear` | `EDTSColor.blue40` |
 | Border width (both unset) | `0` | `0` | `0` | `1` |
 
+---
+
 ## Icon Badge Geometry
 
 | Constant | Value | Description |
@@ -194,6 +227,8 @@ EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 | `iconBadgeDiameter` | `resolvedIconSize + 4` | Circular badge size (glyph + padding) |
 | `iconBadgeRippleSize` | `iconBadgeDiameter + 4` | Size passed to `circularRippleEffect` |
 
+---
+
 ## Interaction & Animation
 
 | Aspect | Value |
@@ -202,11 +237,6 @@ EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 | Icon tap | Each icon badge uses `.circularRippleEffect(size: iconBadgeRippleSize, color: .black.opacity(0.22))` plus a `.highPriorityGesture(DragGesture(minimumDistance: 0))` that fires its own `onTap` closure, taking priority over the chip-level ripple gesture so the two never both fire from one tap |
 | State transition | `.animation(.easeInOut(duration: 0.25), value: isActive)` animates every resolved style value (background, label/icon color, border, shadow) together whenever `isActive` changes |
 
-## Notes
-
-- `fontStyle` is declared as a `public var` but is **not** exposed as an initializer parameter — to use it you must hold the chip in a `var` and set `chip.fontStyle = ...` after construction, or extend the initializer.
-- With both `borderWidth` and `borderWidthActive` left at `0`, a chip on the `poinku` theme will silently grow a `1pt` border only when it becomes active. Pass `borderWidth` alone to give both states the same fixed width, or set `borderWidthActive` explicitly to control the active width independently.
-- The `rippleEffect(color:cornerRadius:onTap:)` call signature used here includes an `onTap` closure parameter; if your `rippleEffect` view modifier elsewhere in the pod doesn't expose `onTap`, an overload will need to exist for `EDTSChip` to compile as written.
-- `label` is forced to `nil` when `labelAttributed` is provided, mirroring the same pattern used in `EDTSButton` and `EDTSSignifier`.
+---
 
 *For further customization, you can ask UX Engineer or wrap `EDTSChip` in a custom `View` to compose additional behavior as required.*
