@@ -14,6 +14,13 @@ public enum Orientation {
     case vertical
 }
 
+public enum Position {
+    case top
+    case bottom
+    case leading
+    case trailing
+}
+
 // MARK: - Rounded Corner Shape (per-corner radius, mirrors UIRectCorner)
 
 public struct RoundedCorner: Shape {

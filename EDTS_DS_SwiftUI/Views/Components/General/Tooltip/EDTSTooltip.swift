@@ -8,78 +8,154 @@
 import SwiftUI
 import Combine
 
-// MARK: - Direction
+// MARK: - Layout constants
 
-public enum EDTSTooltipDirection {
-    case top
-    case bottom
-    case leading
-    case trailing
+private enum EDTSTooltipLayout {
+    static let animationDuration: TimeInterval = 0.15
+    static let appearOffset: CGFloat = 4
+    static let minimumSideSpace: CGFloat = 32
 }
 
-// MARK: - Style
+// MARK: - Config
 
-public struct EDTSTooltipStyle {
-    public var textColor: Color
-    public var fontStyle: Font?
-    public var fontName: String
-    public var fontSize: CGFloat
-    public var fontWeight: String?
-    public var bgColor: Color
-    public var cornerRadius: CGFloat
-    public var shadowColor: Color
-    public var shadowOpacity: Double
-    public var shadowRadius: CGFloat
-    public var shadowOffset: CGSize
-    public var padding: EdgeInsets
-    public var spacing: CGFloat
-    public var maxWidth: CGFloat
-    public var arrowSize: CGSize
-    public var containerMargin: CGFloat
+struct EDTSTooltipConfig {
+    var textColor: Color = .white
+    var fontStyle: Font? = nil
+    var fontName: String = ""
+    var fontSize: CGFloat = .zero
+    var fontWeight: String? = nil
+    var bgColor: Color = .black
+    var cornerRadius: CGFloat = 4
+    var shadowColor: Color = Color(.sRGB, white: 0.5, opacity: 1)
+    var shadowOpacity: Double = 0.18
+    var shadowRadius: CGFloat = 5
+    var shadowOffset: CGSize = CGSize(width: 0, height: 4)
+    var padding: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
+    var spacing: CGFloat = 8
+    var maxWidth: CGFloat = UIScreen.main.bounds.width - 32
+    var arrowSize: CGSize = CGSize(width: 12, height: 8)
+    var containerMargin: CGFloat = 8
+    var position: Position = .top
 
-    public init(
-        textColor: Color = .white,
-        fontStyle: Font? = nil,
-        fontName: String = "",
-        fontSize: CGFloat = .zero,
-        fontWeight: String? = nil,
-        bgColor: Color = .black,
-        cornerRadius: CGFloat = 4,
-        shadowColor: Color = Color(.sRGB, white: 0.5, opacity: 1),
-        shadowOpacity: Double = 0.18,
-        shadowRadius: CGFloat = 5,
-        shadowOffset: CGSize = CGSize(width: 0, height: 4),
-        padding: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8),
-        spacing: CGFloat = 8,
-        maxWidth: CGFloat = UIScreen.main.bounds.width - 32,
-        arrowSize: CGSize = CGSize(width: 12, height: 8),
-        containerMargin: CGFloat = 8
-    ) {
-        self.textColor = textColor
-        self.fontStyle = fontStyle
-        self.fontName = fontName
-        self.fontSize = fontSize
-        self.fontWeight = fontWeight
-        self.bgColor = bgColor
-        self.cornerRadius = cornerRadius
-        self.shadowColor = shadowColor
-        self.shadowOpacity = shadowOpacity
-        self.shadowRadius = shadowRadius
-        self.shadowOffset = shadowOffset
-        self.padding = padding
-        self.spacing = spacing
-        self.maxWidth = maxWidth
-        self.arrowSize = arrowSize
-        self.containerMargin = containerMargin
+    func resolvedFont() -> Font {
+        if let fontStyle {
+            return fontStyle
+        }
+
+        if fontName.isEmpty && fontSize <= 0 && fontWeight == nil {
+            return EDTSFont.Klik.P2.Regular.font
+        }
+
+        let size = fontSize > 0 ? fontSize : UIFont.systemFontSize
+        var font: Font = fontName.isEmpty ? .system(size: size) : .custom(fontName, size: size)
+
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+
+        return font
+    }
+}
+
+struct EDTSTooltipItem: Identifiable {
+    let id: UUID
+    var targetFrame: CGRect
+    var text: String?
+    var attributedText: AttributedString?
+    var config: EDTSTooltipConfig
+    var onTap: () -> Void
+    var isDismissing: Bool = false
+}
+
+// MARK: - View modifier
+
+struct EDTSTooltip: ViewModifier {
+    @Binding var isPresented: Bool
+    var text: String? = nil
+    var attributedText: AttributedString? = nil
+    var config: EDTSTooltipConfig = EDTSTooltipConfig()
+    var minimumPressDuration: TimeInterval? = nil
+    var dismissOnRelease: Bool = true
+    var dismissOnReleaseDelay: TimeInterval = 0.5
+    var autoDismissAfter: TimeInterval? = nil
+
+    @State private var id = UUID()
+    @State private var dismissWorkItem: DispatchWorkItem?
+    @State private var targetFrame: CGRect = .zero
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear {
+                            targetFrame = proxy.frame(in: .global)
+                            syncPresenterIfPresented()
+                        }
+                        .onChange(of: proxy.frame(in: .global)) { newFrame in
+                            targetFrame = newFrame
+                            syncPresenterIfPresented()
+                        }
+                }
+            )
+            .modifier(ActionHelper.LongPressAttach(
+                minimumPressDuration: minimumPressDuration,
+                onBegin: { present() },
+                onEnd: { scheduleDismiss(after: dismissOnRelease ? dismissOnReleaseDelay : nil) }
+            ))
+            .onChange(of: isPresented) { presented in
+                if presented {
+                    syncPresenterIfPresented()
+                    scheduleDismiss(after: autoDismissAfter)
+                } else {
+                    EDTSTooltipPresenter.shared.dismiss(id: id)
+                    dismissWorkItem?.cancel()
+                }
+            }
+            .onChange(of: text) { _ in syncPresenterIfPresented() }
+            .onDisappear {
+                EDTSTooltipPresenter.shared.dismiss(id: id)
+            }
     }
 
-    public static let `default` = EDTSTooltipStyle()
+    private func syncPresenterIfPresented() {
+        guard isPresented else { return }
+        EDTSTooltipPresenter.shared.present(makeItem(frame: targetFrame))
+    }
+
+    private func makeItem(frame: CGRect) -> EDTSTooltipItem {
+        EDTSTooltipItem(
+            id: id,
+            targetFrame: frame,
+            text: text,
+            attributedText: attributedText,
+            config: config,
+            onTap: { isPresented = false }
+        )
+    }
+    
+    private func present() {
+        id = UUID()
+        isPresented = true
+    }
+
+    private func scheduleDismiss(after delay: TimeInterval?) {
+        guard let delay else { return }
+        dismissWorkItem?.cancel()
+        let work = DispatchWorkItem { isPresented = false }
+        dismissWorkItem = work
+        if delay > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+        } else {
+            work.perform()
+        }
+    }
 }
 
 // MARK: - Bubble shape
 
 private struct EDTSTooltipBubbleShape: Shape {
-    var direction: EDTSTooltipDirection
+    var direction: Position
     var cornerRadius: CGFloat
     var arrowSize: CGSize
     var arrowTip: CGPoint
@@ -124,20 +200,6 @@ private struct EDTSTooltipBubbleShape: Shape {
     }
 }
 
-struct EDTSTooltipItem: Identifiable, Equatable {
-    let id: UUID
-    var targetFrame: CGRect
-    var direction: EDTSTooltipDirection
-    var text: String?
-    var attributedText: AttributedString?
-    var style: EDTSTooltipStyle
-    var onTap: () -> Void
-
-    static func == (lhs: EDTSTooltipItem, rhs: EDTSTooltipItem) -> Bool {
-        lhs.id == rhs.id && lhs.targetFrame == rhs.targetFrame && lhs.text == rhs.text
-    }
-}
-
 // MARK: - Bubble
 
 private struct EDTSTooltipBubble: View {
@@ -161,9 +223,9 @@ private struct EDTSTooltipBubble: View {
                 Text(item.text ?? "")
             }
         }
-        .font(item.style.fontStyle)
-        .foregroundColor(item.style.textColor)
-        .padding(item.style.padding)
+        .font(item.config.resolvedFont())
+        .foregroundColor(item.config.textColor)
+        .padding(item.config.padding)
         .modifier(EDTSTooltipTextSizing(maxWidth: effectiveMaxWidth, needsWrap: needsWrap))
         .background(
             GeometryReader { g in
@@ -179,24 +241,24 @@ private struct EDTSTooltipBubble: View {
             contentSize = measured
             hasMeasured = true
         }
-        .padding(.top, direction == .bottom ? item.style.arrowSize.height : 0)
-        .padding(.bottom, direction == .top ? item.style.arrowSize.height : 0)
-        .padding(.leading, direction == .trailing ? item.style.arrowSize.height : 0)
-        .padding(.trailing, direction == .leading ? item.style.arrowSize.height : 0)
+        .padding(.top, direction == .bottom ? item.config.arrowSize.height : 0)
+        .padding(.bottom, direction == .top ? item.config.arrowSize.height : 0)
+        .padding(.leading, direction == .trailing ? item.config.arrowSize.height : 0)
+        .padding(.trailing, direction == .leading ? item.config.arrowSize.height : 0)
         .background(
             GeometryReader { g in
                 EDTSTooltipBubbleShape(
                     direction: direction,
-                    cornerRadius: item.style.cornerRadius,
-                    arrowSize: item.style.arrowSize,
+                    cornerRadius: item.config.cornerRadius,
+                    arrowSize: item.config.arrowSize,
                     arrowTip: arrowTip(in: g.size, direction: direction, bubbleFrame: layout)
                 )
-                .fill(item.style.bgColor)
+                .fill(item.config.bgColor)
                 .shadow(
-                    color: item.style.shadowColor.opacity(item.style.shadowOpacity),
-                    radius: item.style.shadowRadius,
-                    x: item.style.shadowOffset.width,
-                    y: item.style.shadowOffset.height
+                    color: item.config.shadowColor.opacity(item.config.shadowOpacity),
+                    radius: item.config.shadowRadius,
+                    x: item.config.shadowOffset.width,
+                    y: item.config.shadowOffset.height
                 )
             }
         )
@@ -206,13 +268,18 @@ private struct EDTSTooltipBubble: View {
         .offset(appeared ? .zero : initialOffset(direction: direction))
         .onTapGesture { item.onTap() }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.15)) { appeared = true }
+            guard !item.isDismissing else { return }
+            withAnimation(.easeOut(duration: EDTSTooltipLayout.animationDuration)) { appeared = true }
         }
         .onChange(of: item.id) { _ in
             appeared = false
             hasMeasured = false
             needsWrap = false
-            withAnimation(.easeOut(duration: 0.15)) { appeared = true }
+            withAnimation(.easeOut(duration: EDTSTooltipLayout.animationDuration)) { appeared = true }
+        }
+        .onChange(of: item.isDismissing) { isDismissing in
+            guard isDismissing else { return }
+            withAnimation(.easeIn(duration: EDTSTooltipLayout.animationDuration)) { appeared = false }
         }
     }
 
@@ -223,38 +290,38 @@ private struct EDTSTooltipBubble: View {
     private var totalSize: CGSize {
         var size = resolvedContentSize
         switch resolvedDirection {
-        case .top, .bottom: size.height += item.style.arrowSize.height
-        case .leading, .trailing: size.width += item.style.arrowSize.height
+        case .top, .bottom: size.height += item.config.arrowSize.height
+        case .leading, .trailing: size.width += item.config.arrowSize.height
         }
         return size
     }
 
     private var effectiveMaxWidth: CGFloat {
-        let margin = item.style.containerMargin
+        let margin = item.config.containerMargin
         let target = item.targetFrame
-        let arrow = item.style.arrowSize.height
-        let spacing = item.style.spacing
+        let arrow = item.config.arrowSize.height
+        let spacing = item.config.spacing
 
         switch resolvedDirection {
         case .leading:
             let available = target.minX - spacing - arrow - margin
-            return max(1, min(item.style.maxWidth, available))
+            return max(1, min(item.config.maxWidth, available))
         case .trailing:
             let available = containerSize.width - target.maxX - spacing - arrow - margin
-            return max(1, min(item.style.maxWidth, available))
+            return max(1, min(item.config.maxWidth, available))
         case .top, .bottom:
-            return item.style.maxWidth
+            return item.config.maxWidth
         }
     }
-    
-    private var resolvedDirection: EDTSTooltipDirection {
-        let target = item.targetFrame
-        let spacing = item.style.spacing
-        let arrow = item.style.arrowSize
-        let margin = item.style.containerMargin
-        let minimumSideSpace: CGFloat = 32
 
-        switch item.direction {
+    private var resolvedDirection: Position {
+        let target = item.targetFrame
+        let spacing = item.config.spacing
+        let arrow = item.config.arrowSize
+        let margin = item.config.containerMargin
+        let minimumSideSpace = EDTSTooltipLayout.minimumSideSpace
+
+        switch item.config.position {
         case .top:
             let size = resolvedContentSize
             let required = size.height + spacing + arrow.height
@@ -274,21 +341,22 @@ private struct EDTSTooltipBubble: View {
             let availableTrailing = containerSize.width - target.maxX - spacing - arrow.height - margin
             if availableTrailing < minimumSideSpace { return .leading }
         }
-        return item.direction
+        return item.config.position
     }
 
-    private func initialOffset(direction: EDTSTooltipDirection) -> CGSize {
+    private func initialOffset(direction: Position) -> CGSize {
+        let offset = EDTSTooltipLayout.appearOffset
         switch direction {
-        case .top: return CGSize(width: 0, height: 4)
-        case .bottom: return CGSize(width: 0, height: -4)
-        case .leading: return CGSize(width: 4, height: 0)
-        case .trailing: return CGSize(width: -4, height: 0)
+        case .top: return CGSize(width: 0, height: offset)
+        case .bottom: return CGSize(width: 0, height: -offset)
+        case .leading: return CGSize(width: offset, height: 0)
+        case .trailing: return CGSize(width: -offset, height: 0)
         }
     }
 
-    private func computeLayout(direction: EDTSTooltipDirection, size: CGSize) -> CGRect {
+    private func computeLayout(direction: Position, size: CGSize) -> CGRect {
         let target = item.targetFrame
-        let spacing = item.style.spacing
+        let spacing = item.config.spacing
 
         var origin: CGPoint
         switch direction {
@@ -314,23 +382,23 @@ private struct EDTSTooltipBubble: View {
     }
 
     private func clampCrossAxis(_ value: CGFloat, length: CGFloat, containerLength: CGFloat) -> CGFloat {
-        let margin = item.style.containerMargin
+        let margin = item.config.containerMargin
         return max(margin, min(value, containerLength - length - margin))
     }
 
-    private func arrowTip(in localSize: CGSize, direction: EDTSTooltipDirection, bubbleFrame: CGRect) -> CGPoint {
+    private func arrowTip(in localSize: CGSize, direction: Position, bubbleFrame: CGRect) -> CGPoint {
         let target = item.targetFrame
-        let arrow = item.style.arrowSize
+        let arrow = item.config.arrowSize
 
         switch direction {
         case .top, .bottom:
             let desiredX = target.midX - bubbleFrame.minX
-            let clampedX = max(item.style.cornerRadius + arrow.width, min(desiredX, localSize.width - item.style.cornerRadius - arrow.width))
+            let clampedX = max(item.config.cornerRadius + arrow.width, min(desiredX, localSize.width - item.config.cornerRadius - arrow.width))
             let y: CGFloat = direction == .top ? localSize.height : 0
             return CGPoint(x: clampedX, y: y)
         case .leading, .trailing:
             let desiredY = target.midY - bubbleFrame.minY
-            let clampedY = max(item.style.cornerRadius + arrow.width, min(desiredY, localSize.height - item.style.cornerRadius - arrow.width))
+            let clampedY = max(item.config.cornerRadius + arrow.width, min(desiredY, localSize.height - item.config.cornerRadius - arrow.width))
             let x: CGFloat = direction == .leading ? localSize.width : 0
             return CGPoint(x: x, y: clampedY)
         }
@@ -363,11 +431,13 @@ private struct EDTSTooltipSizeKey: PreferenceKey {
 
 // MARK: - Overlay window presentation
 
+@MainActor
 final class EDTSTooltipPresenter: ObservableObject {
     static let shared = EDTSTooltipPresenter()
 
     @Published fileprivate var items: [EDTSTooltipItem] = []
     private var window: EDTSTooltipPassthroughWindow?
+    private let dismissAnimationDuration: TimeInterval = EDTSTooltipLayout.animationDuration
 
     private init() {}
 
@@ -379,11 +449,19 @@ final class EDTSTooltipPresenter: ObservableObject {
         }
         ensureWindow()
     }
-
+    
     func dismiss(id: UUID) {
-        items.removeAll { $0.id == id }
-        if items.isEmpty {
-            teardownWindow()
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        guard !items[index].isDismissing else { return }
+        items[index].isDismissing = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + dismissAnimationDuration) { [weak self] in
+            guard let self else { return }
+            guard let index = self.items.firstIndex(where: { $0.id == id }), self.items[index].isDismissing else { return }
+            self.items.remove(at: index)
+            if self.items.isEmpty {
+                self.teardownWindow()
+            }
         }
     }
 
@@ -435,121 +513,6 @@ private struct EDTSTooltipOverlayRoot: View {
     }
 }
 
-// MARK: - View modifier
-
-public struct EDTSTooltip: ViewModifier {
-    @Binding var isPresented: Bool
-
-    var text: String? = nil
-    var attributedText: AttributedString? = nil
-    var direction: EDTSTooltipDirection = .top
-    var style: EDTSTooltipStyle = .default
-
-    var minimumPressDuration: TimeInterval? = nil
-    var dismissOnRelease: Bool = true
-    var dismissOnReleaseDelay: TimeInterval = 0.5
-    var autoDismissAfter: TimeInterval? = nil
-
-    @State private var id = UUID()
-    @State private var dismissWorkItem: DispatchWorkItem?
-    @State private var targetFrame: CGRect = .zero
-
-    public func body(content: Content) -> some View {
-        content
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear {
-                            targetFrame = proxy.frame(in: .global)
-                            syncPresenterIfPresented()
-                        }
-                        .onChange(of: proxy.frame(in: .global)) { newFrame in
-                            targetFrame = newFrame
-                            syncPresenterIfPresented()
-                        }
-                }
-            )
-            .modifier(LongPressAttach(
-                minimumPressDuration: minimumPressDuration,
-                onBegin: { present() },
-                onEnd: { scheduleReleaseDismissIfNeeded() }
-            ))
-            .onChange(of: isPresented) { presented in
-                if presented {
-                    syncPresenterIfPresented()
-                    scheduleAutoDismissIfNeeded()
-                } else {
-                    EDTSTooltipPresenter.shared.dismiss(id: id)
-                    dismissWorkItem?.cancel()
-                }
-            }
-            .onChange(of: text) { _ in syncPresenterIfPresented() }
-            .onDisappear {
-                EDTSTooltipPresenter.shared.dismiss(id: id)
-            }
-    }
-
-    private func syncPresenterIfPresented() {
-        guard isPresented else { return }
-        EDTSTooltipPresenter.shared.present(makeItem(frame: targetFrame))
-    }
-
-    private func makeItem(frame: CGRect) -> EDTSTooltipItem {
-        EDTSTooltipItem(
-            id: id,
-            targetFrame: frame,
-            direction: direction,
-            text: text,
-            attributedText: attributedText,
-            style: style,
-            onTap: { withAnimation(.easeIn(duration: 0.15)) { isPresented = false } }
-        )
-    }
-
-    private func present() {
-        id = UUID()
-        withAnimation(.easeOut(duration: 0.15)) { isPresented = true }
-    }
-
-    private func scheduleAutoDismissIfNeeded() {
-        guard let duration = autoDismissAfter else { return }
-        dismissWorkItem?.cancel()
-        let work = DispatchWorkItem { withAnimation(.easeIn(duration: 0.15)) { isPresented = false } }
-        dismissWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: work)
-    }
-
-    private func scheduleReleaseDismissIfNeeded() {
-        guard dismissOnRelease else { return }
-        dismissWorkItem?.cancel()
-        let work = DispatchWorkItem { withAnimation(.easeIn(duration: 0.15)) { isPresented = false } }
-        dismissWorkItem = work
-        if dismissOnReleaseDelay > 0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + dismissOnReleaseDelay, execute: work)
-        } else {
-            work.perform()
-        }
-    }
-}
-
-private struct LongPressAttach: ViewModifier {
-    let minimumPressDuration: TimeInterval?
-    let onBegin: () -> Void
-    let onEnd: () -> Void
-
-    func body(content: Content) -> some View {
-        if let duration = minimumPressDuration {
-            content.onLongPressGesture(
-                minimumDuration: duration,
-                pressing: { pressing in if !pressing { onEnd() } },
-                perform: { onBegin() }
-            )
-        } else {
-            content
-        }
-    }
-}
-
 // MARK: - Extension View
 
 public extension View {
@@ -557,19 +520,53 @@ public extension View {
         isPresented: Binding<Bool>,
         text: String? = "Text here",
         attributedText: AttributedString? = nil,
-        direction: EDTSTooltipDirection = .top,
-        style: EDTSTooltipStyle = .default,
+        textColor: Color = .white,
+        fontStyle: Font? = nil,
+        fontName: String = "",
+        fontSize: CGFloat = .zero,
+        fontWeight: String? = nil,
+        bgColor: Color = .black,
+        cornerRadius: CGFloat = 4,
+        shadowColor: Color = Color(.sRGB, white: 0.5, opacity: 1),
+        shadowOpacity: Double = 0.18,
+        shadowRadius: CGFloat = 5,
+        shadowOffset: CGSize = CGSize(width: 0, height: 4),
+        padding: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8),
+        spacing: CGFloat = 8,
+        maxWidth: CGFloat = UIScreen.main.bounds.width - 32,
+        arrowSize: CGSize = CGSize(width: 12, height: 8),
+        containerMargin: CGFloat = 8,
+        position: Position = .top,
         minimumPressDuration: TimeInterval? = nil,
         dismissOnRelease: Bool = true,
         dismissOnReleaseDelay: TimeInterval = 0.5,
         autoDismissAfter: TimeInterval? = nil
     ) -> some View {
-        modifier(EDTSTooltip(
+        let config = EDTSTooltipConfig(
+            textColor: textColor,
+            fontStyle: fontStyle,
+            fontName: fontName,
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            bgColor: bgColor,
+            cornerRadius: cornerRadius,
+            shadowColor: shadowColor,
+            shadowOpacity: shadowOpacity,
+            shadowRadius: shadowRadius,
+            shadowOffset: shadowOffset,
+            padding: padding,
+            spacing: spacing,
+            maxWidth: maxWidth,
+            arrowSize: arrowSize,
+            containerMargin: containerMargin,
+            position: position
+        )
+
+        return modifier(EDTSTooltip(
             isPresented: isPresented,
             text: text,
             attributedText: attributedText,
-            direction: direction,
-            style: style,
+            config: config,
             minimumPressDuration: minimumPressDuration,
             dismissOnRelease: dismissOnRelease,
             dismissOnReleaseDelay: dismissOnReleaseDelay,
@@ -597,7 +594,7 @@ struct EDTSTooltipView: View {
                     .edtsTooltip(
                         isPresented: $showLongPressTooltip,
                         text: "Hold and release to dismiss",
-                        direction: .top,
+                        position: .top,
                         minimumPressDuration: 0.35
                     )
 
@@ -614,14 +611,12 @@ struct EDTSTooltipView: View {
                     .padding(.vertical, 12)
                     .background(Color.gray, in: RoundedRectangle(cornerRadius: 8))
                     .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            showTapTooltip.toggle()
-                        }
+                        showTapTooltip.toggle()
                     }
                     .edtsTooltip(
                         isPresented: $showTapTooltip,
                         text: "Tap the button again to close me",
-                        direction: .bottom
+                        position: .bottom
                     )
 
                 Text("Tap once to open, tap again to close")
