@@ -521,11 +521,11 @@ public struct EDTSButton: View {
             values.tempShadowColor = shadowColor
             
         case .danger:
-            values.tempIconTintColorLeading = iconDangerTintColorLeading ?? EDTSColor.errorStrong
-            values.tempLabelColor = labelDangerColor ?? EDTSColor.errorStrong
-            values.tempIconTintColorTrailing = iconDangerTintColorTrailing ?? EDTSColor.errorStrong
+            values.tempIconTintColorLeading = iconDangerTintColorLeading ?? EDTSColor.red30
+            values.tempLabelColor = labelDangerColor ?? EDTSColor.red30
+            values.tempIconTintColorTrailing = iconDangerTintColorTrailing ?? EDTSColor.red30
             values.tempBgColor = bgDangerColor ?? EDTSColor.white
-            values.tempBorderColor = borderDangerColor ?? EDTSColor.disabled
+            values.tempBorderColor = borderDangerColor ?? EDTSColor.grey30
             values.tempBorderWidth = borderWidth == .zero ? 1 : borderWidth
             values.tempShadowColor = shadowDangerColor ?? shadowColor
             
