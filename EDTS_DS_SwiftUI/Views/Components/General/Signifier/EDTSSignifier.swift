@@ -248,7 +248,7 @@ public struct EDTSSignifier: View {
         EDTSSignifier(bgColor: EDTSColor.grey40, isIndicator: true)
         EDTSSignifier(isSkeleton: true)
         EDTSSignifier(isSkeleton: true, isIndicator: true)
-        EDTSSignifier(bgColorStart: EDTSColor.orange50, bgColorEnd: EDTSColor.grey80)
+        EDTSSignifier(bgColorStart: EDTSColor.blueLeading, bgColorEnd: EDTSColor.blueTrailing)
         Image(systemName: "bell.fill")
             .resizable()
             .scaledToFit()
