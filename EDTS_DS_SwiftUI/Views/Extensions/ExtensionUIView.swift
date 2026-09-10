@@ -16,6 +16,13 @@ public enum Orientation: String {
     case diagonalDown = "diagonaldown"
 }
 
+public enum Position {
+    case top
+    case bottom
+    case leading
+    case trailing
+}
+
 // MARK: - Rounded Corner Shape (per-corner radius, mirrors UIRectCorner)
 
 public struct RoundedCorner: Shape {
