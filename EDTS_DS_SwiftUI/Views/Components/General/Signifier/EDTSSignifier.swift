@@ -7,18 +7,6 @@
 
 import SwiftUI
 
-public struct EDTSShape: Shape {
-    private let pathBuilder: @Sendable (CGRect) -> Path
-
-    init<S: Shape>(_ shape: S) {
-        self.pathBuilder = { rect in shape.path(in: rect) }
-    }
-
-    public func path(in rect: CGRect) -> Path {
-        pathBuilder(rect)
-    }
-}
-
 public struct EDTSSignifier: View {
     // MARK: - Properties
     public let label: String?
@@ -133,8 +121,8 @@ public struct EDTSSignifier: View {
         paddingBottom: CGFloat? = nil,
         paddingLeading: CGFloat = 2,
         paddingTrailing: CGFloat = 2,
-        offsetY: CGFloat = .zero,
-        offsetX: CGFloat = .zero,
+        offsetY: CGFloat = 4.5,
+        offsetX: CGFloat = 2.5,
         isSkeleton: Bool = false,
         isIndicator: Bool = false
     ) {
@@ -264,7 +252,7 @@ public struct EDTSSignifier: View {
         Image(systemName: "bell.fill")
             .resizable()
             .scaledToFit()
-            .frame(width: 32, height: 32)
+            .frame(width: 24, height: 24)
             .foregroundColor(EDTSColor.greyText)
             .edtsSignifier(EDTSSignifier(label: "3", offsetY: 4, offsetX: 2))
     }
