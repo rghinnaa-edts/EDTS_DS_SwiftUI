@@ -239,7 +239,7 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 | `secondary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.red30` |
 | `secondary` | disabled | `EDTSColor.white` | `EDTSColor.grey30` | `EDTSColor.grey30` |
 | `tertiary` | default | `EDTSColor.white` | `EDTSColor.grey60` | `EDTSColor.grey60` |
-| `tertiary` | danger | `EDTSColor.white` | `EDTSColor.errorStrong` | `EDTSColor.disabled` |
+| `tertiary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.grey30` |
 | `tertiary` | disabled | `EDTSColor.white` | `EDTSColor.grey30` | `EDTSColor.grey30` |
 
 For `secondary` and `tertiary` types, if a custom `labelColor` is supplied but `iconTintColorLeading` / `iconTintColorTrailing` / `borderColor` are not, those unset values inherit the resolved label color automatically.
