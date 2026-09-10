@@ -29,33 +29,9 @@
 		503198B13025CA940051DC4B /* EDTS_DS_SwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EDTS_DS_SwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9B5C5621305258E0009172E0 /* Exceptions for "EDTS_DS_SwiftUI" folder in "EDTS_DS_SwiftUI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Documentation/General/EDTSButtonIcon.md,
-			);
-			target = 503198993025CA920051DC4B /* EDTS_DS_SwiftUI */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		9B5C5622305258E0009172E0 /* Exceptions for "EDTS_DS_SwiftUI" folder in "Compile Sources" phase from "EDTS_DS_SwiftUI" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = 503198963025CA920051DC4B /* Sources */;
-			membershipExceptions = (
-				Documentation/General/EDTSButtonIcon.md,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5031989C3025CA920051DC4B /* EDTS_DS_SwiftUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9B5C5621305258E0009172E0 /* Exceptions for "EDTS_DS_SwiftUI" folder in "EDTS_DS_SwiftUI" target */,
-				9B5C5622305258E0009172E0 /* Exceptions for "EDTS_DS_SwiftUI" folder in "Compile Sources" phase from "EDTS_DS_SwiftUI" target */,
-			);
 			path = EDTS_DS_SwiftUI;
 			sourceTree = "<group>";
 		};
