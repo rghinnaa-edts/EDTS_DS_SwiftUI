@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Model
 
-public struct CardSelectionModel: Identifiable, Equatable {
+public struct EDTSCardSelectionModel: Identifiable, Equatable {
     public var id: String
     public var title: String
     public var titleAttributed: AttributedString?
@@ -36,7 +36,7 @@ public struct CardSelectionModel: Identifiable, Equatable {
 
 // MARK: - Style
 
-public struct CardSelectionConfig {
+public struct EDTSCardSelectionConfig {
     public var titleColor: Color
     public var titleActiveColor: Color
     public var descColor: Color
@@ -99,7 +99,7 @@ public struct CardSelectionConfig {
         self.disabledBorderWidth = disabledBorderWidth
     }
 
-    public static let `default` = CardSelectionConfig()
+    public static let `default` = EDTSCardSelectionConfig()
 }
 
 // MARK: - Single card
@@ -110,11 +110,11 @@ public struct EDTSCardSelectionView: View {
     private static let contentPadding: CGFloat = 8
     private static let selectionAnimationDuration: Double = 0.3
 
-    public let model: CardSelectionModel
+    public let model: EDTSCardSelectionModel
     public let isSelected: Bool
-    public var style: CardSelectionConfig = .default
+    public var style: EDTSCardSelectionConfig = .default
 
-    public init(model: CardSelectionModel, isSelected: Bool, style: CardSelectionConfig = .default) {
+    public init(model: EDTSCardSelectionModel, isSelected: Bool, style: EDTSCardSelectionConfig = .default) {
         self.model = model
         self.isSelected = isSelected
         self.style = style
@@ -202,15 +202,15 @@ public struct EDTSCardSelectionListView: View {
     private static let itemSpacing: CGFloat = 8
     private static let horizontalPadding: CGFloat = 16
 
-    public let data: [CardSelectionModel]
+    public let data: [EDTSCardSelectionModel]
     @Binding public var selectedIndex: Int?
-    public var style: CardSelectionConfig = .default
+    public var style: EDTSCardSelectionConfig = .default
     public var onSelect: ((Int) -> Void)? = nil
 
     public init(
-        data: [CardSelectionModel],
+        data: [EDTSCardSelectionModel],
         selectedIndex: Binding<Int?>,
-        style: CardSelectionConfig = .default,
+        style: EDTSCardSelectionConfig = .default,
         onSelect: ((Int) -> Void)? = nil
     ) {
         self.data = data
@@ -267,11 +267,11 @@ public struct EDTSCardSelectionListView: View {
 private struct EDTSCardSelectionListView_PreviewWrapper: View {
     @State private var selectedIndex: Int? = nil
 
-    private let items: [CardSelectionModel] = [
-        CardSelectionModel(title: "Debit Card", description: "Instant transfer"),
-        CardSelectionModel(title: "Credit Card", description: "Pay later"),
-        CardSelectionModel(title: "E-Wallet", description: "Top up balance"),
-        CardSelectionModel(title: "Bank Transfer", description: "Not available", isEnabled: false)
+    private let items: [EDTSCardSelectionModel] = [
+        EDTSCardSelectionModel(title: "Debit Card", description: "Instant transfer"),
+        EDTSCardSelectionModel(title: "Credit Card", description: "Pay later"),
+        EDTSCardSelectionModel(title: "E-Wallet", description: "Top up balance"),
+        EDTSCardSelectionModel(title: "Bank Transfer", description: "Not available", isEnabled: false)
     ]
 
     var body: some View {
