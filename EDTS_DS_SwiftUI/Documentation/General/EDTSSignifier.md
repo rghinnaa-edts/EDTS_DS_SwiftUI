@@ -33,8 +33,8 @@ This relies on the design token types already available in the pod (`EDTSColor`,
 ### 1. Numeric Badge
 
 ```swift
-EDTSSignifier(label: "3")
-EDTSSignifier(label: "99+")
+EDTSSignifier(text: "3")
+EDTSSignifier(text: "99+")
 ```
 
 ### 2. Dot Indicator
@@ -59,7 +59,7 @@ Image(systemName: "bell.fill")
     .scaledToFit()
     .frame(width: 32, height: 32)
     .foregroundColor(EDTSColor.greyText)
-    .edtsSignifier(EDTSSignifier(label: "3", offsetY: 4, offsetX: 2))
+    .edtsSignifier(EDTSSignifier(text: "3", offsetY: 4, offsetX: 2))
 ```
 
 ### 5. Attributed Label
@@ -71,22 +71,22 @@ var attributed: AttributedString {
     return str
 }
 
-EDTSSignifier(label: nil, labelAttributed: attributed)
+EDTSSignifier(text: nil, textAttributed: attributed)
 ```
 
-`labelAttributed` takes precedence over `label` when both are provided (`label` is forced to `nil` internally in that case).
+`textAttributed` takes precedence over `text` when both are provided (`text` is forced to `nil` internally in that case).
 
 ---
 
 ## Properties Reference
 
-### Label
+### Text
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `label` | `String?` | `"0"` | Plain text label of the signifier; ignored if `labelAttributed` is set |
-| `labelAttributed` | `AttributedString?` | `nil` | Rich text label; takes precedence over `label` |
-| `labelColor` | `Color?` | `EDTSColor.white` | Text color of the badge label |
+| `text` | `String?` | `"0"` | Plain text label of the signifier; ignored if `textAttributed` is set |
+| `textAttributed` | `AttributedString?` | `nil` | Rich text label; takes precedence over `text` |
+| `textColor` | `Color?` | `EDTSColor.white` | Text color of the label |
 
 ### Font
 
@@ -133,8 +133,8 @@ EDTSSignifier(label: nil, labelAttributed: attributed)
 | `paddingBottom` | `CGFloat?` | `nil` → `0` (poinku) / `1` (klikIDM) | Bottom inset inside the badge, around the label |
 | `paddingLeading` | `CGFloat` | `2` | Leading inset inside the badge |
 | `paddingTrailing` | `CGFloat` | `2` | Trailing inset inside the badge |
-| `offsetX` | `CGFloat` | `0` | Horizontal offset, used by the `edtsSignifier` overlay modifier |
-| `offsetY` | `CGFloat` | `0` | Vertical offset, used by the `edtsSignifier` overlay modifier |
+| `offsetX` | `CGFloat` | `2.5` | Horizontal offset, used by the `edtsSignifier` overlay modifier |
+| `offsetY` | `CGFloat` | `4.5` | Vertical offset, used by the `edtsSignifier` overlay modifier |
 
 ### Mode Flags
 
@@ -158,7 +158,6 @@ EDTSSignifier(label: nil, labelAttributed: attributed)
 ## Notes
 
 - The badge view uses `.frame(minWidth:minHeight:)` (label can grow the badge horizontally for multi-character text like `"99+"`), while the indicator view uses a fixed `.frame(width:height:)` since it has no label content.
-- Border color fallback is the same for both modes: badge and indicator both use the `resolvedBorderColor` computed property, which resolves `nil` to `EDTSColor.white` (poinku) or `.clear` (klikIDM).
 - `EDTSShape` is a small type-erasing wrapper around any SwiftUI `Shape`, letting `resolvedShape` return either a `Capsule` or a `RoundedRectangle` from a single computed property.
 - This view has no built-in animation; state changes (e.g. toggling `isSkeleton` or updating `label`) render immediately unless wrapped in an external `withAnimation` by the caller.
 
