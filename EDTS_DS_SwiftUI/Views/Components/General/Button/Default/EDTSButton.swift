@@ -87,7 +87,6 @@ public struct EDTSButton: View {
     
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
-    private let defaultValue: CGFloat = -1.0
     
     // MARK: - Initializers
     public init(
@@ -185,6 +184,36 @@ public struct EDTSButton: View {
     }
     
     // MARK: - Private Variable
+    private let defaultFontSize: CGFloat = 16
+    private let pressedScale: CGFloat = 0.95
+    private let pressAnimationDuration: Double = 0.1
+    private let rippleOpacity: Double = 0.12
+    
+    private let smallIconSize: CGFloat = 16
+    private let smallIconSpacing: CGFloat = 8
+    private let smallPoinkuPaddingHorizontal: CGFloat = 8
+    private let smallPoinkuPaddingVertical: CGFloat = 4
+    private let smallPoinkuCornerRadius: CGFloat = 4
+    private let smallKlikPaddingHorizontal: CGFloat = 12
+    private let smallKlikPaddingVertical: CGFloat = 6
+    private let smallKlikCornerRadius: CGFloat = 6
+    
+    private let mediumIconSize: CGFloat = 16
+    private let mediumIconSpacing: CGFloat = 8
+    private let mediumPaddingVertical: CGFloat = 8
+    private let mediumPaddingHorizontal: CGFloat = 12
+    private let mediumPoinkuCornerRadius: CGFloat = 4
+    private let mediumKlikCornerRadius: CGFloat = 6
+    
+    private let largeIconSize: CGFloat = 24
+    private let largeIconSpacing: CGFloat = 8
+    private let largePaddingVertical: CGFloat = 8
+    private let largePaddingHorizontal: CGFloat = 12
+    private let largePoinkuCornerRadius: CGFloat = 8
+    private let largeKlikCornerRadius: CGFloat = 6
+    
+    private let defaultValue: CGFloat = -1.0
+    
     private var resolvedButtonSize: BtnSize {
         btnSize
     }
@@ -218,7 +247,7 @@ public struct EDTSButton: View {
     private var customFont: Font? {
         if let fontStyle { return fontStyle }
         guard !fontName.isEmpty || fontSize != .zero else { return nil }
-        let resolvedSize = fontSize == .zero ? 16 : fontSize
+        let resolvedSize = fontSize == .zero ? defaultFontSize : fontSize
         var font: Font = fontName.isEmpty
             ? .system(size: resolvedSize)
             : .custom(fontName, size: resolvedSize)
@@ -254,8 +283,8 @@ public struct EDTSButton: View {
                 color: (bgColorStart == nil && bgColorEnd == nil) ? (values.tempRippleColor ?? .clear) : .clear,
                 cornerRadius: values.tempCornerRadius
             )
-            .scaleEffect(tempResolvedButtonState != nil ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: tempResolvedButtonState)
+            .scaleEffect(tempResolvedButtonState != nil ? pressedScale : 1.0)
+            .animation(.easeInOut(duration: pressAnimationDuration), value: tempResolvedButtonState)
             .contentShape(Rectangle())
             .simultaneousGesture(setupPressGesture())
     }
@@ -279,7 +308,7 @@ public struct EDTSButton: View {
                     Text(text ?? "Button")
                 }
             }
-            .edtsFont(setupFontStyle, custom: customFont)
+            .font(customFont ?? setupFontStyle)
             .foregroundColor(values.tempTextColor)
             .multilineTextAlignment(.center)
             
@@ -309,19 +338,19 @@ public struct EDTSButton: View {
         }
     }
     
-    private var setupFontStyle: EDTSFont.FontStyle {
+    private var setupFontStyle: Font {
         switch EDTSColor.theme {
         case .klikIDM:
             switch resolvedButtonSize {
-            case .small: return EDTSFont.Klik.Button.Small
-            case .medium: return EDTSFont.Klik.Button.Medium
-            case .large: return EDTSFont.Klik.Button.Large
+            case .small: return EDTSFont.Klik.Button.Small.font
+            case .medium: return EDTSFont.Klik.Button.Medium.font
+            case .large: return EDTSFont.Klik.Button.Large.font
             }
         case .poinku:
             switch resolvedButtonSize {
-            case .small: return EDTSFont.Poinku.Button.Small
-            case .medium: return EDTSFont.Poinku.Button.Medium
-            case .large: return EDTSFont.Poinku.Button.Large
+            case .small: return EDTSFont.Poinku.Button.Small.font
+            case .medium: return EDTSFont.Poinku.Button.Medium.font
+            case .large: return EDTSFont.Poinku.Button.Large.font
             }
         }
     }
@@ -332,49 +361,49 @@ public struct EDTSButton: View {
         switch resolvedButtonSize {
         case .small:
             if EDTSColor.theme == .poinku {
-                values.tempPaddingLeading = paddingLeading == defaultValue ? 8 : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? 8 : paddingTrailing
-                values.tempPaddingTop = paddingTop == defaultValue ? 4 : paddingTop
-                values.tempPaddingBottom = paddingBottom == defaultValue ? 4 : paddingBottom
-                values.tempCornerRadius = cornerRadius == defaultValue ? 4 : cornerRadius
+                values.tempPaddingLeading = paddingLeading == defaultValue ? smallPoinkuPaddingHorizontal : paddingLeading
+                values.tempPaddingTrailing = paddingTrailing == defaultValue ? smallPoinkuPaddingHorizontal : paddingTrailing
+                values.tempPaddingTop = paddingTop == defaultValue ? smallPoinkuPaddingVertical : paddingTop
+                values.tempPaddingBottom = paddingBottom == defaultValue ? smallPoinkuPaddingVertical : paddingBottom
+                values.tempCornerRadius = cornerRadius == defaultValue ? smallPoinkuCornerRadius : cornerRadius
             } else {
-                values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
-                values.tempPaddingTop = paddingTop == defaultValue ? 6 : paddingTop
-                values.tempPaddingBottom = paddingBottom == defaultValue ? 6 : paddingBottom
-                values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
+                values.tempPaddingLeading = paddingLeading == defaultValue ? smallKlikPaddingHorizontal : paddingLeading
+                values.tempPaddingTrailing = paddingTrailing == defaultValue ? smallKlikPaddingHorizontal : paddingTrailing
+                values.tempPaddingTop = paddingTop == defaultValue ? smallKlikPaddingVertical : paddingTop
+                values.tempPaddingBottom = paddingBottom == defaultValue ? smallKlikPaddingVertical : paddingBottom
+                values.tempCornerRadius = cornerRadius == defaultValue ? smallKlikCornerRadius : cornerRadius
             }
             
-            values.tempIconSize = iconSize == .zero ? 16 : iconSize
-            values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
+            values.tempIconSize = iconSize == .zero ? smallIconSize : iconSize
+            values.tempIconSpacing = iconSpacing == .zero ? smallIconSpacing : iconSpacing
             
         case .medium:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 4 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? mediumPoinkuCornerRadius : cornerRadius
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? mediumKlikCornerRadius : cornerRadius
             }
             
-            values.tempIconSize = iconSize == .zero ? 16 : iconSize
-            values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
-            values.tempPaddingTop = paddingTop == defaultValue ? 8 : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? 8 : paddingBottom
-            values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
-            values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
+            values.tempIconSize = iconSize == .zero ? mediumIconSize : iconSize
+            values.tempIconSpacing = iconSpacing == .zero ? mediumIconSpacing : iconSpacing
+            values.tempPaddingTop = paddingTop == defaultValue ? mediumPaddingVertical : paddingTop
+            values.tempPaddingBottom = paddingBottom == defaultValue ? mediumPaddingVertical : paddingBottom
+            values.tempPaddingLeading = paddingLeading == defaultValue ? mediumPaddingHorizontal : paddingLeading
+            values.tempPaddingTrailing = paddingTrailing == defaultValue ? mediumPaddingHorizontal : paddingTrailing
             
         case .large:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 8 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? largePoinkuCornerRadius : cornerRadius
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? largeKlikCornerRadius : cornerRadius
             }
             
-            values.tempIconSize = iconSize == .zero ? 24 : iconSize
-            values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
-            values.tempPaddingTop = paddingTop == defaultValue ? 8 : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? 8 : paddingBottom
-            values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
-            values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
+            values.tempIconSize = iconSize == .zero ? largeIconSize : iconSize
+            values.tempIconSpacing = iconSpacing == .zero ? largeIconSpacing : iconSpacing
+            values.tempPaddingTop = paddingTop == defaultValue ? largePaddingVertical : paddingTop
+            values.tempPaddingBottom = paddingBottom == defaultValue ? largePaddingVertical : paddingBottom
+            values.tempPaddingLeading = paddingLeading == defaultValue ? largePaddingHorizontal : paddingLeading
+            values.tempPaddingTrailing = paddingTrailing == defaultValue ? largePaddingHorizontal : paddingTrailing
         }
         
         return values
@@ -418,17 +447,17 @@ public struct EDTSButton: View {
         
         if rippleColor == nil {
             if values.tempBgColor == EDTSColor.white {
-                values.tempRippleColor = values.tempTextColor?.opacity(0.12)
+                values.tempRippleColor = values.tempTextColor?.opacity(rippleOpacity)
             } else if values.tempBgColor == .clear {
-                values.tempRippleColor = values.tempTextColor?.opacity(0.12)
+                values.tempRippleColor = values.tempTextColor?.opacity(rippleOpacity)
             } else if values.tempBgColor != EDTSColor.white {
-                values.tempRippleColor = EDTSColor.grey70.opacity(0.12)
+                values.tempRippleColor = EDTSColor.grey70.opacity(rippleOpacity)
             }
         } else {
             if rippleColor == .clear {
                 values.tempRippleColor = rippleColor
             } else {
-                values.tempRippleColor = rippleColor?.opacity(0.12)
+                values.tempRippleColor = rippleColor?.opacity(rippleOpacity)
             }
         }
     }
