@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-// MARK: - Public types
+// MARK: - Public Enum
 
-public nonisolated enum EDTSRibbonGravity: Equatable, Sendable {
+public nonisolated enum EDTSRibbonHPosition: Equatable, Sendable {
     case leading
     case trailing
 }
 
-public nonisolated enum EDTSRibbonVerticalAlignment: Equatable, Sendable {
+public nonisolated enum EDTSRibbonVPositon: Equatable, Sendable {
     case top
     case center
     case bottom
@@ -24,11 +24,11 @@ public nonisolated enum EDTSRibbonVerticalAlignment: Equatable, Sendable {
 // MARK: - Shapes
 
 private nonisolated struct RibbonBodyShape: Shape {
-    let gravity: EDTSRibbonGravity
+    let positionHorizontal: EDTSRibbonHPosition
     let cornerRadius: CGFloat
 
     func path(in rect: CGRect) -> Path {
-        let corners: UIRectCorner = gravity == .leading
+        let corners: UIRectCorner = positionHorizontal == .leading
             ? [.topLeft, .topRight, .bottomRight]
             : [.topLeft, .topRight, .bottomLeft]
         let bezierPath = UIBezierPath(
@@ -41,11 +41,11 @@ private nonisolated struct RibbonBodyShape: Shape {
 }
 
 private nonisolated struct RibbonTriangleShape: Shape {
-    let gravity: EDTSRibbonGravity
+    let positionHorizontal: EDTSRibbonHPosition
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        if gravity == .leading {
+        if positionHorizontal == .leading {
             path.move(to: CGPoint(x: 0, y: 0))
             path.addLine(to: CGPoint(x: rect.width, y: 0))
             path.addLine(to: CGPoint(x: rect.width, y: rect.height))
@@ -69,7 +69,8 @@ public struct EDTSRibbon: View {
     public var fontName: String = ""
     public var fontSize: CGFloat = .zero
     public var fontWeight: String? = nil
-    public var gravity: EDTSRibbonGravity
+    public var positionHorizontal: EDTSRibbonHPosition
+    public var positionVertical: EDTSRibbonVPositon
     public var triangleColor: Color
     public var bgColor: Color
     public var bgColorStart: Color?
@@ -98,7 +99,8 @@ public struct EDTSRibbon: View {
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String? = nil,
-        gravity: EDTSRibbonGravity = .leading,
+        positionHorizontal: EDTSRibbonHPosition = .leading,
+        positionVertical: EDTSRibbonVPositon = .defaultV,
         triangleColor: Color = EDTSColor.blue50,
         bgColor: Color = EDTSColor.blue30,
         bgColorStart: Color? = nil,
@@ -112,8 +114,8 @@ public struct EDTSRibbon: View {
         paddingLeading: CGFloat = 4,
         paddingBottom: CGFloat = 2,
         paddingTrailing: CGFloat = 4,
-        offsetX: CGFloat = 0,
-        offsetY: CGFloat = 0
+        offsetX: CGFloat? = nil,
+        offsetY: CGFloat? = nil
     ) {
         self.text = text
         self.textAttributed = textAttributed
@@ -122,7 +124,8 @@ public struct EDTSRibbon: View {
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
-        self.gravity = gravity
+        self.positionHorizontal = positionHorizontal
+        self.positionVertical = positionVertical
         self.triangleColor = triangleColor
         self.bgColor = bgColor
         self.bgColorStart = bgColorStart
@@ -136,12 +139,21 @@ public struct EDTSRibbon: View {
         self.paddingLeading = paddingLeading
         self.paddingBottom = paddingBottom
         self.paddingTrailing = paddingTrailing
-        self.offsetX = offsetX
-        self.offsetY = offsetY
+
+        self.offsetX = offsetX ?? (
+            positionHorizontal == .leading ? -EDTSRibbon.triangleWidth : EDTSRibbon.triangleWidth
+        )
+        self.offsetY = offsetY ?? {
+            switch positionVertical {
+            case .top: return EDTSRibbon.defaultVerticalNudge
+            case .bottom: return -EDTSRibbon.defaultVerticalNudge
+            case .center, .defaultV: return 0
+            }
+        }()
     }
 
     public var body: some View {
-        VStack(alignment: gravity == .leading ? .leading : .trailing, spacing: 0) {
+        VStack(alignment: positionHorizontal == .leading ? .leading : .trailing, spacing: 0) {
             Group {
                 if let textAttributed {
                     Text(textAttributed)
@@ -158,7 +170,7 @@ public struct EDTSRibbon: View {
                 trailing: paddingTrailing
             ))
             .background(containerBackground)
-            .clipShape(RibbonBodyShape(gravity: gravity, cornerRadius: cornerRadius))
+            .clipShape(RibbonBodyShape(positionHorizontal: positionHorizontal, cornerRadius: cornerRadius))
             .shadow(
                 color: shadowColor.opacity(shadowOpacity),
                 radius: shadowRadius,
@@ -166,7 +178,7 @@ public struct EDTSRibbon: View {
                 y: shadowOffset.height
             )
 
-            RibbonTriangleShape(gravity: gravity)
+            RibbonTriangleShape(positionHorizontal: positionHorizontal)
                 .fill(triangleColor)
                 .frame(width: Self.triangleWidth, height: Self.triangleHeight)
         }
@@ -211,25 +223,21 @@ public struct EDTSRibbon: View {
 
 private struct RibbonAnchorModifier: ViewModifier {
     let ribbon: EDTSRibbon
-    let verticalAlignment: EDTSRibbonVerticalAlignment
-    let offsetX: CGFloat
-    let offsetY: CGFloat
 
-    private var triangleWidth: CGFloat { EDTSRibbon.triangleWidth }
     private var triangleHeight: CGFloat { EDTSRibbon.triangleHeight }
     private var defaultVerticalNudge: CGFloat { EDTSRibbon.defaultVerticalNudge }
 
     func body(content: Content) -> some View {
         content.overlay(alignment: overlayAlignment) {
             horizontallyGuidedRibbon
-                .offset(x: offsetX, y: offsetY)
+                .offset(x: ribbon.offsetX, y: ribbon.offsetY)
         }
     }
 
     private var overlayAlignment: Alignment {
-        let horizontal: HorizontalAlignment = ribbon.gravity == .leading ? .leading : .trailing
+        let horizontal: HorizontalAlignment = ribbon.positionHorizontal == .leading ? .leading : .trailing
         let vertical: VerticalAlignment
-        switch verticalAlignment {
+        switch ribbon.positionVertical {
         case .top, .defaultV:
             vertical = .top
         case .bottom:
@@ -242,23 +250,23 @@ private struct RibbonAnchorModifier: ViewModifier {
 
     @ViewBuilder
     private var horizontallyGuidedRibbon: some View {
-        switch ribbon.gravity {
+        switch ribbon.positionHorizontal {
         case .leading:
             verticallyGuidedRibbon
                 .alignmentGuide(.leading) { _ in
-                    triangleWidth
+                    EDTSRibbon.triangleWidth
                 }
         case .trailing:
             verticallyGuidedRibbon
                 .alignmentGuide(.trailing) { d in
-                    d.width - triangleWidth
+                    d.width - EDTSRibbon.triangleWidth
                 }
         }
     }
 
     @ViewBuilder
     private var verticallyGuidedRibbon: some View {
-        switch verticalAlignment {
+        switch ribbon.positionVertical {
         case .top:
             ribbon.alignmentGuide(.top) { d in
                 d.height - triangleHeight
@@ -280,37 +288,8 @@ private struct RibbonAnchorModifier: ViewModifier {
 }
 
 public extension View {
-    func ribbon(
-        _ ribbon: EDTSRibbon,
-        verticalAlignment: EDTSRibbonVerticalAlignment = .defaultV,
-        offsetX: CGFloat? = nil,
-        offsetY: CGFloat? = nil
-    ) -> some View {
-        let resolvedOffsetX = offsetX ?? (
-            ribbon.gravity == .leading ? -EDTSRibbon.triangleWidth : EDTSRibbon.triangleWidth
-        )
-        let resolvedOffsetY: CGFloat
-        if let offsetY {
-            resolvedOffsetY = offsetY
-        } else {
-            switch verticalAlignment {
-            case .top:
-                resolvedOffsetY = EDTSRibbon.defaultVerticalNudge
-            case .bottom:
-                resolvedOffsetY = -EDTSRibbon.defaultVerticalNudge
-            case .center, .defaultV:
-                resolvedOffsetY = 0
-            }
-        }
-
-        return modifier(
-            RibbonAnchorModifier(
-                ribbon: ribbon,
-                verticalAlignment: verticalAlignment,
-                offsetX: resolvedOffsetX,
-                offsetY: resolvedOffsetY
-            )
-        )
+    func ribbon(_ ribbon: EDTSRibbon) -> some View {
+        modifier(RibbonAnchorModifier(ribbon: ribbon))
     }
 }
 
@@ -325,11 +304,11 @@ public extension View {
                 .ribbon(
                     EDTSRibbon(
                         text: "New",
-                        gravity: .leading,
+                        positionHorizontal: .leading,
+                        positionVertical: .top,
                         triangleColor: EDTSColor.blue50,
                         bgColor: EDTSColor.blue30
-                    ),
-                    verticalAlignment: .top
+                    )
                 )
 
             Color(uiColor: .systemGray5)
@@ -338,11 +317,11 @@ public extension View {
                 .ribbon(
                     EDTSRibbon(
                         text: "Sale",
-                        gravity: .leading,
+                        positionHorizontal: .leading,
+                        positionVertical: .bottom,
                         triangleColor: EDTSColor.red50,
                         bgColor: EDTSColor.red30
-                    ),
-                    verticalAlignment: .bottom
+                    )
                 )
             
             Color(uiColor: .systemGray5)
@@ -351,19 +330,21 @@ public extension View {
                 .ribbon(
                     EDTSRibbon(
                         text: "Promo",
-                        gravity: .leading,
+                        positionHorizontal: .leading,
+                        positionVertical: .center,
                         triangleColor: EDTSColor.orange50,
                         bgColor: EDTSColor.orange30
-                    ),
-                    verticalAlignment: .center
+                    )
                 )
         }
 
         EDTSRibbon(
             text: "Standalone",
-            gravity: .leading,
+            positionHorizontal: .leading,
             triangleColor: EDTSColor.green50,
-            bgColor: EDTSColor.green30
+            bgColor: EDTSColor.green30,
+            offsetX: 0,
+            offsetY: 0
         )
     }
     .padding(40)
