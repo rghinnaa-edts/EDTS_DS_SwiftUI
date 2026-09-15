@@ -42,10 +42,17 @@ public struct EDTSSignifier: View {
     public var isIndicator: Bool
     
     // MARK: - Private Variable
+    private static let defaultFontSize: CGFloat = 16
+    private static let poinkuHeight: CGFloat = 12
+    private static let poinkuPaddingVertical: CGFloat = 0
+    private static let klikIndicatorHeight: CGFloat = 8
+    private static let klikBadgeHeight: CGFloat = 16
+    private static let klikPaddingVertical: CGFloat = 1
+    
     private var customFont: Font? {
         if let fontStyle { return fontStyle }
         guard !fontName.isEmpty || fontSize != .zero else { return nil }
-        let resolvedSize = fontSize == .zero ? 16 : fontSize
+        let resolvedSize = fontSize == .zero ? Self.defaultFontSize : fontSize
         var font: Font = fontName.isEmpty
         ? .system(size: resolvedSize)
         : .custom(fontName, size: resolvedSize)
@@ -55,39 +62,14 @@ public struct EDTSSignifier: View {
         return font
     }
     
-    private var resolvedHeight: CGFloat {
-        if isIndicator {
-            return EDTSColor.theme == .poinku ? 12 : 8
-        } else {
-            return EDTSColor.theme == .poinku ? 12 : 16
-        }
-    }
-    
-    private var resolvedTextColor: Color {
-        textColor ?? EDTSColor.white
-    }
-    
-    private var resolvedFontStyle: Font {
-        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B5.Medium.font : EDTSFont.Klik.B4.Semibold.font
-    }
-    
-    private var resolvedBgColor: Color {
-        bgColor ?? EDTSColor.red30
-    }
-    
-    private var resolvedBorderColor: Color {
-        if let borderColor { return borderColor }
-        return EDTSColor.theme == .poinku ? EDTSColor.white : .clear
-    }
-    
-    private var resolvedPaddingTop: CGFloat {
-        if let paddingTop { return paddingTop }
-        return EDTSColor.theme == .poinku ? 0 : 1
-    }
-    
-    private var resolvedPaddingBottom: CGFloat {
-        if let paddingBottom { return paddingBottom }
-        return EDTSColor.theme == .poinku ? 0 : 1
+    private struct ResolvedValues {
+        var tempHeight: CGFloat = .zero
+        var tempTextColor: Color?
+        var tempFontStyle: Font?
+        var tempBgColor: Color?
+        var tempBorderColor: Color?
+        var tempPaddingTop: CGFloat = -1.0
+        var tempPaddingBottom: CGFloat = -1.0
     }
     
     private var resolvedShape: EDTSShape {
@@ -156,28 +138,30 @@ public struct EDTSSignifier: View {
     
     // MARK: - Body
     public var body: some View {
+        let values = setupDefaultTheming()
+        
         Group {
             if isSkeleton {
-                skeletonView
+                skeletonView(values: values)
             } else if isIndicator {
-                indicatorView
+                indicatorView(values: values)
             } else {
-                badgeView
+                badgeView(values: values)
             }
         }
     }
 
     @ViewBuilder
-    private var badgeView: some View {
-        textView
-            .padding(.top, resolvedPaddingTop)
-            .padding(.bottom, resolvedPaddingBottom)
+    private func badgeView(values: ResolvedValues) -> some View {
+        textView(values: values)
+            .padding(.top, values.tempPaddingTop)
+            .padding(.bottom, values.tempPaddingBottom)
             .padding(.leading, paddingLeading)
             .padding(.trailing, paddingTrailing)
-            .frame(minWidth: resolvedHeight, minHeight: resolvedHeight)
-            .background(setupBackground())
+            .frame(minWidth: values.tempHeight, minHeight: values.tempHeight)
+            .background(setupBackground(values: values))
             .clipShape(resolvedShape)
-            .overlay(resolvedShape.stroke(resolvedBorderColor, lineWidth: borderWidth))
+            .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: borderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -187,7 +171,7 @@ public struct EDTSSignifier: View {
     }
 
     @ViewBuilder
-    private var textView: some View {
+    private func textView(values: ResolvedValues) -> some View {
         Group {
             if let textAttributed {
                 Text(textAttributed)
@@ -196,17 +180,17 @@ public struct EDTSSignifier: View {
             }
         }
         .multilineTextAlignment(.center)
-        .foregroundColor(resolvedTextColor)
-        .font(customFont ?? resolvedFontStyle)
+        .foregroundColor(values.tempTextColor)
+        .font(customFont ?? values.tempFontStyle)
     }
 
     @ViewBuilder
-    private var indicatorView: some View {
+    private func indicatorView(values: ResolvedValues) -> some View {
         Color.clear
-            .frame(width: resolvedHeight, height: resolvedHeight)
-            .background(setupBackground())
+            .frame(width: values.tempHeight, height: values.tempHeight)
+            .background(setupBackground(values: values))
             .clipShape(resolvedShape)
-            .overlay(resolvedShape.stroke(resolvedBorderColor, lineWidth: borderWidth))
+            .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: borderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -216,14 +200,14 @@ public struct EDTSSignifier: View {
     }
 
     @ViewBuilder
-    private var skeletonView: some View {
-        EDTSSkeleton(cornerRadius: resolvedHeight / 2)
-            .frame(width: resolvedHeight, height: resolvedHeight)
+    private func skeletonView(values: ResolvedValues) -> some View {
+        EDTSSkeleton(cornerRadius: values.tempHeight / 2)
+            .frame(width: values.tempHeight, height: values.tempHeight)
     }
     
     // MARK: - Setup & Styling
     @ViewBuilder
-    private func setupBackground() -> some View {
+    private func setupBackground(values: ResolvedValues) -> some View {
         if bgColorStart != nil || bgColorEnd != nil {
             let orientation = bgColorOrientation ?? .horizontal
             LinearGradient(
@@ -232,9 +216,33 @@ public struct EDTSSignifier: View {
                 endPoint: orientation == .horizontal ? .trailing : .bottom
             )
         } else {
-            resolvedBgColor
+            values.tempBgColor ?? EDTSColor.red30
         }
     }
+    
+    private func setupDefaultTheming() -> ResolvedValues {
+        var values = ResolvedValues()
+        
+        if EDTSColor.theme == .poinku {
+            values.tempHeight = Self.poinkuHeight
+            values.tempFontStyle = EDTSFont.Poinku.B5.Medium.font
+            values.tempBorderColor = borderColor ?? EDTSColor.white
+            values.tempPaddingTop = paddingTop ?? Self.poinkuPaddingVertical
+            values.tempPaddingBottom = paddingBottom ?? Self.poinkuPaddingVertical
+        } else {
+            values.tempHeight = isIndicator ? Self.klikIndicatorHeight : Self.klikBadgeHeight
+            values.tempFontStyle = EDTSFont.Klik.B4.Semibold.font
+            values.tempBorderColor = borderColor ?? .clear
+            values.tempPaddingTop = paddingTop ?? Self.klikPaddingVertical
+            values.tempPaddingBottom = paddingBottom ?? Self.klikPaddingVertical
+        }
+        
+        values.tempTextColor = textColor ?? EDTSColor.white
+        values.tempBgColor = bgColor ?? EDTSColor.red30
+        
+        return values
+    }
+    
 }
 
 // MARK: - Preview
