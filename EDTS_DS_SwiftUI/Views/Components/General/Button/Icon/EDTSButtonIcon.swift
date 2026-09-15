@@ -455,33 +455,156 @@ public struct EDTSButtonIcon: View {
 #Preview("Preview") {
     struct PreviewWrapper: View {
         var body: some View {
-            VStack(spacing: 16) {
-                HStack(spacing: 12) {
-                    EDTSButtonIcon(btnType: .primary, btnSize: .large, btnState: .default, icon: Image(systemName: "heart.fill")) {}
-                    EDTSButtonIcon(btnType: .primary, btnSize: .medium, btnState: .default, icon: Image(systemName: "heart.fill")) {}
-                    EDTSButtonIcon(btnType: .primary, btnSize: .small, btnState: .default, icon: Image(systemName: "heart.fill")) {}
-                    EDTSButtonIcon(btnType: .primary, btnSize: .large, btnState: .disabled, icon: Image(systemName: "heart.fill")) {}
+            VStack(alignment: .leading, spacing: 24) {
+
+                // MARK: - Primary Button
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Primary Button")
+                        .font(.headline)
+
+                    HStack(spacing: 12) {
+                        EDTSButtonIcon(
+                            btnType: .primary,
+                            btnSize: .large,
+                            btnState: .default,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .primary,
+                            btnSize: .large,
+                            btnState: .danger,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .primary,
+                            btnSize: .large,
+                            btnState: .disabled,
+                            icon: Image("ic_placeholder")
+                        ) {}
+                    }
                 }
 
-                HStack(spacing: 12) {
-                    EDTSButtonIcon(btnType: .secondary, btnSize: .large, btnState: .default, icon: Image(systemName: "square.and.arrow.up")) {}
-                    EDTSButtonIcon(btnType: .secondary, btnSize: .large, btnState: .disabled, icon: Image(systemName: "square.and.arrow.up")) {}
+                // MARK: - Secondary Button
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Secondary Button")
+                        .font(.headline)
+
+                    HStack(spacing: 12) {
+                        EDTSButtonIcon(
+                            btnType: .secondary,
+                            btnSize: .large,
+                            btnState: .default,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .secondary,
+                            btnSize: .large,
+                            btnState: .danger,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .secondary,
+                            btnSize: .large,
+                            btnState: .disabled,
+                            icon: Image("ic_placeholder")
+                        ) {}
+                    }
                 }
 
-                HStack(spacing: 12) {
-                    EDTSButtonIcon(btnType: .tertiary, btnSize: .large, btnState: .default, icon: Image(systemName: "trash")) {}
-                    EDTSButtonIcon(btnType: .tertiary, btnSize: .large, btnState: .disabled, icon: Image(systemName: "trash")) {}
+                // MARK: - Tertiary Button
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Tertiary Button")
+                        .font(.headline)
+
+                    HStack(spacing: 12) {
+                        EDTSButtonIcon(
+                            btnType: .tertiary,
+                            btnSize: .large,
+                            btnState: .default,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .tertiary,
+                            btnSize: .large,
+                            btnState: .danger,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .tertiary,
+                            btnSize: .large,
+                            btnState: .disabled,
+                            icon: Image("ic_placeholder")
+                        ) {}
+                    }
                 }
 
-                EDTSButtonIcon(
-                    btnType: .primary,
-                    btnSize: .large,
-                    icon: Image(systemName: "bell.fill"),
-                    badge: EDTSSignifier(label: "3")
-                ) {}
+                // MARK: - Sizes
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Sizes")
+                        .font(.headline)
+
+                    HStack(spacing: 12) {
+                        EDTSButtonIcon(
+                            btnType: .primary,
+                            btnSize: .small,
+                            btnState: .default,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .primary,
+                            btnSize: .medium,
+                            btnState: .default,
+                            icon: Image("ic_placeholder")
+                        ) {}
+
+                        EDTSButtonIcon(
+                            btnType: .primary,
+                            btnSize: .large,
+                            btnState: .default,
+                            icon: Image("ic_placeholder")
+                        ) {}
+                    }
+                }
+
+                // MARK: - Gradient Background + Badge
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Gradient Background and With Badge")
+                        .font(.headline)
+
+                    EDTSButtonIcon(
+                        btnType: .primary,
+                        btnSize: .large,
+                        icon: Image("ic_placeholder"),
+                        bgColorStart: EDTSColor.blue30,
+                        bgColorEnd: EDTSColor.red30,
+                        bgColorOrientation: .horizontal,
+                        badge: EDTSSignifier(text: "3")
+                    ) {}
+                }
+
+                // MARK: - Icon Only
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Icon Only")
+                        .font(.headline)
+
+                    EDTSButtonIcon(
+                        btnType: .primary,
+                        btnSize: .large,
+                        btnState: .default,
+                        icon: Image("ic_placeholder")
+                    ) {}
+                }
             }
             .padding()
         }
     }
+
     return PreviewWrapper()
 }
