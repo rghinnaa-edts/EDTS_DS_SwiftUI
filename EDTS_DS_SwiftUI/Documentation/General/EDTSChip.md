@@ -53,9 +53,9 @@ struct ExampleView: View {
     @State private var isActive = false
 
     var body: some View {
-        EDTSChip(label: "Chip", isActive: isActive) {
+        EDTSChip(text: "Chip", isActive: isActive, onTapChip: {
             isActive.toggle()
-        }
+        })
     }
 }
 ```
@@ -64,7 +64,7 @@ struct ExampleView: View {
 
 ```swift
 EDTSChip(
-    label: "With icons",
+    text: "With icons",
     iconLeading: Image(systemName: "star.fill"),
     iconTrailing: Image(systemName: "xmark"),
     isActive: isActive,
@@ -80,7 +80,7 @@ Each icon has its own tap target (`onTapLeadingIcon` / `onTapTrailingIcon`) that
 
 ```swift
 EDTSChip(
-    label: "Gradient",
+    text: "Gradient",
     bgColorStart: EDTSColor.skyblueLeading,
     bgColorEnd: EDTSColor.skyblueTrailing,
     bgColorOrientation: .horizontal,
@@ -96,32 +96,32 @@ The inactive and active gradients are configured independently — set only `bgC
 ### 4. Always-Active Chip (non-interactive display)
 
 ```swift
-EDTSChip(label: "Always active", isActive: true, onTapChip: {})
+EDTSChip(text: "Always active", isActive: true, onTapChip: {})
 ```
 
 ---
 
 ## Properties Reference
 
-### Label
+### Text
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `label` | `String?` | `"Chip"` | Plain text label; ignored if `labelAttributed` is set |
-| `labelAttributed` | `AttributedString?` | `nil` | Rich text label; takes precedence over `label` |
-| `labelColor` | `Color?` | theme default | Label color when `isActive == false` |
-| `labelColorActive` | `Color?` | falls back to `labelColor`, then theme default | Label color when `isActive == true` |
+| `text` | `String?` | `"Chip"` | Plain text label; ignored if `textAttributed` is set |
+| `textAttributed` | `AttributedString?` | `nil` | Rich text label; takes precedence over `text` |
+| `textColor` | `Color?` | theme default | Text color when `isActive == false` |
+| `textColorActive` | `Color?` | falls back to `textColor`, then theme default | Text color when `isActive == true` |
 
 ### Font
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `fontStyle` | `Font?` | `nil` | Not settable via the initializer — assign it on a `var` instance after construction. Takes precedence over `fontName`/`fontSize`/`fontWeight` and the theme default |
+| `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override, settable directly via the initializer; takes precedence over `fontName`/`fontSize`/`fontWeight` and the theme default |
 | `fontName` | `String` | `""` | Custom font family name |
-| `fontSize` | `CGFloat` | `0` | Custom font size; resolves to `12` if left at `0` while `fontName`/`fontWeight` is set |
+| `fontSize` | `CGFloat` | `0` | Custom font size; resolves to `12` if left at `0` whenever the custom-font path is active (see note below) |
 | `fontWeight` | `String` | `""` | Custom font weight keyword, applied via `setupFontWeight(from:)` |
 
-> With no custom font set, the label uses `EDTSFont.Poinku.B3.Light` (poinku) or `EDTSFont.Klik.B3.Semibold` (klikIDM).
+> With no custom font set, the label uses `EDTSFont.Poinku.B3.Light` (poinku) or `EDTSFont.Klik.B3.Semibold` (klikIDM). Note that `fontWeight` alone — even with `fontName` and `fontSize` left default — is enough to switch away from the theme default and build a custom system font at that weight.
 
 ### Background
 
@@ -211,7 +211,8 @@ EDTSChip(label: "Always active", isActive: true, onTapChip: {})
 | Token | klikIDM inactive | klikIDM active | poinku inactive | poinku active |
 | ----- | ------------------ | ---------------- | ------------------ | ---------------- |
 | Background | `EDTSColor.grey20` | `EDTSColor.blue50` | `EDTSColor.grey20` | `EDTSColor.blue30` |
-| Label / Icon tint | `EDTSColor.blue50` | `EDTSColor.white` (label), `EDTSColor.blue50` (icon) | `EDTSColor.grey80` (label), `EDTSColor.grey60` (icon) | `EDTSColor.white` |
+| Text | `EDTSColor.blue50` | `EDTSColor.white` | `EDTSColor.grey80` | `EDTSColor.white` |
+| Icon tint | `EDTSColor.blue50` | `EDTSColor.blue50` | `EDTSColor.grey60` | `EDTSColor.white` |
 | Icon badge background | `.clear` | `EDTSColor.grey20` | `.clear` | `.clear` |
 | Border | `.clear` | `.clear` | `.clear` | `EDTSColor.blue40` |
 | Border width (both unset) | `0` | `0` | `0` | `1` |
