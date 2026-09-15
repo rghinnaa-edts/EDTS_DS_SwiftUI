@@ -230,7 +230,6 @@ private struct RibbonAnchorModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.overlay(alignment: overlayAlignment) {
             horizontallyGuidedRibbon
-                .offset(x: ribbon.offsetX, y: ribbon.offsetY)
         }
     }
 
