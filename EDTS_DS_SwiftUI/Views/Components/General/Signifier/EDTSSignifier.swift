@@ -9,9 +9,9 @@ import SwiftUI
 
 public struct EDTSSignifier: View {
     // MARK: - Properties
-    public let label: String?
-    public let labelAttributed: AttributedString?
-    public var labelColor: Color?
+    public let text: String?
+    public let textAttributed: AttributedString?
+    public var textColor: Color?
     public var fontStyle: Font?
     public var fontName: String
     public var fontSize: CGFloat
@@ -63,12 +63,12 @@ public struct EDTSSignifier: View {
         }
     }
     
-    private var resolvedLabelColor: Color {
-        labelColor ?? EDTSColor.white
+    private var resolvedTextColor: Color {
+        textColor ?? EDTSColor.white
     }
     
-    private var resolvedFontStyle: EDTSFont.FontStyle {
-        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B5.Medium : EDTSFont.Klik.B4.Semibold
+    private var resolvedFontStyle: Font {
+        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B5.Medium.font : EDTSFont.Klik.B4.Semibold.font
     }
     
     private var resolvedBgColor: Color {
@@ -99,13 +99,13 @@ public struct EDTSSignifier: View {
     
     // MARK: - Initializers
     public init(
-        label: String? = "0",
-        labelAttributed: AttributedString? = nil,
+        text: String? = "0",
+        textAttributed: AttributedString? = nil,
+        textColor: Color? = nil,
         fontStyle: Font? = nil,
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String? = nil,
-        labelColor: Color? = nil,
         bgColor: Color? = nil,
         bgColorStart: Color? = nil,
         bgColorEnd: Color? = nil,
@@ -126,13 +126,13 @@ public struct EDTSSignifier: View {
         isSkeleton: Bool = false,
         isIndicator: Bool = false
     ) {
-        self.label = labelAttributed == nil ? (label ?? "0") : nil
-        self.labelAttributed = labelAttributed
+        self.text = textAttributed == nil ? text : nil
+        self.textAttributed = textAttributed
+        self.textColor = textColor
         self.fontStyle = fontStyle
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
-        self.labelColor = labelColor
         self.bgColor = bgColor
         self.bgColorStart = bgColorStart
         self.bgColorEnd = bgColorEnd
@@ -169,7 +169,7 @@ public struct EDTSSignifier: View {
 
     @ViewBuilder
     private var badgeView: some View {
-        labelView
+        textView
             .padding(.top, resolvedPaddingTop)
             .padding(.bottom, resolvedPaddingBottom)
             .padding(.leading, paddingLeading)
@@ -187,17 +187,17 @@ public struct EDTSSignifier: View {
     }
 
     @ViewBuilder
-    private var labelView: some View {
+    private var textView: some View {
         Group {
-            if let labelAttributed {
-                Text(labelAttributed)
+            if let textAttributed {
+                Text(textAttributed)
             } else {
-                Text(label ?? "0")
+                Text(text ?? "0")
             }
         }
         .multilineTextAlignment(.center)
-        .foregroundColor(resolvedLabelColor)
-        .edtsFont(resolvedFontStyle, custom: customFont)
+        .foregroundColor(resolvedTextColor)
+        .font(customFont ?? resolvedFontStyle)
     }
 
     @ViewBuilder
@@ -240,9 +240,9 @@ public struct EDTSSignifier: View {
 // MARK: - Preview
 #Preview("Preview") {
     VStack(spacing: 24) {
-        EDTSSignifier(label: "0")
-        EDTSSignifier(label: "9")
-        EDTSSignifier(label: "99+")
+        EDTSSignifier(text: "0")
+        EDTSSignifier(text: "9")
+        EDTSSignifier(text: "99+")
         EDTSSignifier(isIndicator: true)
         EDTSSignifier(bgColor: EDTSColor.green30, isIndicator: true)
         EDTSSignifier(bgColor: EDTSColor.grey40, isIndicator: true)
@@ -254,6 +254,6 @@ public struct EDTSSignifier: View {
             .scaledToFit()
             .frame(width: 24, height: 24)
             .foregroundColor(EDTSColor.greyText)
-            .edtsSignifier(EDTSSignifier(label: "3", offsetY: 4, offsetX: 2))
+            .edtsSignifier(EDTSSignifier(text: "3", offsetY: 4, offsetX: 2))
     }
 }
