@@ -79,7 +79,7 @@ Setting either `bgColorStart` or `bgColorEnd` switches the background to a `Line
 ```swift
 EDTSButtonIcon(
     icon: Image(systemName: "bell.fill"),
-    badge: EDTSSignifier(label: "3", offsetY: 4, offsetX: 2)
+    badge: EDTSSignifier(text: "3", offsetY: 4, offsetX: 2)
 ) {}
 ```
 
@@ -184,7 +184,7 @@ The badge is drawn as a `.topTrailing` overlay, offset by `badge.offsetX` and `-
 | `secondary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.red30` |
 | `secondary` | disabled | `EDTSColor.white` | `EDTSColor.grey30` | `EDTSColor.grey30` |
 | `tertiary` | default | `EDTSColor.white` | `EDTSColor.grey60` | `EDTSColor.grey60` |
-| `tertiary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.red30` |
+| `tertiary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.grey30` |
 | `tertiary` | disabled | `EDTSColor.white` | `EDTSColor.grey30` | `EDTSColor.grey30` |
 
 ---
