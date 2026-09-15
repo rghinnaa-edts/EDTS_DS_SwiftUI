@@ -8,42 +8,48 @@
 import SwiftUI
 
 public struct EDTSBadge: View {
-    // MARK: - Public API
-    public var label: String
+    public var text: String
+    public var textAttributed: AttributedString?
+    public var textColor: Color
+    public var fontStyle: Font
+    public var fontName: String
+    public var fontSize: CGFloat
+    public var fontWeight: String?
     public var icon: Image?
-
-    // Styling
-    public var labelColor: Color
-    public var labelFont: Font
     public var iconTint: Color?
     public var iconPadding: CGFloat
-
     public var bgColor: Color
+    public var bgColorStart: Color?
+    public var bgColorEnd: Color?
     public var cornerRadius: CGFloat
     public var borderWidth: CGFloat
     public var borderColor: Color
-
     public var shadowOpacity: Double
     public var shadowOffset: CGSize
     public var shadowRadius: CGFloat
     public var shadowColor: Color
-
     public var paddingTop: CGFloat
     public var paddingBottom: CGFloat
     public var paddingLeading: CGFloat
     public var paddingTrailing: CGFloat
-
     public var isSkeleton: Bool
 
     // MARK: - Init
+    
     public init(
-        label: String,
-        labelColor: Color = EDTSColor.grey70,
-        labelFont: Font = EDTSFont.Klik.B4.Regular.font,
+        text: String,
+        attributedText: AttributedString? = nil,
+        textColor: Color = EDTSColor.grey70,
+        fontStyle: Font = EDTSFont.Klik.B4.Regular.font,
+        fontName: String = "",
+        fontSize: CGFloat = .zero,
+        fontWeight: String? = nil,
         icon: Image? = nil,
         iconTint: Color? = nil,
         iconPadding: CGFloat = 2.0,
         bgColor: Color = EDTSColor.grey20,
+        bgColorStart: Color? = nil,
+        bgColorEnd: Color? = nil,
         cornerRadius: CGFloat = 9.0,
         borderWidth: CGFloat = 0.0,
         borderColor: Color = .clear,
@@ -57,13 +63,19 @@ public struct EDTSBadge: View {
         paddingTrailing: CGFloat = 4.0,
         isSkeleton: Bool = false
     ) {
-        self.label = label
-        self.labelColor = labelColor
-        self.labelFont = labelFont
+        self.text = text
+        self.textAttributed = attributedText
+        self.textColor = textColor
+        self.fontStyle = fontStyle
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.fontWeight = fontWeight
         self.icon = icon
         self.iconTint = iconTint
         self.iconPadding = iconPadding
         self.bgColor = bgColor
+        self.bgColorStart = bgColorStart
+        self.bgColorEnd = bgColorEnd
         self.cornerRadius = cornerRadius
         self.borderWidth = borderWidth
         self.borderColor = borderColor
@@ -78,7 +90,22 @@ public struct EDTSBadge: View {
         self.isSkeleton = isSkeleton
     }
 
+    private var containerBackgroundStyle: AnyShapeStyle {
+        if bgColorStart != nil || bgColorEnd != nil {
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [bgColorStart ?? .clear, bgColorEnd ?? .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+        } else {
+            return AnyShapeStyle(bgColor)
+        }
+    }
+
     // MARK: - Body
+    
     public var body: some View {
         HStack(spacing: icon == nil ? 0 : iconPadding) {
             if let icon {
@@ -86,12 +113,12 @@ public struct EDTSBadge: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 12, height: 12)
-                    .foregroundStyle(iconTint ?? labelColor)
+                    .foregroundStyle(iconTint ?? textColor)
             }
 
-            Text(label)
-                .font(labelFont)
-                .foregroundStyle(labelColor)
+            Text(text)
+                .font(fontStyle)
+                .foregroundStyle(textColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
@@ -99,7 +126,7 @@ public struct EDTSBadge: View {
         .frame(minWidth: 18, minHeight: 18, alignment: .center)
         .background(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(bgColor)
+                .fill(containerBackgroundStyle)
         )
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
@@ -112,8 +139,8 @@ public struct EDTSBadge: View {
 
 #Preview {
     VStack(spacing: 12) {
-        EDTSBadge(label: "Label")
-        EDTSBadge(label: "Label", icon: Image(systemName: "tag.fill"))
+        EDTSBadge(text: "Label")
+        EDTSBadge(text: "Label", icon: Image(systemName: "tag.fill"))
     }
     .padding()
 }
