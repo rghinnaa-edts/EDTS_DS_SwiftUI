@@ -14,15 +14,15 @@ public enum ChipState: String {
 
 public struct EDTSChip: View {
     // MARK: - Properties
-    public let label: String?
-    public let labelAttributed: AttributedString?
+    public let text: String?
+    public let textAttributed: AttributedString?
+    public var textColor: Color?
+    public var textColorActive: Color?
     public var fontStyle: Font?
     public var fontName: String
     public var fontSize: CGFloat
     public var fontWeight: String
     
-    public var labelColor: Color?
-    public var labelColorActive: Color?
     public var bgColor: Color?
     public var bgColorStart: Color?
     public var bgColorEnd: Color?
@@ -112,8 +112,8 @@ public struct EDTSChip: View {
     private var resolvedPaddingLeading: CGFloat { paddingLeading ?? 8 }
     private var resolvedPaddingTrailing: CGFloat { paddingTrailing ?? 8 }
 
-    private var resolvedFontStyle: EDTSFont.FontStyle {
-        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Light : EDTSFont.Klik.B3.Semibold
+    private var resolvedFontStyle: Font {
+        EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Light.font : EDTSFont.Klik.B3.Semibold.font
     }
     
     private var resolvedShape: EDTSShape {
@@ -136,7 +136,7 @@ public struct EDTSChip: View {
     private struct ResolvedValues {
         var iconTintLeading: Color
         var iconBgLeading: Color
-        var labelColor: Color
+        var textColor: Color
         var iconTintTrailing: Color
         var iconBgTrailing: Color
         var bgColor: Color
@@ -156,7 +156,7 @@ public struct EDTSChip: View {
                 return ResolvedValues(
                     iconTintLeading: iconTintColorLeading ?? EDTSColor.grey60,
                     iconBgLeading: iconBgColorLeading ?? .clear,
-                    labelColor: labelColor ?? EDTSColor.grey80,
+                    textColor: textColor ?? EDTSColor.grey80,
                     iconTintTrailing: iconTintColorTrailing ?? EDTSColor.grey60,
                     iconBgTrailing: iconBgColorTrailing ?? .clear,
                     bgColor: bgColor ?? EDTSColor.grey20,
@@ -171,7 +171,7 @@ public struct EDTSChip: View {
                 return ResolvedValues(
                     iconTintLeading: iconTintColorLeading ?? EDTSColor.blue50,
                     iconBgLeading: iconBgColorLeading ?? .clear,
-                    labelColor: labelColor ?? EDTSColor.blue50,
+                    textColor: textColor ?? EDTSColor.blue50,
                     iconTintTrailing: iconTintColorTrailing ?? EDTSColor.blue50,
                     iconBgTrailing: iconBgColorTrailing ?? .clear,
                     bgColor: bgColor ?? EDTSColor.grey20,
@@ -189,7 +189,7 @@ public struct EDTSChip: View {
                 return ResolvedValues(
                     iconTintLeading: iconTintColorLeadingActive ?? (iconTintColorLeading ?? EDTSColor.white),
                     iconBgLeading: iconBgColorLeadingActive ?? (iconBgColorLeading ?? .clear),
-                    labelColor: labelColorActive ?? (labelColor ?? EDTSColor.white),
+                    textColor: textColorActive ?? (textColor ?? EDTSColor.white),
                     iconTintTrailing: iconTintColorTrailingActive ?? (iconTintColorTrailing ?? EDTSColor.white),
                     iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? .clear),
                     bgColor: bgColorActive ?? (bgColor ?? EDTSColor.blue30),
@@ -204,7 +204,7 @@ public struct EDTSChip: View {
                 return ResolvedValues(
                     iconTintLeading: iconTintColorLeadingActive ?? (iconTintColorLeading ?? EDTSColor.blue50),
                     iconBgLeading: iconBgColorLeadingActive ?? (iconBgColorLeading ?? EDTSColor.grey20),
-                    labelColor: labelColorActive ?? (labelColor ?? EDTSColor.white),
+                    textColor: textColorActive ?? (textColor ?? EDTSColor.white),
                     iconTintTrailing: iconTintColorTrailingActive ?? (iconTintColorTrailing ?? EDTSColor.blue50),
                     iconBgTrailing: iconBgColorTrailingActive ?? (iconBgColorTrailing ?? EDTSColor.grey20),
                     bgColor: bgColorActive ?? (bgColor ?? EDTSColor.blue50),
@@ -221,14 +221,14 @@ public struct EDTSChip: View {
     
     // MARK: - Initializers
     public init(
-        label: String? = "Chip",
-        labelAttributed: AttributedString? = nil,
+        text: String? = "Chip",
+        textAttributed: AttributedString? = nil,
+        textColor: Color? = nil,
+        textColorActive: Color? = nil,
         fontStyle: Font? = nil,
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String = "",
-        labelColor: Color? = nil,
-        labelColorActive: Color? = nil,
         bgColor: Color? = nil,
         bgColorStart: Color? = nil,
         bgColorEnd: Color? = nil,
@@ -271,14 +271,14 @@ public struct EDTSChip: View {
         onTapLeadingIcon: (() -> Void)? = nil,
         onTapTrailingIcon: (() -> Void)? = nil
     ) {
-        self.label = labelAttributed == nil ? (label ?? "Chip") : nil
-        self.labelAttributed = labelAttributed
+        self.text = textAttributed == nil ? text : nil
+        self.textAttributed = textAttributed
+        self.textColor = textColor
+        self.textColorActive = textColorActive
         self.fontStyle = fontStyle
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
-        self.labelColor = labelColor
-        self.labelColorActive = labelColorActive
         self.bgColor = bgColor
         self.bgColorStart = bgColorStart
         self.bgColorEnd = bgColorEnd
@@ -336,7 +336,7 @@ public struct EDTSChip: View {
                 )
             }
             
-            labelView(color: values.labelColor)
+            textView(color: values.textColor)
             
             if let iconTrailing {
                 iconBadgeView(
@@ -374,16 +374,16 @@ public struct EDTSChip: View {
     }
     
     @ViewBuilder
-    private func labelView(color: Color) -> some View {
+    private func textView(color: Color) -> some View {
         Group {
-            if let labelAttributed {
-                Text(labelAttributed)
+            if let textAttributed {
+                Text(textAttributed)
             } else {
-                Text(label ?? "Chip")
+                Text(text ?? "Chip")
             }
         }
         .foregroundColor(color)
-        .edtsFont(resolvedFontStyle, custom: fontStyle ?? (hasCustomFont ? customFont : nil))
+        .font(fontStyle ?? (hasCustomFont ? customFont : resolvedFontStyle))
     }
     
     @ViewBuilder
@@ -439,12 +439,12 @@ public struct EDTSChip: View {
         
         var body: some View {
             VStack(spacing: 24) {
-                EDTSChip(label: "Chip", isActive: isActive, onTapChip: {
+                EDTSChip(text: "Chip", isActive: isActive, onTapChip: {
                     isActive.toggle()
                 })
                 
                 EDTSChip(
-                    label: "With icons",
+                    text: "With icons",
                     iconLeading: Image(systemName: "star.fill"),
                     iconTrailing: Image(systemName: "xmark"),
                     isActive: isActive,
@@ -453,7 +453,7 @@ public struct EDTSChip: View {
                     onTapTrailingIcon: { print("trailing icon tapped") }
                 )
                 
-                EDTSChip(label: "Always active", isActive: true, onTapChip: {})
+                EDTSChip(text: "Always active", isActive: true, onTapChip: {})
             }
             .padding()
         }
