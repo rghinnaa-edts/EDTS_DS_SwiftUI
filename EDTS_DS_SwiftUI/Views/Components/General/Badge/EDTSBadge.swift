@@ -94,7 +94,18 @@ public struct EDTSBadge: View {
         self.bgColorEnd = bgColorEnd
         self.bgColorOrientation = bgColorOrientation
         self.cornerRadius = cornerRadius
-
+        self.borderWidth = borderWidth
+        self.borderColor = borderColor
+        self.shadowOpacity = shadowOpacity
+        self.shadowOffset = shadowOffset
+        self.shadowRadius = shadowRadius
+        self.shadowColor = shadowColor
+        self.paddingTop = paddingTop
+        self.paddingBottom = paddingBottom
+        self.paddingLeading = paddingLeading
+        self.paddingTrailing = paddingTrailing
+        self.isSkeleton = isSkeleton
+        
         let hasCustomCorner = cornerRadiusTopLeft != nil
             || cornerRadiusTopRight != nil
             || cornerRadiusBottomLeft != nil
@@ -111,18 +122,6 @@ public struct EDTSBadge: View {
             self.cornerRadiusBottomLeft = cornerRadius
             self.cornerRadiusBottomRight = cornerRadius
         }
-
-        self.borderWidth = borderWidth
-        self.borderColor = borderColor
-        self.shadowOpacity = shadowOpacity
-        self.shadowOffset = shadowOffset
-        self.shadowRadius = shadowRadius
-        self.shadowColor = shadowColor
-        self.paddingTop = paddingTop
-        self.paddingBottom = paddingBottom
-        self.paddingLeading = paddingLeading
-        self.paddingTrailing = paddingTrailing
-        self.isSkeleton = isSkeleton
     }
     
     private var containerBackgroundStyle: AnyShapeStyle {
