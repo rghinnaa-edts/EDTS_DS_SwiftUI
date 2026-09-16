@@ -19,23 +19,26 @@ private enum EDTSTooltipLayout {
 // MARK: - Config
 
 struct EDTSTooltipConfig {
-    var textColor: Color = .white
-    var fontStyle: Font? = nil
-    var fontName: String = ""
-    var fontSize: CGFloat = .zero
-    var fontWeight: String? = nil
-    var bgColor: Color = .black
-    var cornerRadius: CGFloat = 4
-    var shadowColor: Color = Color(.sRGB, white: 0.5, opacity: 1)
-    var shadowOpacity: Double = 0.18
-    var shadowRadius: CGFloat = 5
-    var shadowOffset: CGSize = CGSize(width: 0, height: 4)
-    var padding: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
-    var spacing: CGFloat = 8
-    var maxWidth: CGFloat = UIScreen.main.bounds.width - 32
-    var arrowSize: CGSize = CGSize(width: 12, height: 8)
-    var containerMargin: CGFloat = 8
-    var position: Position = .top
+    public var textColor: Color = .white
+    public var fontStyle: Font? = nil
+    public var fontName: String = ""
+    public var fontSize: CGFloat = .zero
+    public var fontWeight: String? = nil
+    public var bgColor: Color = .black
+    public var cornerRadius: CGFloat = 4
+    public var shadowColor: Color = Color(.sRGB, white: 0.5, opacity: 1)
+    public var shadowOpacity: Double = 0.18
+    public var shadowRadius: CGFloat = 5
+    public var shadowOffset: CGSize = CGSize(width: 0, height: 4)
+    public var paddingTop: CGFloat = 8
+    public var paddingBottom: CGFloat = 8
+    public var paddingLeading: CGFloat = 8
+    public var paddingTrailing: CGFloat = 8
+    public var distance: CGFloat = 8
+    public var maxWidth: CGFloat = UIScreen.main.bounds.width - 32
+    public var arrowSize: CGSize = CGSize(width: 12, height: 8)
+    public var containerMargin: CGFloat = 8
+    public var position: Position = .top
 
     func resolvedFont() -> Font {
         if let fontStyle {
@@ -58,26 +61,26 @@ struct EDTSTooltipConfig {
 }
 
 struct EDTSTooltipItem: Identifiable {
-    let id: UUID
-    var targetFrame: CGRect
-    var text: String?
-    var attributedText: AttributedString?
-    var config: EDTSTooltipConfig
-    var onTap: () -> Void
-    var isDismissing: Bool = false
+    public let id: UUID
+    public var targetFrame: CGRect
+    public var text: String?
+    public var textAttributed: AttributedString?
+    public var config: EDTSTooltipConfig
+    public var onTap: () -> Void
+    public var isDismissing: Bool = false
 }
 
 // MARK: - View modifier
 
 struct EDTSTooltip: ViewModifier {
     @Binding var isPresented: Bool
-    var text: String? = nil
-    var attributedText: AttributedString? = nil
-    var config: EDTSTooltipConfig = EDTSTooltipConfig()
-    var minimumPressDuration: TimeInterval? = nil
-    var dismissOnRelease: Bool = true
-    var dismissOnReleaseDelay: TimeInterval = 0.5
-    var autoDismissAfter: TimeInterval? = nil
+    public var text: String? = nil
+    public var textAttributed: AttributedString? = nil
+    public var config: EDTSTooltipConfig = EDTSTooltipConfig()
+    public var minimumPressDuration: TimeInterval? = nil
+    public var dismissOnRelease: Bool = true
+    public var dismissOnReleaseDelay: TimeInterval = 0.5
+    public var autoDismissAfter: TimeInterval? = nil
 
     @State private var id = UUID()
     @State private var dismissWorkItem: DispatchWorkItem?
@@ -93,6 +96,10 @@ struct EDTSTooltip: ViewModifier {
                             syncPresenterIfPresented()
                         }
                         .onChange(of: proxy.frame(in: .global)) { newFrame in
+                            guard isAnchorOnScreen(newFrame) else {
+                                EDTSTooltipPresenter.shared.dismiss(id: id, animated: false)
+                                return
+                            }
                             targetFrame = newFrame
                             syncPresenterIfPresented()
                         }
@@ -114,7 +121,7 @@ struct EDTSTooltip: ViewModifier {
             }
             .onChange(of: text) { _ in syncPresenterIfPresented() }
             .onDisappear {
-                EDTSTooltipPresenter.shared.dismiss(id: id)
+                EDTSTooltipPresenter.shared.dismiss(id: id, animated: false)
             }
     }
 
@@ -123,12 +130,17 @@ struct EDTSTooltip: ViewModifier {
         EDTSTooltipPresenter.shared.present(makeItem(frame: targetFrame))
     }
 
+    private func isAnchorOnScreen(_ frame: CGRect) -> Bool {
+        guard frame.width > 0, frame.height > 0 else { return false }
+        return UIScreen.main.bounds.intersects(frame)
+    }
+
     private func makeItem(frame: CGRect) -> EDTSTooltipItem {
         EDTSTooltipItem(
             id: id,
             targetFrame: frame,
             text: text,
-            attributedText: attributedText,
+            textAttributed: textAttributed,
             config: config,
             onTap: { isPresented = false }
         )
@@ -162,40 +174,84 @@ private struct EDTSTooltipBubbleShape: Shape {
 
     func path(in rect: CGRect) -> Path {
         var bodyRect = rect
+
         switch direction {
-        case .top:    bodyRect.size.height -= arrowSize.height
+        case .top:
+            bodyRect.size.height -= arrowSize.height
         case .bottom:
             bodyRect.origin.y += arrowSize.height
             bodyRect.size.height -= arrowSize.height
-        case .leading: bodyRect.size.width -= arrowSize.height
+        case .leading:
+            bodyRect.size.width -= arrowSize.height
         case .trailing:
             bodyRect.origin.x += arrowSize.height
             bodyRect.size.width -= arrowSize.height
         }
 
-        var path = Path(roundedRect: bodyRect, cornerRadius: cornerRadius)
+        let r = min(cornerRadius, min(bodyRect.width, bodyRect.height) / 2)
+        let halfArrow = arrowSize.width / 2
 
-        var arrow = Path()
+        var path = Path()
+
         switch direction {
         case .top:
-            arrow.move(to: CGPoint(x: arrowTip.x - arrowSize.width / 2, y: bodyRect.maxY))
-            arrow.addLine(to: arrowTip)
-            arrow.addLine(to: CGPoint(x: arrowTip.x + arrowSize.width / 2, y: bodyRect.maxY))
+            path.move(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY))
+            path.addLine(to: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.maxX, y: bodyRect.maxY - r))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+            path.addLine(to: CGPoint(x: arrowTip.x + halfArrow, y: bodyRect.maxY))
+            path.addLine(to: arrowTip)
+            path.addLine(to: CGPoint(x: arrowTip.x - halfArrow, y: bodyRect.maxY))
+            path.addLine(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX, y: bodyRect.minY + r))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+
         case .bottom:
-            arrow.move(to: CGPoint(x: arrowTip.x - arrowSize.width / 2, y: bodyRect.minY))
-            arrow.addLine(to: arrowTip)
-            arrow.addLine(to: CGPoint(x: arrowTip.x + arrowSize.width / 2, y: bodyRect.minY))
+            path.move(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY))
+            path.addLine(to: CGPoint(x: arrowTip.x - halfArrow, y: bodyRect.minY))
+            path.addLine(to: arrowTip)
+            path.addLine(to: CGPoint(x: arrowTip.x + halfArrow, y: bodyRect.minY))
+            path.addLine(to: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.maxX, y: bodyRect.maxY - r))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX, y: bodyRect.minY + r))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+
         case .leading:
-            arrow.move(to: CGPoint(x: bodyRect.maxX, y: arrowTip.y - arrowSize.width / 2))
-            arrow.addLine(to: arrowTip)
-            arrow.addLine(to: CGPoint(x: bodyRect.maxX, y: arrowTip.y + arrowSize.width / 2))
+            path.move(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY))
+            path.addLine(to: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.maxX, y: arrowTip.y - halfArrow))
+            path.addLine(to: arrowTip)
+            path.addLine(to: CGPoint(x: bodyRect.maxX, y: arrowTip.y + halfArrow))
+            path.addLine(to: CGPoint(x: bodyRect.maxX, y: bodyRect.maxY - r))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX, y: bodyRect.minY + r))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+
         case .trailing:
-            arrow.move(to: CGPoint(x: bodyRect.minX, y: arrowTip.y - arrowSize.width / 2))
-            arrow.addLine(to: arrowTip)
-            arrow.addLine(to: CGPoint(x: bodyRect.minX, y: arrowTip.y + arrowSize.width / 2))
+            path.move(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY))
+            path.addLine(to: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.maxX, y: bodyRect.maxY - r))
+            path.addArc(center: CGPoint(x: bodyRect.maxX - r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.maxY - r), radius: r, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
+            path.addLine(to: CGPoint(x: bodyRect.minX, y: arrowTip.y + halfArrow))
+            path.addLine(to: arrowTip)
+            path.addLine(to: CGPoint(x: bodyRect.minX, y: arrowTip.y - halfArrow))
+            path.addLine(to: CGPoint(x: bodyRect.minX, y: bodyRect.minY + r))
+            path.addArc(center: CGPoint(x: bodyRect.minX + r, y: bodyRect.minY + r), radius: r, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
         }
-        arrow.closeSubpath()
-        path.addPath(arrow)
+
+        path.closeSubpath()
         return path
     }
 }
@@ -205,6 +261,7 @@ private struct EDTSTooltipBubbleShape: Shape {
 private struct EDTSTooltipBubble: View {
     let item: EDTSTooltipItem
     let containerSize: CGSize
+    let topSafeAreaInset: CGFloat
 
     @State private var contentSize: CGSize = .zero
     @State private var hasMeasured = false
@@ -217,15 +274,15 @@ private struct EDTSTooltipBubble: View {
         let layout = computeLayout(direction: direction, size: size)
 
         Group {
-            if let attributed = item.attributedText {
+            if let attributed = item.textAttributed {
                 Text(attributed)
             } else {
-                Text(item.text ?? "")
+                Text(item.text ?? "Text Here")
             }
         }
         .font(item.config.resolvedFont())
         .foregroundColor(item.config.textColor)
-        .padding(item.config.padding)
+        .padding(EdgeInsets(top: item.config.paddingTop, leading: item.config.paddingLeading, bottom: item.config.paddingBottom, trailing: item.config.paddingTrailing))
         .modifier(EDTSTooltipTextSizing(maxWidth: effectiveMaxWidth, needsWrap: needsWrap))
         .background(
             GeometryReader { g in
@@ -239,7 +296,13 @@ private struct EDTSTooltipBubble: View {
                 return
             }
             contentSize = measured
+            
+            guard !hasMeasured else { return }
             hasMeasured = true
+            guard !item.isDismissing else { return }
+            withAnimation(.easeOut(duration: EDTSTooltipLayout.animationDuration)) {
+                appeared = true
+            }
         }
         .padding(.top, direction == .bottom ? item.config.arrowSize.height : 0)
         .padding(.bottom, direction == .top ? item.config.arrowSize.height : 0)
@@ -267,20 +330,16 @@ private struct EDTSTooltipBubble: View {
         .scaleEffect(appeared ? 1 : 0.98)
         .offset(appeared ? .zero : initialOffset(direction: direction))
         .onTapGesture { item.onTap() }
-        .onAppear {
-            guard !item.isDismissing else { return }
-            withAnimation(.easeOut(duration: EDTSTooltipLayout.animationDuration)) { appeared = true }
-        }
         .onChange(of: item.id) { _ in
             appeared = false
             hasMeasured = false
             needsWrap = false
-            withAnimation(.easeOut(duration: EDTSTooltipLayout.animationDuration)) { appeared = true }
         }
         .onChange(of: item.isDismissing) { isDismissing in
             guard isDismissing else { return }
             withAnimation(.easeIn(duration: EDTSTooltipLayout.animationDuration)) { appeared = false }
         }
+        .preference(key: EDTSTooltipFrameKey.self, value: [item.id: layout])
     }
 
     private var resolvedContentSize: CGSize {
@@ -289,10 +348,14 @@ private struct EDTSTooltipBubble: View {
 
     private var totalSize: CGSize {
         var size = resolvedContentSize
+        
         switch resolvedDirection {
-        case .top, .bottom: size.height += item.config.arrowSize.height
-        case .leading, .trailing: size.width += item.config.arrowSize.height
+        case .top, .bottom:
+            size.height += item.config.arrowSize.height
+        case .leading, .trailing:
+            size.width += item.config.arrowSize.height
         }
+        
         return size
     }
 
@@ -300,45 +363,52 @@ private struct EDTSTooltipBubble: View {
         let margin = item.config.containerMargin
         let target = item.targetFrame
         let arrow = item.config.arrowSize.height
-        let spacing = item.config.spacing
+        let distance = item.config.distance
 
         switch resolvedDirection {
         case .leading:
-            let available = target.minX - spacing - arrow - margin
+            let available = target.minX - distance - arrow - margin
             return max(1, min(item.config.maxWidth, available))
         case .trailing:
-            let available = containerSize.width - target.maxX - spacing - arrow - margin
+            let available = containerSize.width - target.maxX - distance - arrow - margin
             return max(1, min(item.config.maxWidth, available))
         case .top, .bottom:
             return item.config.maxWidth
         }
     }
 
+    private var topLimit: CGFloat {
+        topSafeAreaInset
+    }
+
+    private var bottomLimit: CGFloat {
+        containerSize.height - (item.config.distance + item.config.arrowSize.height + item.config.containerMargin)
+    }
+
     private var resolvedDirection: Position {
         let target = item.targetFrame
-        let spacing = item.config.spacing
+        let spacing = item.config.distance
         let arrow = item.config.arrowSize
-        let margin = item.config.containerMargin
         let minimumSideSpace = EDTSTooltipLayout.minimumSideSpace
 
         switch item.config.position {
         case .top:
             let size = resolvedContentSize
             let required = size.height + spacing + arrow.height
-            let fitsTop = target.minY - required >= margin
-            let fitsBottom = target.maxY + required <= containerSize.height - margin
+            let fitsTop = target.minY - required >= topLimit
+            let fitsBottom = target.maxY + required <= bottomLimit
             if !fitsTop && fitsBottom { return .bottom }
         case .bottom:
             let size = resolvedContentSize
             let required = size.height + spacing + arrow.height
-            let fitsBottom = target.maxY + required <= containerSize.height - margin
-            let fitsTop = target.minY - required >= margin
+            let fitsBottom = target.maxY + required <= bottomLimit
+            let fitsTop = target.minY - required >= topLimit
             if !fitsBottom && fitsTop { return .top }
         case .leading:
-            let availableLeading = target.minX - spacing - arrow.height - margin
+            let availableLeading = target.minX - spacing - arrow.height - item.config.containerMargin
             if availableLeading < minimumSideSpace { return .trailing }
         case .trailing:
-            let availableTrailing = containerSize.width - target.maxX - spacing - arrow.height - margin
+            let availableTrailing = containerSize.width - target.maxX - spacing - arrow.height - item.config.containerMargin
             if availableTrailing < minimumSideSpace { return .leading }
         }
         return item.config.position
@@ -346,27 +416,32 @@ private struct EDTSTooltipBubble: View {
 
     private func initialOffset(direction: Position) -> CGSize {
         let offset = EDTSTooltipLayout.appearOffset
+        
         switch direction {
-        case .top: return CGSize(width: 0, height: offset)
-        case .bottom: return CGSize(width: 0, height: -offset)
-        case .leading: return CGSize(width: offset, height: 0)
-        case .trailing: return CGSize(width: -offset, height: 0)
+        case .top:
+            return CGSize(width: 0, height: offset)
+        case .bottom:
+            return CGSize(width: 0, height: -offset)
+        case .leading:
+            return CGSize(width: offset, height: 0)
+        case .trailing:
+            return CGSize(width: -offset, height: 0)
         }
     }
 
     private func computeLayout(direction: Position, size: CGSize) -> CGRect {
         let target = item.targetFrame
-        let spacing = item.config.spacing
-
+        let spacing = item.config.distance
         var origin: CGPoint
+        
         switch direction {
         case .top:
             let idealY = target.minY - spacing - size.height
-            origin = CGPoint(x: target.midX - size.width / 2, y: idealY)
+            origin = CGPoint(x: target.midX - size.width / 2, y: max(idealY, topLimit))
             origin.x = clampCrossAxis(origin.x, length: size.width, containerLength: containerSize.width)
         case .bottom:
             let idealY = target.maxY + spacing
-            origin = CGPoint(x: target.midX - size.width / 2, y: idealY)
+            origin = CGPoint(x: target.midX - size.width / 2, y: min(idealY, bottomLimit - size.height))
             origin.x = clampCrossAxis(origin.x, length: size.width, containerLength: containerSize.width)
         case .leading:
             let idealX = target.minX - spacing - size.width
@@ -429,6 +504,13 @@ private struct EDTSTooltipSizeKey: PreferenceKey {
     }
 }
 
+private struct EDTSTooltipFrameKey: PreferenceKey {
+    static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
 // MARK: - Overlay window presentation
 
 @MainActor
@@ -449,10 +531,19 @@ final class EDTSTooltipPresenter: ObservableObject {
         }
         ensureWindow()
     }
-    
-    func dismiss(id: UUID) {
+
+    func dismiss(id: UUID, animated: Bool = true) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         guard !items[index].isDismissing else { return }
+
+        guard animated else {
+            items.remove(at: index)
+            if items.isEmpty {
+                teardownWindow()
+            }
+            return
+        }
+
         items[index].isDismissing = true
 
         DispatchQueue.main.asyncAfter(deadline: .now() + dismissAnimationDuration) { [weak self] in
@@ -463,6 +554,10 @@ final class EDTSTooltipPresenter: ObservableObject {
                 self.teardownWindow()
             }
         }
+    }
+
+    func updateBubbleFrames(_ frames: [CGRect]) {
+        window?.bubbleFrames = frames
     }
 
     private func ensureWindow() {
@@ -494,22 +589,38 @@ final class EDTSTooltipPresenter: ObservableObject {
 }
 
 private final class EDTSTooltipPassthroughWindow: UIWindow {
+    var bubbleFrames: [CGRect] = []
+
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard let hitView = super.hitTest(point, with: event) else { return nil }
-        return hitView == rootViewController?.view ? nil : hitView
+        let tappedBubble = bubbleFrames.contains { $0.insetBy(dx: -4, dy: -4).contains(point) }
+        return tappedBubble ? hitView : nil
     }
 }
 
 private struct EDTSTooltipOverlayRoot: View {
     @ObservedObject var presenter: EDTSTooltipPresenter
 
+    private var topSafeAreaInset: CGFloat {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let keyWindow = scenes.flatMap { $0.windows }.first(where: { $0.isKeyWindow })
+        return keyWindow?.safeAreaInsets.top ?? 0
+    }
+
     var body: some View {
         GeometryReader { proxy in
             ForEach(presenter.items) { item in
-                EDTSTooltipBubble(item: item, containerSize: proxy.size)
+                EDTSTooltipBubble(
+                    item: item,
+                    containerSize: proxy.size,
+                    topSafeAreaInset: topSafeAreaInset
+                )
             }
         }
         .ignoresSafeArea()
+        .onPreferenceChange(EDTSTooltipFrameKey.self) { frames in
+            presenter.updateBubbleFrames(Array(frames.values))
+        }
     }
 }
 
@@ -519,7 +630,7 @@ public extension View {
     func edtsTooltip(
         isPresented: Binding<Bool>,
         text: String? = "Text here",
-        attributedText: AttributedString? = nil,
+        textAttributed: AttributedString? = nil,
         textColor: Color = .white,
         fontStyle: Font? = nil,
         fontName: String = "",
@@ -531,8 +642,11 @@ public extension View {
         shadowOpacity: Double = 0.18,
         shadowRadius: CGFloat = 5,
         shadowOffset: CGSize = CGSize(width: 0, height: 4),
-        padding: EdgeInsets = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8),
-        spacing: CGFloat = 8,
+        paddingTop: CGFloat = 8,
+        paddingBottom: CGFloat = 8,
+        paddingLeading: CGFloat = 8,
+        paddingTrailing: CGFloat = 8,
+        distance: CGFloat = 8,
         maxWidth: CGFloat = UIScreen.main.bounds.width - 32,
         arrowSize: CGSize = CGSize(width: 12, height: 8),
         containerMargin: CGFloat = 8,
@@ -554,8 +668,11 @@ public extension View {
             shadowOpacity: shadowOpacity,
             shadowRadius: shadowRadius,
             shadowOffset: shadowOffset,
-            padding: padding,
-            spacing: spacing,
+            paddingTop: paddingTop,
+            paddingBottom: paddingBottom,
+            paddingLeading: paddingLeading,
+            paddingTrailing: paddingTrailing,
+            distance: distance,
             maxWidth: maxWidth,
             arrowSize: arrowSize,
             containerMargin: containerMargin,
@@ -565,7 +682,7 @@ public extension View {
         return modifier(EDTSTooltip(
             isPresented: isPresented,
             text: text,
-            attributedText: attributedText,
+            textAttributed: textAttributed,
             config: config,
             minimumPressDuration: minimumPressDuration,
             dismissOnRelease: dismissOnRelease,
@@ -583,7 +700,7 @@ struct EDTSTooltipView: View {
     @State private var showEdgeTooltip = false
 
     var body: some View {
-        VStack(spacing: 80) {
+        VStack(spacing: 24) {
             VStack(spacing: 8) {
                 Text("Long press")
                     .font(.system(size: 14, weight: .semibold))
