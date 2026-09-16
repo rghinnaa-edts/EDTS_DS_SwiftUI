@@ -4,19 +4,6 @@
 
 ---
 
-## Enum
-
-```swift
-public enum ChipState: String {
-    case inactive = "inactive"
-    case active = "active"
-}
-```
-
-`ChipState` models the two visual states internally; `EDTSChip` itself is driven by the `isActive: Bool` property rather than taking a `ChipState` directly.
-
----
-
 ## Preview
 
 | Feature / Variation | Preview |
@@ -98,6 +85,19 @@ The inactive and active gradients are configured independently — set only `bgC
 ```swift
 EDTSChip(text: "Always active", isActive: true, onTapChip: {})
 ```
+
+---
+
+## Enum
+
+```swift
+public enum ChipState: String {
+    case inactive = "inactive"
+    case active = "active"
+}
+```
+
+`ChipState` models the two visual states internally; `EDTSChip` itself is driven by the `isActive: Bool` property rather than taking a `ChipState` directly.
 
 ---
 
