@@ -15,10 +15,12 @@ public struct EDTSBadge: View {
     public var fontName: String
     public var fontSize: CGFloat
     public var fontWeight: String?
-    public var icon: Image?
-    public var iconTintColor: Color?
+    public var iconLeading: Image?
+    public var iconTintColorLeading: Color?
+    public var iconTrailing: Image?
+    public var iconTintColorTrailing: Color?
     public var iconSize: CGFloat?
-    public var iconPadding: CGFloat
+    public var iconSpacing: CGFloat
     public var bgColor: Color
     public var bgColorStart: Color?
     public var bgColorEnd: Color?
@@ -53,10 +55,12 @@ public struct EDTSBadge: View {
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String? = nil,
-        icon: Image? = nil,
-        iconTintColor: Color? = nil,
+        iconLeading: Image? = nil,
+        iconTintColorLeading: Color? = nil,
+        iconTrailing: Image? = nil,
+        iconTintColorTrailing: Color? = nil,
         iconSize: CGFloat = 16.0,
-        iconPadding: CGFloat = 4.0,
+        iconSpacing: CGFloat = 4.0,
         bgColor: Color = EDTSColor.grey20,
         bgColorStart: Color? = nil,
         bgColorEnd: Color? = nil,
@@ -85,10 +89,12 @@ public struct EDTSBadge: View {
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
-        self.icon = icon
-        self.iconTintColor = iconTintColor
+        self.iconLeading = iconLeading
+        self.iconTintColorLeading = iconTintColorLeading
+        self.iconTrailing = iconTrailing
+        self.iconTintColorTrailing = iconTintColorTrailing
         self.iconSize = iconSize
-        self.iconPadding = iconPadding
+        self.iconSpacing = iconSpacing
         self.bgColor = bgColor
         self.bgColorStart = bgColorStart
         self.bgColorEnd = bgColorEnd
@@ -147,6 +153,10 @@ public struct EDTSBadge: View {
             bottomRight: cornerRadiusBottomRight
         )
     }
+
+    private var contentSpacing: CGFloat {
+        (iconLeading != nil || iconTrailing != nil) ? iconSpacing : 0
+    }
     
     func resolvedFont() -> Font {
         if let fontStyle {
@@ -174,13 +184,13 @@ public struct EDTSBadge: View {
     // MARK: - Body
     
     public var body: some View {
-        HStack(spacing: icon == nil ? 0 : iconPadding) {
-            if let icon {
-                icon
+        HStack(spacing: contentSpacing) {
+            if let iconLeading {
+                iconLeading
                     .resizable()
                     .scaledToFit()
                     .frame(width: iconSize, height: iconSize)
-                    .foregroundStyle(iconTintColor ?? textColor)
+                    .foregroundStyle(iconTintColorLeading ?? textColor)
             }
 
             if let attributed = textAttributed {
@@ -195,6 +205,14 @@ public struct EDTSBadge: View {
                     .foregroundStyle(textColor)
                     .lineLimit(1)
                     .minimumScaleFactor(minimumScale)
+            }
+
+            if let iconTrailing {
+                iconTrailing
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: iconSize, height: iconSize)
+                    .foregroundStyle(iconTintColorTrailing ?? textColor)
             }
         }
         .padding(EdgeInsets(top: paddingTop, leading: paddingLeading, bottom: paddingBottom, trailing: paddingTrailing))
@@ -215,7 +233,8 @@ public struct EDTSBadge: View {
 #Preview {
     VStack(spacing: 12) {
         EDTSBadge(text: "Label")
-        EDTSBadge(text: "Label", icon: Image(systemName: "tag.fill"))
+        EDTSBadge(text: "Label", iconLeading: Image(systemName: "tag.fill"))
+        EDTSBadge(text: "Label", iconTrailing: Image(systemName: "tag.fill"))
     }
     .padding()
 }
