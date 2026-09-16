@@ -11,17 +11,23 @@ public struct EDTSBadge: View {
     public var text: String
     public var textAttributed: AttributedString?
     public var textColor: Color
-    public var fontStyle: Font
+    public var fontStyle: Font?
     public var fontName: String
     public var fontSize: CGFloat
     public var fontWeight: String?
     public var icon: Image?
-    public var iconTint: Color?
+    public var iconTintColor: Color?
+    public var iconSize: CGFloat?
     public var iconPadding: CGFloat
     public var bgColor: Color
     public var bgColorStart: Color?
     public var bgColorEnd: Color?
+    public var bgColorOrientation: Orientation?
     public var cornerRadius: CGFloat
+    public var cornerRadiusTopLeft: CGFloat
+    public var cornerRadiusTopRight: CGFloat
+    public var cornerRadiusBottomLeft: CGFloat
+    public var cornerRadiusBottomRight: CGFloat
     public var borderWidth: CGFloat
     public var borderColor: Color
     public var shadowOpacity: Double
@@ -33,50 +39,79 @@ public struct EDTSBadge: View {
     public var paddingLeading: CGFloat
     public var paddingTrailing: CGFloat
     public var isSkeleton: Bool
+    
+    private let minimumSize: CGFloat = 16
+    private let minimumScale: CGFloat = 0.8
 
     // MARK: - Init
     
     public init(
         text: String,
-        attributedText: AttributedString? = nil,
+        textAttributed: AttributedString? = nil,
         textColor: Color = EDTSColor.grey70,
-        fontStyle: Font = EDTSFont.Klik.B4.Regular.font,
+        fontStyle: Font? = nil,
         fontName: String = "",
         fontSize: CGFloat = .zero,
         fontWeight: String? = nil,
         icon: Image? = nil,
-        iconTint: Color? = nil,
-        iconPadding: CGFloat = 2.0,
+        iconTintColor: Color? = nil,
+        iconSize: CGFloat = 16.0,
+        iconPadding: CGFloat = 4.0,
         bgColor: Color = EDTSColor.grey20,
         bgColorStart: Color? = nil,
         bgColorEnd: Color? = nil,
-        cornerRadius: CGFloat = 9.0,
+        bgColorOrientation: Orientation? = nil,
+        cornerRadius: CGFloat = 8.0,
+        cornerRadiusTopLeft: CGFloat? = nil,
+        cornerRadiusTopRight: CGFloat? = nil,
+        cornerRadiusBottomLeft: CGFloat? = nil,
+        cornerRadiusBottomRight: CGFloat? = nil,
         borderWidth: CGFloat = 0.0,
         borderColor: Color = .clear,
         shadowOpacity: Double = 0.0,
         shadowOffset: CGSize = .zero,
         shadowRadius: CGFloat = 0.0,
         shadowColor: Color = .black,
-        paddingTop: CGFloat = 1.0,
-        paddingBottom: CGFloat = 1.0,
-        paddingLeading: CGFloat = 4.0,
-        paddingTrailing: CGFloat = 4.0,
+        paddingTop: CGFloat = 2.0,
+        paddingBottom: CGFloat = 2.0,
+        paddingLeading: CGFloat = 8.0,
+        paddingTrailing: CGFloat = 8.0,
         isSkeleton: Bool = false
     ) {
         self.text = text
-        self.textAttributed = attributedText
+        self.textAttributed = textAttributed
         self.textColor = textColor
         self.fontStyle = fontStyle
         self.fontName = fontName
         self.fontSize = fontSize
         self.fontWeight = fontWeight
         self.icon = icon
-        self.iconTint = iconTint
+        self.iconTintColor = iconTintColor
+        self.iconSize = iconSize
         self.iconPadding = iconPadding
         self.bgColor = bgColor
         self.bgColorStart = bgColorStart
         self.bgColorEnd = bgColorEnd
+        self.bgColorOrientation = bgColorOrientation
         self.cornerRadius = cornerRadius
+
+        let hasCustomCorner = cornerRadiusTopLeft != nil
+            || cornerRadiusTopRight != nil
+            || cornerRadiusBottomLeft != nil
+            || cornerRadiusBottomRight != nil
+
+        if hasCustomCorner {
+            self.cornerRadiusTopLeft = cornerRadiusTopLeft ?? 0.0
+            self.cornerRadiusTopRight = cornerRadiusTopRight ?? 0.0
+            self.cornerRadiusBottomLeft = cornerRadiusBottomLeft ?? 0.0
+            self.cornerRadiusBottomRight = cornerRadiusBottomRight ?? 0.0
+        } else {
+            self.cornerRadiusTopLeft = cornerRadius
+            self.cornerRadiusTopRight = cornerRadius
+            self.cornerRadiusBottomLeft = cornerRadius
+            self.cornerRadiusBottomRight = cornerRadius
+        }
+
         self.borderWidth = borderWidth
         self.borderColor = borderColor
         self.shadowOpacity = shadowOpacity
@@ -89,19 +124,52 @@ public struct EDTSBadge: View {
         self.paddingTrailing = paddingTrailing
         self.isSkeleton = isSkeleton
     }
-
+    
     private var containerBackgroundStyle: AnyShapeStyle {
         if bgColorStart != nil || bgColorEnd != nil {
+            let orientation = bgColorOrientation ?? .horizontal
             return AnyShapeStyle(
                 LinearGradient(
                     colors: [bgColorStart ?? .clear, bgColorEnd ?? .clear],
-                    startPoint: .leading,
-                    endPoint: .trailing
+                    startPoint: orientation == .horizontal ? .leading : .top,
+                    endPoint: orientation == .horizontal ? .trailing : .bottom
                 )
             )
         } else {
             return AnyShapeStyle(bgColor)
         }
+    }
+    
+    private var badgeShape: UnevenRoundedShape {
+        UnevenRoundedShape(
+            topLeft: cornerRadiusTopLeft,
+            topRight: cornerRadiusTopRight,
+            bottomLeft: cornerRadiusBottomLeft,
+            bottomRight: cornerRadiusBottomRight
+        )
+    }
+    
+    func resolvedFont() -> Font {
+        if let fontStyle {
+            return fontStyle
+        }
+
+        if fontName.isEmpty && fontSize <= 0 && fontWeight == nil {
+            if EDTSColor.theme == .poinku {
+                return EDTSFont.Poinku.B4.Medium.font
+            } else {
+                return EDTSFont.Klik.B4.Semibold.font
+            }
+        }
+
+        let size = fontSize > 0 ? fontSize : UIFont.systemFontSize
+        var font: Font = fontName.isEmpty ? .system(size: size) : .custom(fontName, size: size)
+
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+
+        return font
     }
 
     // MARK: - Body
@@ -112,24 +180,32 @@ public struct EDTSBadge: View {
                 icon
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 12, height: 12)
-                    .foregroundStyle(iconTint ?? textColor)
+                    .frame(width: iconSize, height: iconSize)
+                    .foregroundStyle(iconTintColor ?? textColor)
             }
 
-            Text(text)
-                .font(fontStyle)
-                .foregroundStyle(textColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            if let attributed = textAttributed {
+                Text(attributed)
+                    .font(resolvedFont())
+                    .foregroundStyle(textColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(minimumScale)
+            } else {
+                Text(text)
+                    .font(resolvedFont())
+                    .foregroundStyle(textColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(minimumScale)
+            }
         }
         .padding(EdgeInsets(top: paddingTop, leading: paddingLeading, bottom: paddingBottom, trailing: paddingTrailing))
-        .frame(minWidth: 18, minHeight: 18, alignment: .center)
+        .frame(minWidth: minimumSize, minHeight: minimumSize, alignment: .center)
         .background(
-            RoundedRectangle(cornerRadius: cornerRadius)
+            badgeShape
                 .fill(containerBackgroundStyle)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
+            badgeShape
                 .stroke(borderColor, lineWidth: borderWidth)
         )
         .shadow(color: shadowColor.opacity(shadowOpacity), radius: shadowRadius, x: shadowOffset.width, y: shadowOffset.height)

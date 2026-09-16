@@ -37,6 +37,65 @@ public struct RoundedCorner: Shape {
     }
 }
 
+// MARK: - Custom Shape for per-corner radius
+
+public struct UnevenRoundedShape: Shape {
+    var topLeft: CGFloat
+    var topRight: CGFloat
+    var bottomLeft: CGFloat
+    var bottomRight: CGFloat
+
+    public func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+
+        let maxRadius = min(w, h) / 2
+        let tl = min(topLeft, maxRadius)
+        let tr = min(topRight, maxRadius)
+        let bl = min(bottomLeft, maxRadius)
+        let br = min(bottomRight, maxRadius)
+
+        var path = Path()
+
+        path.move(to: CGPoint(x: rect.minX + tl, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - tr, y: rect.minY))
+        path.addArc(
+            center: CGPoint(x: rect.maxX - tr, y: rect.minY + tr),
+            radius: tr,
+            startAngle: .degrees(-90),
+            endAngle: .degrees(0),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - br))
+        path.addArc(
+            center: CGPoint(x: rect.maxX - br, y: rect.maxY - br),
+            radius: br,
+            startAngle: .degrees(0),
+            endAngle: .degrees(90),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: rect.minX + bl, y: rect.maxY))
+        path.addArc(
+            center: CGPoint(x: rect.minX + bl, y: rect.maxY - bl),
+            radius: bl,
+            startAngle: .degrees(90),
+            endAngle: .degrees(180),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + tl))
+        path.addArc(
+            center: CGPoint(x: rect.minX + tl, y: rect.minY + tl),
+            radius: tl,
+            startAngle: .degrees(180),
+            endAngle: .degrees(270),
+            clockwise: false
+        )
+        path.closeSubpath()
+
+        return path
+    }
+}
+
 // MARK: - Gradient Background
 
 public struct GradientBackgroundModifier: ViewModifier {

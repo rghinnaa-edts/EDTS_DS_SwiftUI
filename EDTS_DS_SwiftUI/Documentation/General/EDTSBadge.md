@@ -7,9 +7,8 @@ The `EDTSBadge` component is a small, compact label used to surface status, cate
 - Text label with an optional leading icon
 - Independent tint for the icon, defaulting to the label color when unset
 - Solid color or two-stop linear gradient background
-- Configurable corner radius, border, and drop shadow
+- Configurable corner radius (uniform or per-corner), border, and drop shadow
 - Per-edge padding control (top / bottom / leading / trailing)
-- Minimum tap-friendly size (`18x18`) regardless of content
 - Built-in skeleton loading state via `isSkeleton`
 
 ---
@@ -58,8 +57,6 @@ EDTSBadge(
 )
 ```
 
-The icon renders at a fixed `12x12` and is tinted with `textColor` unless `iconTint` is set explicitly. `iconPadding` controls the gap between the icon and the label — it has no effect when there's no icon.
-
 ### With Custom Colors
 
 ```swift
@@ -104,13 +101,34 @@ EDTSBadge(
 )
 ```
 
+### With Per-Corner Radius
+
+```swift
+EDTSBadge(
+    text: "Top Rounded",
+    cornerRadiusTopLeft: 12,
+    cornerRadiusTopRight: 12
+)
+```
+
+```swift
+EDTSBadge(
+    text: "One Corner",
+    cornerRadiusTopLeft: 16
+)
+```
+
+Leave all four corner parameters unset to use a uniform radius everywhere, controlled by `cornerRadius` alone:
+
+```swift
+EDTSBadge(text: "Uniform", cornerRadius: 12)
+```
+
 ### Skeleton / Loading State
 
 ```swift
 EDTSBadge(text: "New", isSkeleton: true)
 ```
-
-When `isSkeleton` is `true`, the badge's content is replaced by the shared `edtsSkeleton` shimmer treatment, matching the badge's `cornerRadius`. `text` is still required even in skeleton state, since it's used to size the placeholder.
 
 ---
 
@@ -122,8 +140,8 @@ When `isSkeleton` is `true`, the badge's content is replaced by the shared `edts
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `text` | `String` | — (required) | Text shown in the badge. Truncates to one line, scaling down to `80%` before clipping |
-| `attributedText` | `AttributedString?` | `nil` | ⚠️ Accepted and stored, but not currently rendered — see [Known Limitations](#known-limitations) below |
+| `text` | `String` | — (required) | Text shown in the badge. Still required even when `textAttributed` is set, since it's used to size the placeholder for the skeleton state. Truncates to one line, scaling down to `80%` before clipping |
+| `textAttributed` | `AttributedString?` | `nil` | When set, rendered instead of `text` |
 | `icon` | `Image?` | `nil` | Optional leading icon, rendered at a fixed `12x12` |
 
 ### Text Styling
@@ -131,10 +149,10 @@ When `isSkeleton` is `true`, the badge's content is replaced by the shared `edts
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `textColor` | `Color` | `EDTSColor.grey70` | Color applied to `text`, and to `icon` when `iconTint` is unset |
-| `fontStyle` | `Font` | `EDTSFont.Klik.B4.Regular.font` | Font applied to `text`. This is the only font parameter that currently has an effect — see [Known Limitations](#known-limitations) |
-| `fontName` | `String` | `""` | ⚠️ Accepted and stored, but not currently applied |
-| `fontSize` | `CGFloat` | `0` | ⚠️ Accepted and stored, but not currently applied |
-| `fontWeight` | `String?` | `nil` | ⚠️ Accepted and stored, but not currently applied |
+| `fontStyle` | `Font?` | `nil` | Explicit font for `text`. When set, this takes priority over `fontName`/`fontSize`/`fontWeight` |
+| `fontName` | `String` | `""` | Custom font family name for `text`. Ignored if `fontStyle` is set. |
+| `fontSize` | `CGFloat` | `0` | Custom font size for `text`. Ignored if `fontStyle` is set. Falls back to `UIFont.systemFontSize` if `0` while `fontName` or `fontWeight` is set |
+| `fontWeight` | `String?` | `nil` | Custom font weight for `text`, applied via `setupFontWeight(from:)`. Ignored if `fontStyle` is set |
 
 ### Icon
 
@@ -150,7 +168,11 @@ When `isSkeleton` is `true`, the badge's content is replaced by the shared `edts
 | `bgColor` | `Color` | `EDTSColor.grey20` | Solid fill color of the badge background, used when neither `bgColorStart` nor `bgColorEnd` is set |
 | `bgColorStart` | `Color?` | `nil` | Gradient start color (leading edge). If set alone, the gradient still renders, fading to `.clear` |
 | `bgColorEnd` | `Color?` | `nil` | Gradient end color (trailing edge). If set alone, the gradient still renders, fading from `.clear` |
-| `cornerRadius` | `CGFloat` | `9.0` | Corner radius applied to the background, border, and skeleton shape |
+| `cornerRadius` | `CGFloat` | `8.0` | Uniform corner radius applied to the background, border, and skeleton shape, unless overridden by a per-corner value below |
+| `cornerRadiusTopLeft` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
+| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Radius of the top-right corner. Same fallback rule as above |
+| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Radius of the bottom-left corner. Same fallback rule as above |
+| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Radius of the bottom-right corner. Same fallback rule as above |
 | `borderWidth` | `CGFloat` | `0.0` | Width of the badge's stroke border |
 | `borderColor` | `Color` | `.clear` | Color of the badge's stroke border |
 
@@ -171,14 +193,6 @@ When `isSkeleton` is `true`, the badge's content is replaced by the shared `edts
 | `paddingBottom` | `CGFloat` | `1.0` | Padding below the content |
 | `paddingLeading` | `CGFloat` | `4.0` | Padding before the content (icon or label) |
 | `paddingTrailing` | `CGFloat` | `4.0` | Padding after the content (label) |
-
-> Note: regardless of padding and content size, the badge enforces a minimum frame of `18x18`, so very short labels (or icon-only-looking badges) still render as a comfortably sized pill rather than collapsing to the text's natural size.
-
-### Loading State
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `isSkeleton` | `Bool` | `false` | When `true`, renders a shimmering skeleton placeholder (via `edtsSkeleton`) in place of the badge's content, using the same `cornerRadius` |
 
 ---
 
