@@ -147,6 +147,7 @@ struct EDTSTooltip: ViewModifier {
     }
     
     private func present() {
+        guard !isPresented else { return }
         id = UUID()
         isPresented = true
     }
@@ -190,7 +191,6 @@ private struct EDTSTooltipBubbleShape: Shape {
 
         let r = min(cornerRadius, min(bodyRect.width, bodyRect.height) / 2)
         let halfArrow = arrowSize.width / 2
-
         var path = Path()
 
         switch direction {
