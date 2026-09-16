@@ -1,6 +1,6 @@
 # EDTSChip
 
-`EDTSChip` is a SwiftUI toggle-style chip with an `inactive`/`active` state, an optional leading and/or trailing icon (each independently tappable), a full-chip tap ripple, and per-icon circular ripples. Every visual property — label color, background, icon tint/background, border, and shadow — has a separate `*Active` override that's used only when `isActive == true`, with automatic fallback to the inactive value and then to a theme default (`klikIDM` vs `poinku`). The background additionally supports an independent linear gradient for each state.
+`EDTSChip` is a SwiftUI toggle-style chip with an `inactive`/`active` state, an optional leading and/or trailing icon (each independently tappable), a full-chip tap ripple, and per-icon circular ripples.
 
 ---
 
