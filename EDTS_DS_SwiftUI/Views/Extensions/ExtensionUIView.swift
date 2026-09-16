@@ -72,7 +72,6 @@ public struct GradientBackgroundModifier: ViewModifier {
 }
 
 extension View {
-
     public func gradientBackground(
         _ gradient: [Color],
         orientation: Orientation = .horizontal,
