@@ -43,7 +43,6 @@ public struct EDTSBadge: View {
     public var isSkeleton: Bool
     
     private let minimumSize: CGFloat = 16
-    private let minimumScale: CGFloat = 0.8
 
     // MARK: - Init
     
@@ -197,14 +196,10 @@ public struct EDTSBadge: View {
                 Text(attributed)
                     .font(resolvedFont())
                     .foregroundStyle(textColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(minimumScale)
             } else {
                 Text(text)
                     .font(resolvedFont())
                     .foregroundStyle(textColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(minimumScale)
             }
 
             if let iconTrailing {
