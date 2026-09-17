@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
-import Combine
 
 public struct EDTSSkeleton: View {
     public var cornerRadius: CGFloat
+    public var cornerRadiusTopLeft: CGFloat
+    public var cornerRadiusTopRight: CGFloat
+    public var cornerRadiusBottomLeft: CGFloat
+    public var cornerRadiusBottomRight: CGFloat
     public var baseColor: Color
     public var highlightColor: Color
     public var duration: Double
@@ -19,6 +22,10 @@ public struct EDTSSkeleton: View {
 
     public init(
         cornerRadius: CGFloat = 8,
+        cornerRadiusTopLeft: CGFloat? = nil,
+        cornerRadiusTopRight: CGFloat? = nil,
+        cornerRadiusBottomLeft: CGFloat? = nil,
+        cornerRadiusBottomRight: CGFloat? = nil,
         baseColor: Color = EDTSColor.grey20,
         highlightColor: Color = EDTSColor.grey30,
         duration: Double = 1.5,
@@ -29,6 +36,32 @@ public struct EDTSSkeleton: View {
         self.highlightColor = highlightColor
         self.duration = duration
         self.isActive = isActive
+
+        let hasCustomCorner = cornerRadiusTopLeft != nil
+            || cornerRadiusTopRight != nil
+            || cornerRadiusBottomLeft != nil
+            || cornerRadiusBottomRight != nil
+
+        if hasCustomCorner {
+            self.cornerRadiusTopLeft = cornerRadiusTopLeft ?? 0.0
+            self.cornerRadiusTopRight = cornerRadiusTopRight ?? 0.0
+            self.cornerRadiusBottomLeft = cornerRadiusBottomLeft ?? 0.0
+            self.cornerRadiusBottomRight = cornerRadiusBottomRight ?? 0.0
+        } else {
+            self.cornerRadiusTopLeft = cornerRadius
+            self.cornerRadiusTopRight = cornerRadius
+            self.cornerRadiusBottomLeft = cornerRadius
+            self.cornerRadiusBottomRight = cornerRadius
+        }
+    }
+
+    private var skeletonShape: UnevenRoundedShape {
+        UnevenRoundedShape(
+            topLeft: cornerRadiusTopLeft,
+            topRight: cornerRadiusTopRight,
+            bottomLeft: cornerRadiusBottomLeft,
+            bottomRight: cornerRadiusBottomRight
+        )
     }
 
     public var body: some View {
@@ -40,7 +73,7 @@ public struct EDTSSkeleton: View {
                 endPoint: .trailing
             )
 
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            skeletonShape
                 .fill(baseColor)
                 .overlay(
                     gradient
@@ -48,15 +81,15 @@ public struct EDTSSkeleton: View {
                         .offset(x: phase * width * 2)
                 )
                 .mask(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    skeletonShape
                         .fill(Color.white)
                 )
         }
         .onAppear { startIfNeeded() }
-        .onChangeCompat(of: isActive) { newValue in
+        .onChange(of: isActive) { newValue in
             if newValue { startIfNeeded() } else { stop() }
         }
-        .accessibilityHiddenCompat(true)
+        .accessibilityHidden(true)
     }
 
     private func startIfNeeded() {
@@ -73,33 +106,15 @@ public struct EDTSSkeleton: View {
     }
 }
 
-private extension View {
-    @ViewBuilder
-    func onChangeCompat<T: Equatable>(of value: T, perform action: @escaping (T) -> Void) -> some View {
-        if #available(iOS 14.0, *) {
-            self.onChange(of: value, perform: action)
-        } else {
-            self.onReceive(Just(value).removeDuplicates()) { newValue in
-                action(newValue)
-            }
-        }
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func accessibilityHiddenCompat(_ hidden: Bool) -> some View {
-        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
-            self.accessibilityHidden(hidden)
-        } else {
-            self.accessibility(hidden: hidden)
-        }
-    }
-}
+// MARK: View Modifier
 
 public struct EDTSSkeletonModifier: ViewModifier {
     public let active: Bool
     public let cornerRadius: CGFloat
+    public let cornerRadiusTopLeft: CGFloat?
+    public let cornerRadiusTopRight: CGFloat?
+    public let cornerRadiusBottomLeft: CGFloat?
+    public let cornerRadiusBottomRight: CGFloat?
     public let baseColor: Color
     public let highlightColor: Color
     public let duration: Double
@@ -111,6 +126,10 @@ public struct EDTSSkeletonModifier: ViewModifier {
             if active {
                 EDTSSkeleton(
                     cornerRadius: cornerRadius,
+                    cornerRadiusTopLeft: cornerRadiusTopLeft,
+                    cornerRadiusTopRight: cornerRadiusTopRight,
+                    cornerRadiusBottomLeft: cornerRadiusBottomLeft,
+                    cornerRadiusBottomRight: cornerRadiusBottomRight,
                     baseColor: baseColor,
                     highlightColor: highlightColor,
                     duration: duration,
@@ -121,10 +140,16 @@ public struct EDTSSkeletonModifier: ViewModifier {
     }
 }
 
+// MARK: Extension View
+
 public extension View {
     func edtsSkeleton(
         active: Bool,
         cornerRadius: CGFloat = 8,
+        cornerRadiusTopLeft: CGFloat? = nil,
+        cornerRadiusTopRight: CGFloat? = nil,
+        cornerRadiusBottomLeft: CGFloat? = nil,
+        cornerRadiusBottomRight: CGFloat? = nil,
         baseColor: Color = EDTSColor.grey20,
         highlightColor: Color = EDTSColor.grey30,
         duration: Double = 1.5
@@ -133,6 +158,10 @@ public extension View {
             EDTSSkeletonModifier(
                 active: active,
                 cornerRadius: cornerRadius,
+                cornerRadiusTopLeft: cornerRadiusTopLeft,
+                cornerRadiusTopRight: cornerRadiusTopRight,
+                cornerRadiusBottomLeft: cornerRadiusBottomLeft,
+                cornerRadiusBottomRight: cornerRadiusBottomRight,
                 baseColor: baseColor,
                 highlightColor: highlightColor,
                 duration: duration
@@ -155,6 +184,13 @@ public extension View {
                     .frame(width: 120, height: 14)
             }
         }
+        EDTSSkeleton(
+            cornerRadiusTopLeft: 16,
+            cornerRadiusTopRight: 16,
+            cornerRadiusBottomLeft: 0,
+            cornerRadiusBottomRight: 0
+        )
+        .frame(height: 60)
         Text("Loaded content")
             .edtsSkeleton(active: true, cornerRadius: 6)
             .frame(height: 16)
