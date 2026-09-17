@@ -282,11 +282,11 @@ public struct EDTSCheckbox: View {
         case true:
             if EDTSColor.theme == .poinku {
                 return ResolvedValues(
-                    titleColor: titleColorInactive ?? EDTSColor.grey70,
-                    descColor: descColorInactive ?? EDTSColor.grey60,
-                    boxBgColor: boxBgColorInactive ?? EDTSColor.blue30,
-                    iconTintColor: iconTintColorInactive ?? EDTSColor.white,
-                    borderColor: borderColorInactive ?? EDTSColor.blue30
+                    titleColor: titleColorActive ?? EDTSColor.grey70,
+                    descColor: descColorActive ?? EDTSColor.grey60,
+                    boxBgColor: boxBgColorActive ?? EDTSColor.blue30,
+                    iconTintColor: iconTintColorActive ?? EDTSColor.white,
+                    borderColor: borderColorActive ?? EDTSColor.blue30
                 )
             } else {
                 return ResolvedValues(
@@ -388,13 +388,7 @@ public struct EDTSCheckbox: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: resolvedCornerRadius))
         .contentShape(Rectangle())
-        .overlay(
-            Circle()
-                .fill(EDTSColor.black.opacity(isPressed ? rippleOpacity : 0))
-                .frame(width: resolvedIconContainerSize + rippleBleed, height: resolvedIconContainerSize + rippleBleed)
-                .animation(.easeOut(duration: isPressed ? rippleGrowDuration : rippleFadeDuration), value: isPressed)
-                .allowsHitTesting(false)
-        )
+        .circularRippleEffect(size: resolvedIconContainerSize + rippleBleed, color: EDTSColor.black.opacity(rippleOpacity))
         .animation(.easeInOut(duration: activeStateAnimationDuration), value: isActive)
     }
 
