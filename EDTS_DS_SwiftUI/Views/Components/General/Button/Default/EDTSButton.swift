@@ -32,11 +32,11 @@ public struct EDTSButton: View {
     public var btnSize: BtnSize
     public var btnState: BtnState
 
-    public let label: String?
-    public let labelAttributed: AttributedString?
-    public var labelColor: Color?
-    public var labelDangerColor: Color?
-    public var labelDisabledColor: Color?
+    public let text: String?
+    public let textAttributed: AttributedString?
+    public var textColor: Color?
+    public var textDangerColor: Color?
+    public var textDisabledColor: Color?
     
     public var fontStyle: Font?
     public var fontName: String
@@ -87,18 +87,17 @@ public struct EDTSButton: View {
     
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
-    private let defaultValue: CGFloat = -1.0
     
     // MARK: - Initializers
     public init(
         btnType: BtnType = .primary,
         btnSize: BtnSize = .large,
         btnState: BtnState = .default,
-        label: String? = "Button",
-        labelAttributed: AttributedString? = nil,
-        labelColor: Color? = nil,
-        labelDangerColor: Color? = nil,
-        labelDisabledColor: Color? = nil,
+        text: String? = "Button",
+        textAttributed: AttributedString? = nil,
+        textColor: Color? = nil,
+        textDangerColor: Color? = nil,
+        textDisabledColor: Color? = nil,
         fontStyle: Font? = nil,
         fontName: String = "",
         fontSize: CGFloat = .zero,
@@ -140,11 +139,11 @@ public struct EDTSButton: View {
         self.btnType = btnType
         self.btnSize = btnSize
         self.btnState = btnState
-        self.label = labelAttributed == nil ? (label ?? "Button") : nil
-        self.labelAttributed = labelAttributed
-        self.labelColor = labelColor
-        self.labelDangerColor = labelDangerColor
-        self.labelDisabledColor = labelDisabledColor
+        self.text = textAttributed == nil ? text : nil
+        self.textAttributed = textAttributed
+        self.textColor = textColor
+        self.textDangerColor = textDangerColor
+        self.textDisabledColor = textDisabledColor
         self.fontStyle = fontStyle
         self.fontName = fontName
         self.fontSize = fontSize
@@ -185,6 +184,36 @@ public struct EDTSButton: View {
     }
     
     // MARK: - Private Variable
+    private let defaultFontSize: CGFloat = 16
+    private let pressedScale: CGFloat = 0.95
+    private let pressAnimationDuration: Double = 0.1
+    private let rippleOpacity: Double = 0.12
+    
+    private let smallIconSize: CGFloat = 16
+    private let smallIconSpacing: CGFloat = 8
+    private let smallPoinkuPaddingHorizontal: CGFloat = 8
+    private let smallPoinkuPaddingVertical: CGFloat = 4
+    private let smallPoinkuCornerRadius: CGFloat = 4
+    private let smallKlikPaddingHorizontal: CGFloat = 12
+    private let smallKlikPaddingVertical: CGFloat = 6
+    private let smallKlikCornerRadius: CGFloat = 6
+    
+    private let mediumIconSize: CGFloat = 16
+    private let mediumIconSpacing: CGFloat = 8
+    private let mediumPaddingVertical: CGFloat = 8
+    private let mediumPaddingHorizontal: CGFloat = 12
+    private let mediumPoinkuCornerRadius: CGFloat = 4
+    private let mediumKlikCornerRadius: CGFloat = 6
+    
+    private let largeIconSize: CGFloat = 24
+    private let largeIconSpacing: CGFloat = 8
+    private let largePaddingVertical: CGFloat = 8
+    private let largePaddingHorizontal: CGFloat = 12
+    private let largePoinkuCornerRadius: CGFloat = 8
+    private let largeKlikCornerRadius: CGFloat = 6
+    
+    private let defaultValue: CGFloat = -1.0
+    
     private var resolvedButtonSize: BtnSize {
         btnSize
     }
@@ -200,7 +229,7 @@ public struct EDTSButton: View {
     private struct ResolvedValues {
         var tempIconTintColorLeading: Color?
         var tempIconTintColorTrailing: Color?
-        var tempLabelColor: Color?
+        var tempTextColor: Color?
         var tempBgColor: Color?
         var tempRippleColor: Color?
         var tempBorderColor: Color?
@@ -218,7 +247,7 @@ public struct EDTSButton: View {
     private var customFont: Font? {
         if let fontStyle { return fontStyle }
         guard !fontName.isEmpty || fontSize != .zero else { return nil }
-        let resolvedSize = fontSize == .zero ? 16 : fontSize
+        let resolvedSize = fontSize == .zero ? defaultFontSize : fontSize
         var font: Font = fontName.isEmpty
             ? .system(size: resolvedSize)
             : .custom(fontName, size: resolvedSize)
@@ -254,8 +283,8 @@ public struct EDTSButton: View {
                 color: (bgColorStart == nil && bgColorEnd == nil) ? (values.tempRippleColor ?? .clear) : .clear,
                 cornerRadius: values.tempCornerRadius
             )
-            .scaleEffect(tempResolvedButtonState != nil ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: tempResolvedButtonState)
+            .scaleEffect(tempResolvedButtonState != nil ? pressedScale : 1.0)
+            .animation(.easeInOut(duration: pressAnimationDuration), value: tempResolvedButtonState)
             .contentShape(Rectangle())
             .simultaneousGesture(setupPressGesture())
     }
@@ -273,14 +302,14 @@ public struct EDTSButton: View {
             }
             
             Group {
-                if let labelAttributed {
-                    Text(labelAttributed)
+                if let textAttributed {
+                    Text(textAttributed)
                 } else {
-                    Text(label ?? "Button")
+                    Text(text ?? "Button")
                 }
             }
-            .edtsFont(setupFontStyle, custom: customFont)
-            .foregroundColor(values.tempLabelColor)
+            .font(customFont ?? setupFontStyle)
+            .foregroundColor(values.tempTextColor)
             .multilineTextAlignment(.center)
             
             if let iconTrailing {
@@ -309,19 +338,19 @@ public struct EDTSButton: View {
         }
     }
     
-    private var setupFontStyle: EDTSFont.FontStyle {
+    private var setupFontStyle: Font {
         switch EDTSColor.theme {
         case .klikIDM:
             switch resolvedButtonSize {
-            case .small: return EDTSFont.Klik.Button.Small
-            case .medium: return EDTSFont.Klik.Button.Medium
-            case .large: return EDTSFont.Klik.Button.Large
+            case .small: return EDTSFont.Klik.Button.Small.font
+            case .medium: return EDTSFont.Klik.Button.Medium.font
+            case .large: return EDTSFont.Klik.Button.Large.font
             }
         case .poinku:
             switch resolvedButtonSize {
-            case .small: return EDTSFont.Poinku.Button.Small
-            case .medium: return EDTSFont.Poinku.Button.Medium
-            case .large: return EDTSFont.Poinku.Button.Large
+            case .small: return EDTSFont.Poinku.Button.Small.font
+            case .medium: return EDTSFont.Poinku.Button.Medium.font
+            case .large: return EDTSFont.Poinku.Button.Large.font
             }
         }
     }
@@ -332,49 +361,49 @@ public struct EDTSButton: View {
         switch resolvedButtonSize {
         case .small:
             if EDTSColor.theme == .poinku {
-                values.tempPaddingLeading = paddingLeading == defaultValue ? 8 : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? 8 : paddingTrailing
-                values.tempPaddingTop = paddingTop == defaultValue ? 4 : paddingTop
-                values.tempPaddingBottom = paddingBottom == defaultValue ? 4 : paddingBottom
-                values.tempCornerRadius = cornerRadius == defaultValue ? 4 : cornerRadius
+                values.tempPaddingLeading = paddingLeading == defaultValue ? smallPoinkuPaddingHorizontal : paddingLeading
+                values.tempPaddingTrailing = paddingTrailing == defaultValue ? smallPoinkuPaddingHorizontal : paddingTrailing
+                values.tempPaddingTop = paddingTop == defaultValue ? smallPoinkuPaddingVertical : paddingTop
+                values.tempPaddingBottom = paddingBottom == defaultValue ? smallPoinkuPaddingVertical : paddingBottom
+                values.tempCornerRadius = cornerRadius == defaultValue ? smallPoinkuCornerRadius : cornerRadius
             } else {
-                values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
-                values.tempPaddingTop = paddingTop == defaultValue ? 6 : paddingTop
-                values.tempPaddingBottom = paddingBottom == defaultValue ? 6 : paddingBottom
-                values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
+                values.tempPaddingLeading = paddingLeading == defaultValue ? smallKlikPaddingHorizontal : paddingLeading
+                values.tempPaddingTrailing = paddingTrailing == defaultValue ? smallKlikPaddingHorizontal : paddingTrailing
+                values.tempPaddingTop = paddingTop == defaultValue ? smallKlikPaddingVertical : paddingTop
+                values.tempPaddingBottom = paddingBottom == defaultValue ? smallKlikPaddingVertical : paddingBottom
+                values.tempCornerRadius = cornerRadius == defaultValue ? smallKlikCornerRadius : cornerRadius
             }
             
-            values.tempIconSize = iconSize == .zero ? 16 : iconSize
-            values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
+            values.tempIconSize = iconSize == .zero ? smallIconSize : iconSize
+            values.tempIconSpacing = iconSpacing == .zero ? smallIconSpacing : iconSpacing
             
         case .medium:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 4 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? mediumPoinkuCornerRadius : cornerRadius
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? mediumKlikCornerRadius : cornerRadius
             }
             
-            values.tempIconSize = iconSize == .zero ? 16 : iconSize
-            values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
-            values.tempPaddingTop = paddingTop == defaultValue ? 8 : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? 8 : paddingBottom
-            values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
-            values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
+            values.tempIconSize = iconSize == .zero ? mediumIconSize : iconSize
+            values.tempIconSpacing = iconSpacing == .zero ? mediumIconSpacing : iconSpacing
+            values.tempPaddingTop = paddingTop == defaultValue ? mediumPaddingVertical : paddingTop
+            values.tempPaddingBottom = paddingBottom == defaultValue ? mediumPaddingVertical : paddingBottom
+            values.tempPaddingLeading = paddingLeading == defaultValue ? mediumPaddingHorizontal : paddingLeading
+            values.tempPaddingTrailing = paddingTrailing == defaultValue ? mediumPaddingHorizontal : paddingTrailing
             
         case .large:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 8 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? largePoinkuCornerRadius : cornerRadius
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? 6 : cornerRadius
+                values.tempCornerRadius = cornerRadius == defaultValue ? largeKlikCornerRadius : cornerRadius
             }
             
-            values.tempIconSize = iconSize == .zero ? 24 : iconSize
-            values.tempIconSpacing = iconSpacing == .zero ? 8 : iconSpacing
-            values.tempPaddingTop = paddingTop == defaultValue ? 8 : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? 8 : paddingBottom
-            values.tempPaddingLeading = paddingLeading == defaultValue ? 12 : paddingLeading
-            values.tempPaddingTrailing = paddingTrailing == defaultValue ? 12 : paddingTrailing
+            values.tempIconSize = iconSize == .zero ? largeIconSize : iconSize
+            values.tempIconSpacing = iconSpacing == .zero ? largeIconSpacing : iconSpacing
+            values.tempPaddingTop = paddingTop == defaultValue ? largePaddingVertical : paddingTop
+            values.tempPaddingBottom = paddingBottom == defaultValue ? largePaddingVertical : paddingBottom
+            values.tempPaddingLeading = paddingLeading == defaultValue ? largePaddingHorizontal : paddingLeading
+            values.tempPaddingTrailing = paddingTrailing == defaultValue ? largePaddingHorizontal : paddingTrailing
         }
         
         return values
@@ -404,10 +433,10 @@ public struct EDTSButton: View {
             break
             
         case .secondary, .tertiary:
-            if labelColor != nil {
-                values.tempIconTintColorLeading = iconTintColorLeading == nil ? values.tempLabelColor : values.tempIconTintColorLeading
-                values.tempIconTintColorTrailing = iconTintColorTrailing == nil ? values.tempLabelColor : values.tempIconTintColorTrailing
-                values.tempBorderColor = borderColor == nil ? values.tempLabelColor : values.tempBorderColor
+            if textColor != nil {
+                values.tempIconTintColorLeading = iconTintColorLeading == nil ? values.tempTextColor : values.tempIconTintColorLeading
+                values.tempIconTintColorTrailing = iconTintColorTrailing == nil ? values.tempTextColor : values.tempIconTintColorTrailing
+                values.tempBorderColor = borderColor == nil ? values.tempTextColor : values.tempBorderColor
             }
         }
         
@@ -418,17 +447,17 @@ public struct EDTSButton: View {
         
         if rippleColor == nil {
             if values.tempBgColor == EDTSColor.white {
-                values.tempRippleColor = values.tempLabelColor?.opacity(0.12)
+                values.tempRippleColor = values.tempTextColor?.opacity(rippleOpacity)
             } else if values.tempBgColor == .clear {
-                values.tempRippleColor = values.tempLabelColor?.opacity(0.12)
+                values.tempRippleColor = values.tempTextColor?.opacity(rippleOpacity)
             } else if values.tempBgColor != EDTSColor.white {
-                values.tempRippleColor = EDTSColor.grey70.opacity(0.12)
+                values.tempRippleColor = EDTSColor.grey70.opacity(rippleOpacity)
             }
         } else {
             if rippleColor == .clear {
                 values.tempRippleColor = rippleColor
             } else {
-                values.tempRippleColor = rippleColor?.opacity(0.12)
+                values.tempRippleColor = rippleColor?.opacity(rippleOpacity)
             }
         }
     }
@@ -445,14 +474,14 @@ public struct EDTSButton: View {
             }
             
             values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.white
-            values.tempLabelColor = labelColor ?? EDTSColor.white
+            values.tempTextColor = textColor ?? EDTSColor.white
             values.tempIconTintColorTrailing = iconTintColorTrailing ?? EDTSColor.white
             values.tempBorderWidth = borderWidth == .zero ? 0 : borderWidth
             values.tempShadowColor = shadowColor
             
         case .danger:
             values.tempIconTintColorLeading = iconDangerTintColorLeading ?? EDTSColor.white
-            values.tempLabelColor = labelDangerColor ?? EDTSColor.white
+            values.tempTextColor = textDangerColor ?? EDTSColor.white
             values.tempIconTintColorTrailing = iconDangerTintColorTrailing ?? EDTSColor.white
             values.tempBgColor = bgDangerColor ?? EDTSColor.red30
             values.tempBorderColor = borderDangerColor ?? EDTSColor.red30
@@ -463,7 +492,7 @@ public struct EDTSButton: View {
             values.tempBgColor = bgDisabledColor ?? EDTSColor.grey30
             values.tempBorderColor = borderDisabledColor ?? EDTSColor.grey30
             values.tempIconTintColorLeading = iconDisabledTintColorLeading ?? EDTSColor.white
-            values.tempLabelColor = labelDisabledColor ?? EDTSColor.white
+            values.tempTextColor = textDisabledColor ?? EDTSColor.white
             values.tempIconTintColorTrailing = iconDisabledTintColorTrailing ?? EDTSColor.white
             values.tempBorderWidth = borderWidth == .zero ? 0 : borderWidth
             values.tempShadowColor = shadowDisabledColor ?? shadowColor
@@ -475,12 +504,12 @@ public struct EDTSButton: View {
         case .default:
             if EDTSColor.theme == .poinku {
                 values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.blue30
-                values.tempLabelColor = labelColor ?? EDTSColor.blue30
+                values.tempTextColor = textColor ?? EDTSColor.blue30
                 values.tempIconTintColorTrailing = iconTintColorTrailing ?? EDTSColor.blue30
                 values.tempBorderColor = borderColor ?? EDTSColor.blue30
             } else {
                 values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.blue50
-                values.tempLabelColor = labelColor ?? EDTSColor.blue50
+                values.tempTextColor = textColor ?? EDTSColor.blue50
                 values.tempIconTintColorTrailing = iconTintColorTrailing ?? EDTSColor.blue50
                 values.tempBorderColor = borderColor ?? EDTSColor.blue50
             }
@@ -491,7 +520,7 @@ public struct EDTSButton: View {
             
         case .danger:
             values.tempIconTintColorLeading = iconDangerTintColorLeading ?? EDTSColor.red30
-            values.tempLabelColor = labelDangerColor ?? EDTSColor.red30
+            values.tempTextColor = textDangerColor ?? EDTSColor.red30
             values.tempIconTintColorTrailing = iconDangerTintColorTrailing ?? EDTSColor.red30
             values.tempBgColor = bgDangerColor ?? EDTSColor.white
             values.tempBorderColor = borderDangerColor ?? EDTSColor.red30
@@ -500,7 +529,7 @@ public struct EDTSButton: View {
             
         case .disabled:
             values.tempIconTintColorLeading = iconDisabledTintColorLeading ?? EDTSColor.grey30
-            values.tempLabelColor = labelDisabledColor ?? EDTSColor.grey30
+            values.tempTextColor = textDisabledColor ?? EDTSColor.grey30
             values.tempIconTintColorTrailing = iconDisabledTintColorTrailing ?? EDTSColor.grey30
             values.tempBorderColor = borderDisabledColor ?? EDTSColor.grey30
             values.tempBgColor = bgDisabledColor ?? EDTSColor.white
@@ -513,7 +542,7 @@ public struct EDTSButton: View {
         switch state {
         case .default:
             values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.grey60
-            values.tempLabelColor = labelColor ?? EDTSColor.grey60
+            values.tempTextColor = textColor ?? EDTSColor.grey60
             values.tempIconTintColorTrailing = iconTintColorTrailing ?? EDTSColor.grey60
             values.tempBgColor = bgColor ?? EDTSColor.white
             values.tempBorderColor = borderColor ?? EDTSColor.grey60
@@ -521,17 +550,17 @@ public struct EDTSButton: View {
             values.tempShadowColor = shadowColor
             
         case .danger:
-            values.tempIconTintColorLeading = iconDangerTintColorLeading ?? EDTSColor.errorStrong
-            values.tempLabelColor = labelDangerColor ?? EDTSColor.errorStrong
-            values.tempIconTintColorTrailing = iconDangerTintColorTrailing ?? EDTSColor.errorStrong
+            values.tempIconTintColorLeading = iconDangerTintColorLeading ?? EDTSColor.red30
+            values.tempTextColor = textDangerColor ?? EDTSColor.red30
+            values.tempIconTintColorTrailing = iconDangerTintColorTrailing ?? EDTSColor.red30
             values.tempBgColor = bgDangerColor ?? EDTSColor.white
-            values.tempBorderColor = borderDangerColor ?? EDTSColor.disabled
+            values.tempBorderColor = borderDangerColor ?? EDTSColor.grey30
             values.tempBorderWidth = borderWidth == .zero ? 1 : borderWidth
             values.tempShadowColor = shadowDangerColor ?? shadowColor
             
         case .disabled:
             values.tempIconTintColorLeading = iconDisabledTintColorLeading ?? EDTSColor.grey30
-            values.tempLabelColor = labelDisabledColor ?? EDTSColor.grey30
+            values.tempTextColor = textDisabledColor ?? EDTSColor.grey30
             values.tempIconTintColorTrailing = iconDisabledTintColorTrailing ?? EDTSColor.grey30
             values.tempBorderColor = borderDisabledColor ?? EDTSColor.grey30
             values.tempBgColor = bgDisabledColor ?? EDTSColor.white
@@ -566,20 +595,20 @@ public struct EDTSButton: View {
     struct PreviewWrapper: View {
         var body: some View {
             VStack(spacing: 12) {
-                EDTSButton(btnType: .primary, btnSize: .large, btnState: .default, label: "Primary Default") {}
-                EDTSButton(btnType: .primary, btnSize: .large, btnState: .danger, label: "Primary Danger") {}
-                EDTSButton(btnType: .primary, btnSize: .large, btnState: .disabled, label: "Primary Disabled") {}
-                EDTSButton(btnType: .secondary, btnSize: .medium, btnState: .default, label: "Secondary Default") {}
-                EDTSButton(btnType: .secondary, btnSize: .medium, btnState: .danger, label: "Secondary Danger") {}
-                EDTSButton(btnType: .secondary, btnSize: .medium, btnState: .disabled, label: "Secondary Disabled") {}
-                EDTSButton(btnType: .tertiary, btnSize: .small, btnState: .default, label: "Tertiary Default") {}
-                EDTSButton(btnType: .tertiary, btnSize: .small, btnState: .danger, label: "Tertiary Danger") {}
-                EDTSButton(btnType: .tertiary, btnSize: .small, btnState: .disabled, label: "Tertiary Disabled") {}
+                EDTSButton(btnType: .primary, btnSize: .large, btnState: .default, text: "Primary Default") {}
+                EDTSButton(btnType: .primary, btnSize: .large, btnState: .danger, text: "Primary Danger") {}
+                EDTSButton(btnType: .primary, btnSize: .large, btnState: .disabled, text: "Primary Disabled") {}
+                EDTSButton(btnType: .secondary, btnSize: .medium, btnState: .default, text: "Secondary Default") {}
+                EDTSButton(btnType: .secondary, btnSize: .medium, btnState: .danger, text: "Secondary Danger") {}
+                EDTSButton(btnType: .secondary, btnSize: .medium, btnState: .disabled, text: "Secondary Disabled") {}
+                EDTSButton(btnType: .tertiary, btnSize: .small, btnState: .default, text: "Tertiary Default") {}
+                EDTSButton(btnType: .tertiary, btnSize: .small, btnState: .danger, text: "Tertiary Danger") {}
+                EDTSButton(btnType: .tertiary, btnSize: .small, btnState: .disabled, text: "Tertiary Disabled") {}
                 EDTSButton(
                     btnType: .primary,
                     btnSize: .small,
                     btnState: .default,
-                    label: "Gradient With Icon",
+                    text: "Gradient With Icon",
                     bgColorStart: EDTSColor.skyblueLeading,
                     bgColorEnd: EDTSColor.skyblueTrailing,
                     bgColorOrientation: .vertical,

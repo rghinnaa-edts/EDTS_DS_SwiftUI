@@ -5,11 +5,9 @@ The `EDTSSkeleton` component is an animated shimmer placeholder used to indicate
 ## Features
 
 - Continuous left-to-right shimmer animation, looping indefinitely while active
-- Configurable corner radius, base/highlight colors, and animation duration
+- Configurable corner radius, including independent per-corner radii, base/highlight colors, and animation duration
 - Can be used directly as a shaped placeholder view, or applied to existing content via `.edtsSkeleton(...)`
 - Automatically starts/stops the shimmer loop when `isActive` changes
-- Hidden from accessibility (`accessibilityHidden`), since it's a purely visual loading indicator
-- Includes internal iOS-version compatibility shims for `onChange` and `accessibilityHidden`, so it works on older deployment targets
 
 ---
 
@@ -33,7 +31,7 @@ Then import it wherever you use the component:
 import EDTS_DS_SwiftUI
 ```
 
-This relies on the design token types already available in the pod (`EDTSColor`).
+This relies on the design token types already available in the pod (`EDTSColor`) and the shared `UnevenRoundedShape` used for per-corner rounding.
 
 ---
 
@@ -45,6 +43,24 @@ This relies on the design token types already available in the pod (`EDTSColor`)
 EDTSSkeleton()
     .frame(height: 60)
 ```
+
+### Extension View Modifier
+
+```swift
+func edtsSkeleton(
+    active: Bool,
+    cornerRadius: CGFloat = 8,
+    cornerRadiusTopLeft: CGFloat? = nil,
+    cornerRadiusTopRight: CGFloat? = nil,
+    cornerRadiusBottomLeft: CGFloat? = nil,
+    cornerRadiusBottomRight: CGFloat? = nil,
+    baseColor: Color = EDTSColor.grey20,
+    highlightColor: Color = EDTSColor.grey30,
+    duration: Double = 1.5
+) -> some View
+```
+
+---
 
 `EDTSSkeleton` has no intrinsic size — always constrain it with `.frame(...)` (or place it inside a layout that sizes it), the same way you'd size any shape.
 
@@ -61,6 +77,18 @@ EDTSSkeleton(
 ```
 
 `duration` is the time for one shimmer sweep across the view; the sweep then repeats indefinitely (`repeatForever(autoreverses: false)`) for as long as `isActive` is `true`.
+
+### Per-Corner Radius
+
+```swift
+EDTSSkeleton(
+    cornerRadiusTopLeft: 16,
+    cornerRadiusTopRight: 16,
+    cornerRadiusBottomLeft: 0,
+    cornerRadiusBottomRight: 0
+)
+.frame(height: 60)
+```
 
 ### Composing a Loading Layout
 
@@ -91,7 +119,7 @@ Text("Loaded content")
     .frame(height: 16)
 ```
 
-`.edtsSkeleton(active:...)` wraps the view in a `ZStack`: the original content is set to `opacity(0)` (so it still reserves its layout size) and an `EDTSSkeleton` is overlaid on top while `active` is `true`. When `active` is `false`, only the original content is shown at full opacity. This is the preferred way to skeleton-ize existing UI, since the placeholder automatically matches the content's frame instead of needing a manually-sized `EDTSSkeleton()`.
+`.edtsSkeleton(active:...)` wraps the view in a `ZStack`: the original content is set to `opacity(0)` (so it still reserves its layout size) and an `EDTSSkeleton` is overlaid on top while `active` is `true`. When `active` is `false`, only the original content is shown at full opacity.
 
 ---
 
@@ -99,35 +127,16 @@ Text("Loaded content")
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `cornerRadius` | `CGFloat` | `8` | Corner radius of the shimmer shape |
+| `active` | `Bool` | — (required) | When `true`, replaces the visible content with an `EDTSSkeleton` overlay sized to match the content's own frame; when `false`, shows the original content |
+| `cornerRadius` | `CGFloat` | `8` | Uniform corner radius of the shimmer shape, used when none of the four per-corner parameters below are set |
+| `cornerRadiusTopLeft` | `CGFloat?` | `nil` | Top-left corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius` |
+| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Top-right corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius` |
+| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Bottom-left corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius` |
+| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Bottom-right corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius`|
 | `baseColor` | `Color` | `EDTSColor.grey20` | Base fill color of the shimmer shape |
 | `highlightColor` | `Color` | `EDTSColor.grey30` | Color of the moving highlight band that sweeps across the shape |
 | `duration` | `Double` | `1.5` | Duration in seconds of one shimmer sweep. The sweep repeats indefinitely while `isActive` is `true` |
-| `isActive` | `Bool` | `true` | Whether the shimmer animation is running. Setting this to `false` freezes the shape at its base color (see [Animation](#animation) below) |
-
----
-
-## Public Interface — `.edtsSkeleton(...)` Modifier
-
-```swift
-func edtsSkeleton(
-    active: Bool,
-    cornerRadius: CGFloat = 8,
-    baseColor: Color = EDTSColor.grey20,
-    highlightColor: Color = EDTSColor.grey30,
-    duration: Double = 1.5
-) -> some View
-```
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `active` | `Bool` | — (required) | When `true`, replaces the visible content with an `EDTSSkeleton` overlay sized to match the content's own frame; when `false`, shows the original content |
-| `cornerRadius` | `CGFloat` | `8` | Corner radius of the overlaid `EDTSSkeleton` |
-| `baseColor` | `Color` | `EDTSColor.grey20` | Base fill color of the overlaid `EDTSSkeleton` |
-| `highlightColor` | `Color` | `EDTSColor.grey30` | Highlight sweep color of the overlaid `EDTSSkeleton` |
-| `duration` | `Double` | `1.5` | Shimmer sweep duration of the overlaid `EDTSSkeleton` |
-
-> Note: the modifier always passes `isActive: true` to the internal `EDTSSkeleton` it creates — the shimmer only starts looping once `active` makes the skeleton visible in the first place, so there's no separate "visible but frozen" state reachable through the modifier the way there is with the standalone view's `isActive` parameter.
+| `isActive` | `Bool` | `true` | Whether the shimmer animation is running. Setting this to `false` freezes the shape at its base color |
 
 ---
 
@@ -136,25 +145,8 @@ func edtsSkeleton(
 | Property | Value | Notes |
 |---|---|---|
 | Type | `.linear(duration: duration).repeatForever(autoreverses: false)` | Started in `onAppear` and whenever `isActive` becomes `true` |
-| Mechanism | An internal `phase` value animates from `-1` to `1`; a gradient band (`baseColor → highlightColor → baseColor`) twice the view's width is offset by `phase * width * 2` | Produces a continuous left-to-right sweep, masked to the shape's rounded rectangle |
+| Mechanism | An internal `phase` value animates from `-1` to `1`; a gradient band (`baseColor → highlightColor → baseColor`) twice the view's width is offset by `phase * width * 2` | Produces a continuous left-to-right sweep, masked to the shape (a `UnevenRoundedShape` built from the resolved corner radii) |
 | Stopping | Setting `isActive` to `false` calls `withAnimation(.none) { phase = -1 }`, snapping the shimmer back to its resting position immediately rather than easing out | The shape remains visible at `baseColor`; it isn't hidden or removed |
-
----
-
-## Compatibility
-
-`EDTSSkeleton` includes two private fallback helpers so it can be used below the platform's native availability for certain modifiers:
-
-- **`onChangeCompat`** — uses `.onChange(of:perform:)` on iOS 14+, and falls back to `.onReceive(Just(value).removeDuplicates())` (via Combine) on earlier versions, to react to `isActive` changes.
-- **`accessibilityHiddenCompat`** — uses `.accessibilityHidden(_:)` on iOS 14 / macOS 11 / tvOS 14 / watchOS 7+, and falls back to the older `.accessibility(hidden:)` modifier otherwise.
-
-Both are internal implementation details — consumers don't need to call them directly, but they're why `EDTSSkeleton` can be dropped into projects with a lower minimum deployment target without extra `#available` handling at the call site.
-
----
-
-## Accessibility
-
-`EDTSSkeleton` is always marked `accessibilityHidden(true)`, since it's a transient visual loading state with no meaningful content for assistive technologies to announce.
 
 ---
 
