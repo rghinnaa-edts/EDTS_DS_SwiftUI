@@ -140,9 +140,11 @@ EDTSBadge(text: "New", isSkeleton: true)
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `text` | `String` | — (required) | Text shown in the badge. Still required even when `textAttributed` is set, since it's used to size the placeholder for the skeleton state. Truncates to one line, scaling down to `80%` before clipping |
+| `text` | `String` | — (required) | Text shown in the badge. Still required even when `textAttributed` is set, since it's used to size the placeholder |
 | `textAttributed` | `AttributedString?` | `nil` | When set, rendered instead of `text` |
-| `icon` | `Image?` | `nil` | Optional leading icon, rendered at a fixed `12x12` |
+| `iconLeading` | `Image?` | `nil` | Optional leading icon, rendered at a fixed `16x16` |
+| `iconTrailing` | `Image?` | `nil` | Optional trialing icon, rendered at a fixed `16x16` |
+| `isSkeleton` | `Bool?` | `nil` | For show or hide skeleton on the badge |
 
 ### Text Styling
 
@@ -158,8 +160,10 @@ EDTSBadge(text: "New", isSkeleton: true)
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `iconTint` | `Color?` | `nil` | Tint applied to `icon`. Falls back to `textColor` when `nil` |
-| `iconPadding` | `CGFloat` | `2.0` | Spacing between the icon and the label. Ignored when `icon` is `nil` (no gap is reserved) |
+| `iconTintColorLeading` | `Color?` | `nil` | Tint applied to `icon` leading. Falls back to `textColor` when `nil` |
+| `iconTintColorTrailing` | `Color?` | `nil` | Tint applied to `icon` trailing. Falls back to `textColor` when `nil` |
+| `iconSpacing` | `CGFloat` | `4.0` | Spacing between the icon and the label. Ignored when `icon` is `nil` (no gap is reserved) |
+| `iconSize` | `CGFloat` | `16.0` | Size of the `icon` |
 
 ### Background & Border
 
@@ -168,11 +172,12 @@ EDTSBadge(text: "New", isSkeleton: true)
 | `bgColor` | `Color` | `EDTSColor.grey20` | Solid fill color of the badge background, used when neither `bgColorStart` nor `bgColorEnd` is set |
 | `bgColorStart` | `Color?` | `nil` | Gradient start color (leading edge). If set alone, the gradient still renders, fading to `.clear` |
 | `bgColorEnd` | `Color?` | `nil` | Gradient end color (trailing edge). If set alone, the gradient still renders, fading from `.clear` |
+| `bgColorOrientation` | `Orientation?` | `.vertical` | Gradient direction: .horizontal (leading→trailing) or .vertical (top→bottom) |
 | `cornerRadius` | `CGFloat` | `8.0` | Uniform corner radius applied to the background, border, and skeleton shape, unless overridden by a per-corner value below |
 | `cornerRadiusTopLeft` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
-| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Radius of the top-right corner. Same fallback rule as above |
-| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Radius of the bottom-left corner. Same fallback rule as above |
-| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Radius of the bottom-right corner. Same fallback rule as above |
+| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
+| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
+| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
 | `borderWidth` | `CGFloat` | `0.0` | Width of the badge's stroke border |
 | `borderColor` | `Color` | `.clear` | Color of the badge's stroke border |
 
@@ -189,10 +194,10 @@ EDTSBadge(text: "New", isSkeleton: true)
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `paddingTop` | `CGFloat` | `1.0` | Padding above the content |
-| `paddingBottom` | `CGFloat` | `1.0` | Padding below the content |
-| `paddingLeading` | `CGFloat` | `4.0` | Padding before the content (icon or label) |
-| `paddingTrailing` | `CGFloat` | `4.0` | Padding after the content (label) |
+| `paddingTop` | `CGFloat` | `2.0` | Padding above the content |
+| `paddingBottom` | `CGFloat` | `2.0` | Padding below the content |
+| `paddingLeading` | `CGFloat` | `8.0` | Padding before the content (icon or label) |
+| `paddingTrailing` | `CGFloat` | `8.0` | Padding after the content (label) |
 
 ---
 
