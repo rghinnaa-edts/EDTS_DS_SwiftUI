@@ -332,7 +332,8 @@ public struct EDTSChip: View {
                     icon: iconLeading,
                     tint: values.iconTintLeading,
                     bg: values.iconBgLeading,
-                    onTap: onTapLeadingIcon
+                    onTap: onTapLeadingIcon,
+                    isActionable: onTapLeadingIcon != nil
                 )
             }
             
@@ -343,7 +344,8 @@ public struct EDTSChip: View {
                     icon: iconTrailing,
                     tint: values.iconTintTrailing,
                     bg: values.iconBgTrailing,
-                    onTap: onTapTrailingIcon
+                    onTap: onTapTrailingIcon,
+                    isActionable: onTapTrailingIcon != nil
                 )
             }
         }
@@ -391,9 +393,10 @@ public struct EDTSChip: View {
         icon: Image,
         tint: Color,
         bg: Color,
-        onTap: (() -> Void)?
+        onTap: (() -> Void)?,
+        isActionable: Bool
     ) -> some View {
-        icon
+        let base = icon
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
@@ -402,13 +405,19 @@ public struct EDTSChip: View {
             .padding(iconBadgePadding)
             .background(bg)
             .clipShape(Circle())
-            .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(0.22))
-            .highPriorityGesture(
-                DragGesture(minimumDistance: 0)
-                    .onEnded { _ in
-                        onTap?()
-                    }
-            )
+
+        if isActionable {
+            base
+                .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(0.22))
+                .highPriorityGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onEnded { _ in
+                            onTap?()
+                        }
+                )
+        } else {
+            base
+        }
     }
     
     // MARK: - Setup & Styling
@@ -445,11 +454,13 @@ public struct EDTSChip: View {
                 
                 EDTSChip(
                     text: "With icons",
-                    iconLeading: Image(systemName: "star.fill"),
-                    iconTrailing: Image(systemName: "xmark"),
-                    isActive: isActive,
-                    onTapChip: { isActive.toggle() },
-                    onTapLeadingIcon: { print("leading icon tapped") },
+                    iconLeading: Image("ic_placeholder"),
+                    iconBgColorLeading: .white,
+                    iconTrailing: Image("ic_placeholder"),
+                    iconBgColorTrailing: .white,
+                    isActive: false,
+                    onTapChip: {},
+                    onTapLeadingIcon: { print("Leading icon tapped") },
                     onTapTrailingIcon: { print("trailing icon tapped") }
                 )
                 
