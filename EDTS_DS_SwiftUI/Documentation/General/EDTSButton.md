@@ -2,22 +2,6 @@
 
 `EDTSButton` is a SwiftUI button built as a plain `View` (not `ButtonStyle`), combining a `DragGesture(minimumDistance: 0)` for press handling with a custom ripple effect, gradient/solid background support, and per-state (`default` / `danger` / `disabled`) color resolution across label, icon, border, and shadow. Its visual defaults are theme-aware, switching between `klikIDM` and `poinku` token sets via `EDTSColor.theme`.
 
-## Enums
-
-```swift
-public enum BtnState: String {
-    case `default`, danger, disabled
-}
-
-public enum BtnType: String {
-    case primary, secondary, tertiary
-}
-
-public enum BtnSize: String {
-    case small, medium, large
-}
-```
-
 ---
 
 ## Preview
@@ -109,6 +93,24 @@ EDTSButton(text: nil, textAttributed: attributed) {}
 ```
 
 When `textAttributed` is non-`nil`, it takes precedence and `text` is ignored (internally forced to `nil`).
+
+---
+
+## Enums
+
+```swift
+public enum BtnState: String {
+    case `default`, danger, disabled
+}
+
+public enum BtnType: String {
+    case primary, secondary, tertiary
+}
+
+public enum BtnSize: String {
+    case small, medium, large
+}
+```
 
 ---
 
