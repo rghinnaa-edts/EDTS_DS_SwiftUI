@@ -1,13 +1,6 @@
-//
-//  EDTSCheckbox.md
-//  EDTS_DS_SwiftUI
-//
-//  Created by Yovita Handayiani on 17/09/26.
-//
-
 # EDTSCheckbox
 
-`EDTSCheckbox` is a SwiftUI checkbox component that supports checked and indeterminate types, default and disabled states, optional title and description text, optional custom icons, active/inactive styling, configurable borders and padding, and tap handling. Its visual defaults are theme-aware, switching between `klikIDM` and `poinku` token sets via `EDTSColor.theme`.
+`EDTSCheckbox` is a SwiftUI checkbox component that supports checked and indeterminate types, default and disabled states, optional title and description text, optional custom icons, active/inactive styling, configurable borders and padding, and tap handling.
 
 ---
 
@@ -21,6 +14,8 @@
 | **Disabled — Inactive** | ![Checkbox Disabled Inactive](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1781077898/checkbox_disabled_uncheck_qimqjb.png) |
 | **Disabled — Active (Checked)** | ![Checkbox Disabled Active](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1781077903/checkbox_disabled_checked_qyyuch.png) |
 | **Disabled — Active (Indeterminate)** | ![Checkbox Disabled Active](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1781077902/checkbox_disabled_indeterminated_ywcvbt.png) |
+
+---
 
 ## Installation
 
@@ -198,11 +193,11 @@ public enum EDTSCheckboxType: String {
 | -------------- | ---- | ------- | ----------- |
 | `titleFontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override for the title; takes precedence over `titleFontName`/`titleFontSize`/`titleFontWeight` and the theme default |
 | `titleFontName` | `String` | `""` | Custom title font family name |
-| `titleFontSize` | `CGFloat` | `0` | Custom title font size; resolves to `14` when the custom-font path is active and size is unset |
+| `titleFontSize` | `CGFloat` | `0` | Custom title font size |
 | `titleFontWeight` | `String?` | `nil` | Custom title font weight keyword, applied via `setupFontWeight(from:)` |
-| `descFontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override for the description |
+| `descFontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override for the description; takes precedence over `descFontName`/`descFontSize`/`descFontWeight` and the theme default |
 | `descFontName` | `String` | `""` | Custom description font family name |
-| `descFontSize` | `CGFloat` | `0` | Custom description font size; resolves to `12` when the custom-font path is active and size is unset |
+| `descFontSize` | `CGFloat` | `0` | Custom description font size |
 | `descFontWeight` | `String?` | `nil` | Custom description font weight keyword, applied via `setupFontWeight(from:)` |
 
 When no custom title font is supplied, the title uses `EDTSFont.Poinku.B2.Medium` for `poinku` or `EDTSFont.Klik.B2.Medium` for `klikIDM`.
@@ -213,7 +208,7 @@ When no custom description font is supplied, the description uses `EDTSFont.Poin
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `icon` | `Image?` | `nil` | Custom icon rendered inside the checkbox; when unset, the icon is resolved from `checkboxType` |
+| `icon` | `Image?` | `nil` | Custom icon rendered inside the checkbox |
 | `iconTintColorActive` | `Color?` | theme default | Icon tint when `isActive == true` |
 | `iconTintColorInactive` | `Color?` | theme default | Icon tint when `isActive == false` |
 
@@ -234,8 +229,8 @@ The icon is rendered as a template image and resized to `16pt × 16pt`.
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `spacing` | `CGFloat` | `0` → `8` | Spacing between the checkbox box and the title/description content |
-| `labelSpacing` | `CGFloat` | `0` → `4` | Vertical spacing between title and description |
+| `spacing` | `CGFloat` | `8` | Spacing between the checkbox box and the title/description content |
+| `labelSpacing` | `CGFloat` | `4` | Vertical spacing between title and description |
 | `paddingTop` | `CGFloat` | `0` | Top content padding |
 | `paddingBottom` | `CGFloat` | `0` | Bottom content padding |
 | `paddingLeading` | `CGFloat` | `0` | Leading content padding |
@@ -245,11 +240,9 @@ The icon is rendered as a template image and resized to `16pt × 16pt`.
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `borderWidth` | `CGFloat` | `0` → `1` | Checkbox border width; `0` uses the component's default border width |
+| `borderWidth` | `CGFloat` | `1` | Checkbox border width |
 | `borderColorActive` | `Color?` | theme default | Border color when `isActive == true` |
 | `borderColorInactive` | `Color?` | theme default | Border color when `isActive == false` |
-
-The checkbox uses a fixed `4pt` corner radius.
 
 ---
 
@@ -277,49 +270,12 @@ The checkbox uses a fixed `4pt` corner radius.
 
 ---
 
-## Sizing & Geometry
-
-| Constant | Value | Description |
-| -------- | ----- | ----------- |
-| `iconContainerSize` | `20pt` | Width and height of the checkbox container |
-| `iconSize` | `16pt` | Width and height of the icon glyph |
-| `cornerRadius` | `4pt` | Corner radius of the checkbox box |
-| `defaultBorderWidth` | `1pt` | Border width used when `borderWidth` is `0` |
-| `defaultSpacing` | `8pt` | Default spacing between checkbox and label content |
-| `defaultLabelSpacing` | `4pt` | Default vertical spacing between title and description |
-
----
-
-## Interaction & Animation
+## Animation
 
 | Aspect | Value |
 | ------ | ----- |
-| Tap gesture | `DragGesture(minimumDistance: 0)` |
-| Press state | Internal `isPressed` state is set while an enabled gesture is active |
-| Tap completion | `onTapCheckbox` is called when the gesture ends within the drag cancellation threshold |
-| Drag cancellation threshold | `44pt` on both horizontal and vertical translation |
-| Disabled interaction | No press state or tap action is triggered when `checkboxState == .disabled` |
 | Ripple | `.circularRippleEffect(size: 36pt, color: EDTSColor.black.opacity(0.12))` on the checkbox box |
 | Active-state animation | `.easeInOut(duration: 0.25)` when `isActive` changes |
-
-A tap is considered valid when both the horizontal and vertical translations are less than `44pt` in absolute value. Larger movement cancels the checkbox action.
-
-The active/inactive style transition is animated over `0.25s`.
-
----
-
-## Notes
-
-- `EDTSCheckbox` is a SwiftUI `View`.
-- The checkbox itself is always `20pt × 20pt`; the icon inside it is `16pt × 16pt`.
-- The title and description are optional. If both are empty or `nil`, only the checkbox box is rendered.
-- `titleAttributed` takes precedence over `title`.
-- `descAttributed` takes precedence over `desc`.
-- A custom `icon` takes precedence over the icon selected by `checkboxType`.
-- `checkboxType` changes the default icon but does not itself control `isActive`.
-- `checkboxState == .disabled` prevents the tap callback from being invoked.
-- The component uses theme-specific `EDTSColor` and `EDTSFont` tokens based on `EDTSColor.theme`.
-- The preview demonstrates unchecked, checked, indeterminate, disabled unchecked, disabled checked, and disabled indeterminate configurations.
 
 ---
 

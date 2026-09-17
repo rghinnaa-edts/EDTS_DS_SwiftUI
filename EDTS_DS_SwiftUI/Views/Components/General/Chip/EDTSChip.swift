@@ -458,6 +458,7 @@ public struct EDTSChip: View {
                     iconBgColorLeading: .white,
                     iconTrailing: Image("ic_placeholder"),
                     iconBgColorTrailing: .white,
+                    iconSize: 50,
                     isActive: false,
                     onTapChip: {},
                     onTapLeadingIcon: { print("Leading icon tapped") },

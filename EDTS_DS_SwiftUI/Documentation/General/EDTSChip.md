@@ -230,7 +230,7 @@ public enum ChipState: String {
 
 ---
 
-## Interaction & Animation
+## Animation
 
 | Aspect | Value |
 | ------ | ----- |

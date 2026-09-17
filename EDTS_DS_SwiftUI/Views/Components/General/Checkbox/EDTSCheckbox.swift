@@ -71,7 +71,7 @@ public struct EDTSCheckbox: View {
     public init(
         checkboxState: EDTSCheckboxState = .default,
         checkboxType: EDTSCheckboxType = .checked,
-        title: String? = "Title Here",
+        title: String? = "Title checkbox",
         titleAttributed: AttributedString? = nil,
         titleFontStyle: Font? = nil,
         titleFontName: String = "",
@@ -79,7 +79,7 @@ public struct EDTSCheckbox: View {
         titleFontWeight: String? = nil,
         titleColorActive: Color? = nil,
         titleColorInactive: Color? = nil,
-        desc: String? = "Body text",
+        desc: String? = "Body text goes here",
         descAttributed: AttributedString? = nil,
         descFontStyle: Font? = nil,
         descFontName: String = "",
