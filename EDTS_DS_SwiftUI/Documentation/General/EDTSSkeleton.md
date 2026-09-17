@@ -44,6 +44,24 @@ EDTSSkeleton()
     .frame(height: 60)
 ```
 
+### Extension View Modifier
+
+```swift
+func edtsSkeleton(
+    active: Bool,
+    cornerRadius: CGFloat = 8,
+    cornerRadiusTopLeft: CGFloat? = nil,
+    cornerRadiusTopRight: CGFloat? = nil,
+    cornerRadiusBottomLeft: CGFloat? = nil,
+    cornerRadiusBottomRight: CGFloat? = nil,
+    baseColor: Color = EDTSColor.grey20,
+    highlightColor: Color = EDTSColor.grey30,
+    duration: Double = 1.5
+) -> some View
+```
+
+---
+
 `EDTSSkeleton` has no intrinsic size — always constrain it with `.frame(...)` (or place it inside a layout that sizes it), the same way you'd size any shape.
 
 ### Custom Colors & Duration
@@ -109,45 +127,16 @@ Text("Loaded content")
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
+| `active` | `Bool` | — (required) | When `true`, replaces the visible content with an `EDTSSkeleton` overlay sized to match the content's own frame; when `false`, shows the original content |
 | `cornerRadius` | `CGFloat` | `8` | Uniform corner radius of the shimmer shape, used when none of the four per-corner parameters below are set |
 | `cornerRadiusTopLeft` | `CGFloat?` | `nil` | Top-left corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius` |
-| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Top-right corner radius override. Same fallback-to-`0` behavior as above |
-| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Bottom-left corner radius override. Same fallback-to-`0` behavior as above |
-| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Bottom-right corner radius override. Same fallback-to-`0` behavior as above |
+| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Top-right corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius` |
+| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Bottom-left corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius` |
+| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Bottom-right corner radius override. If set alone (or with only some of the other three), the unset corners default to `0`, not to `cornerRadius`|
 | `baseColor` | `Color` | `EDTSColor.grey20` | Base fill color of the shimmer shape |
 | `highlightColor` | `Color` | `EDTSColor.grey30` | Color of the moving highlight band that sweeps across the shape |
 | `duration` | `Double` | `1.5` | Duration in seconds of one shimmer sweep. The sweep repeats indefinitely while `isActive` is `true` |
 | `isActive` | `Bool` | `true` | Whether the shimmer animation is running. Setting this to `false` freezes the shape at its base color |
-
----
-
-## Public Interface — `.edtsSkeleton(...)` Modifier
-
-```swift
-func edtsSkeleton(
-    active: Bool,
-    cornerRadius: CGFloat = 8,
-    cornerRadiusTopLeft: CGFloat? = nil,
-    cornerRadiusTopRight: CGFloat? = nil,
-    cornerRadiusBottomLeft: CGFloat? = nil,
-    cornerRadiusBottomRight: CGFloat? = nil,
-    baseColor: Color = EDTSColor.grey20,
-    highlightColor: Color = EDTSColor.grey30,
-    duration: Double = 1.5
-) -> some View
-```
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `active` | `Bool` | — (required) | When `true`, replaces the visible content with an `EDTSSkeleton` overlay sized to match the content's own frame; when `false`, shows the original content |
-| `cornerRadius` | `CGFloat` | `8` | Uniform corner radius of the overlaid `EDTSSkeleton`, used when none of the four per-corner parameters below are set |
-| `cornerRadiusTopLeft` | `CGFloat?` | `nil` | Forwarded to the overlaid `EDTSSkeleton`; see the per-corner behavior notes above |
-| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Forwarded to the overlaid `EDTSSkeleton`; see the per-corner behavior notes above |
-| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Forwarded to the overlaid `EDTSSkeleton`; see the per-corner behavior notes above |
-| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Forwarded to the overlaid `EDTSSkeleton`; see the per-corner behavior notes above |
-| `baseColor` | `Color` | `EDTSColor.grey20` | Base fill color of the overlaid `EDTSSkeleton` |
-| `highlightColor` | `Color` | `EDTSColor.grey30` | Highlight sweep color of the overlaid `EDTSSkeleton` |
-| `duration` | `Double` | `1.5` | Shimmer sweep duration of the overlaid `EDTSSkeleton` |
 
 ---
 
