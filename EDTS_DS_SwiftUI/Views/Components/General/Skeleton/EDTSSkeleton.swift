@@ -120,23 +120,23 @@ public struct EDTSSkeletonModifier: ViewModifier {
     public let duration: Double
 
     public func body(content: Content) -> some View {
-        ZStack {
-            content
-                .opacity(active ? 0 : 1)
-            if active {
-                EDTSSkeleton(
-                    cornerRadius: cornerRadius,
-                    cornerRadiusTopLeft: cornerRadiusTopLeft,
-                    cornerRadiusTopRight: cornerRadiusTopRight,
-                    cornerRadiusBottomLeft: cornerRadiusBottomLeft,
-                    cornerRadiusBottomRight: cornerRadiusBottomRight,
-                    baseColor: baseColor,
-                    highlightColor: highlightColor,
-                    duration: duration,
-                    isActive: true
-                )
+        content
+            .opacity(active ? 0 : 1)
+            .overlay {
+                if active {
+                    EDTSSkeleton(
+                        cornerRadius: cornerRadius,
+                        cornerRadiusTopLeft: cornerRadiusTopLeft,
+                        cornerRadiusTopRight: cornerRadiusTopRight,
+                        cornerRadiusBottomLeft: cornerRadiusBottomLeft,
+                        cornerRadiusBottomRight: cornerRadiusBottomRight,
+                        baseColor: baseColor,
+                        highlightColor: highlightColor,
+                        duration: duration,
+                        isActive: true
+                    )
+                }
             }
-        }
     }
 }
 

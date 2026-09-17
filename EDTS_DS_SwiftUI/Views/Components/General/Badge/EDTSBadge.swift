@@ -221,7 +221,7 @@ public struct EDTSBadge: View {
                 .stroke(borderColor, lineWidth: borderWidth)
         )
         .shadow(color: shadowColor.opacity(shadowOpacity), radius: shadowRadius, x: shadowOffset.width, y: shadowOffset.height)
-        .edtsSkeleton(active: isSkeleton, cornerRadius: cornerRadius)
+        .edtsSkeleton(active: isSkeleton, cornerRadius: cornerRadius, cornerRadiusTopLeft: cornerRadiusTopLeft, cornerRadiusTopRight: cornerRadiusTopRight, cornerRadiusBottomLeft: cornerRadiusBottomLeft, cornerRadiusBottomRight: cornerRadiusBottomRight)
     }
 }
 
