@@ -141,58 +141,67 @@ public struct EDTSCheckbox: View {
     }
 
     // MARK: - Private Variable
-    private var resolvedSpacing: CGFloat { spacing == .zero ? 8 : spacing }
-    private var resolvedLabelSpacing: CGFloat { labelSpacing == .zero ? 4 : labelSpacing }
-    private var resolvedBorderWidth: CGFloat { borderWidth == .zero ? 1 : borderWidth }
-    private var resolvedCornerRadius: CGFloat { 4 }
-    private var resolvedIconContainerSize: CGFloat { 20 }
-
-    private var hasTitle: Bool {
-        if let titleAttributed { return !titleAttributed.characters.isEmpty }
-        return !(title ?? "").isEmpty
-    }
-
-    private var hasDesc: Bool {
-        if let descAttributed { return !descAttributed.characters.isEmpty }
-        return !(desc ?? "").isEmpty
-    }
-
-    private var resolvedTitleFontStyle: EDTSFont.FontStyle {
-        EDTSFont.Klik.B2.Medium
-    }
-
-    private var hasCustomTitleFont: Bool {
-        !titleFontName.isEmpty || titleFontSize != .zero || (titleFontWeight?.isEmpty == false)
-    }
-
-    private var customTitleFont: Font? {
-        if let titleFontStyle { return titleFontStyle }
-        guard hasCustomTitleFont else { return nil }
-        let weight = setupFontWeight(from: titleFontWeight ?? "")
-        if !titleFontName.isEmpty {
-            return .custom(titleFontName, size: titleFontSize == .zero ? 14 : titleFontSize)
+    private let defaultTitleFontSize: CGFloat = 14
+    private let defaultDescFontSize: CGFloat = 12
+    private let iconContainerSize: CGFloat = 20
+    private let iconSize: CGFloat = 16
+    private let defaultSpacing: CGFloat = 8
+    private let defaultLabelSpacing: CGFloat = 4
+    private let cornerRadius: CGFloat = 4
+    private let defaultBorderWidth: CGFloat = 1
+    private let rippleBleed: CGFloat = 16
+    private let rippleOpacity: Double = 0.12
+    private let rippleGrowDuration: Double = 0.10
+    private let rippleFadeDuration: Double = 0.22
+    private let activeStateAnimationDuration: Double = 0.25
+    private let dragCancelThreshold: CGFloat = 44
+    
+    private var resolvedTitleFontStyle: Font {
+        if EDTSColor.theme == .poinku {
+            return EDTSFont.Poinku.B2.Medium.font
+        } else {
+            return EDTSFont.Klik.B2.Medium.font
         }
-        return .system(size: titleFontSize == .zero ? 14 : titleFontSize, weight: weight)
     }
 
-    private var resolvedDescFontStyle: EDTSFont.FontStyle {
-        EDTSFont.Klik.B3.Regular
-    }
-
-    private var hasCustomDescFont: Bool {
-        !descFontName.isEmpty || descFontSize != .zero || (descFontWeight?.isEmpty == false)
-    }
-
-    private var customDescFont: Font? {
-        if let descFontStyle { return descFontStyle }
-        guard hasCustomDescFont else { return nil }
-        let weight = setupFontWeight(from: descFontWeight ?? "")
-        if !descFontName.isEmpty {
-            return .custom(descFontName, size: descFontSize == .zero ? 12 : descFontSize)
+    private var resolvedDescFontStyle: Font {
+        if EDTSColor.theme == .poinku {
+            return EDTSFont.Poinku.B3.Light.font
+        } else {
+            return EDTSFont.Klik.B3.Regular.font
         }
-        return .system(size: descFontSize == .zero ? 12 : descFontSize, weight: weight)
     }
 
+    private var resolvedIcon: Image? {
+        if let icon { return icon }
+        switch checkboxType {
+        case .checked:
+            return Image("ic_check")
+        case .indeterminated:
+            return Image("ic_minus")
+        }
+    }
+
+    private var resolvedIconContainerSize: CGFloat {
+        iconContainerSize
+    }
+    
+    private var resolvedSpacing: CGFloat {
+        spacing == .zero ? defaultSpacing : spacing
+    }
+    
+    private var resolvedLabelSpacing: CGFloat {
+        labelSpacing == .zero ? defaultLabelSpacing : labelSpacing
+    }
+    
+    private var resolvedCornerRadius: CGFloat {
+        cornerRadius
+    }
+    
+    private var resolvedBorderWidth: CGFloat {
+        borderWidth == .zero ? defaultBorderWidth : borderWidth
+    }
+    
     private struct ResolvedValues {
         var titleColor: Color
         var descColor: Color
@@ -209,7 +218,46 @@ public struct EDTSCheckbox: View {
             return resolveDisabled()
         }
     }
+    
+    private var customTitleFont: Font? {
+        if let titleFontStyle { return titleFontStyle }
+        guard hasCustomTitleFont else { return nil }
+        let weight = setupFontWeight(from: titleFontWeight ?? "")
+        if !titleFontName.isEmpty {
+            return .custom(titleFontName, size: titleFontSize == .zero ? defaultTitleFontSize : titleFontSize)
+        }
+        return .system(size: titleFontSize == .zero ? defaultTitleFontSize : titleFontSize, weight: weight)
+    }
 
+    private var customDescFont: Font? {
+        if let descFontStyle { return descFontStyle }
+        guard hasCustomDescFont else { return nil }
+        let weight = setupFontWeight(from: descFontWeight ?? "")
+        if !descFontName.isEmpty {
+            return .custom(descFontName, size: descFontSize == .zero ? defaultDescFontSize : descFontSize)
+        }
+        return .system(size: descFontSize == .zero ? defaultDescFontSize : descFontSize, weight: weight)
+    }
+    
+    private var hasTitle: Bool {
+        if let titleAttributed { return !titleAttributed.characters.isEmpty }
+        return !(title ?? "").isEmpty
+    }
+
+    private var hasCustomTitleFont: Bool {
+        !titleFontName.isEmpty || titleFontSize != .zero || (titleFontWeight?.isEmpty == false)
+    }
+
+    private var hasDesc: Bool {
+        if let descAttributed { return !descAttributed.characters.isEmpty }
+        return !(desc ?? "").isEmpty
+    }
+    
+    private var hasCustomDescFont: Bool {
+        !descFontName.isEmpty || descFontSize != .zero || (descFontWeight?.isEmpty == false)
+    }
+
+    // MARK: - Setup & Styling
     private func resolveDefault() -> ResolvedValues {
         switch isActive {
         case false:
@@ -246,7 +294,7 @@ public struct EDTSCheckbox: View {
                     descColor: descColorActive ?? EDTSColor.grey50,
                     boxBgColor: boxBgColorActive ?? EDTSColor.blue50,
                     iconTintColor: iconTintColorActive ?? EDTSColor.white,
-                    borderColor: borderColorActive ?? .clear
+                    borderColor: borderColorActive ?? EDTSColor.blue50,
                 )
             }
         }
@@ -288,19 +336,9 @@ public struct EDTSCheckbox: View {
                     descColor: EDTSColor.grey30,
                     boxBgColor: EDTSColor.grey20,
                     iconTintColor: EDTSColor.grey40,
-                    borderColor: EDTSColor.grey40
+                    borderColor: EDTSColor.grey30
                 )
             }
-        }
-    }
-
-    private var resolvedIcon: Image? {
-        if let icon { return icon }
-        switch checkboxType {
-        case .checked:
-            return Image("ic_check")
-        case .indeterminated:
-            return Image("ic_minus")
         }
     }
 
@@ -338,7 +376,7 @@ public struct EDTSCheckbox: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 16, height: 16)
+                    .frame(width: iconSize, height: iconSize)
                     .foregroundColor(values.iconTintColor)
             }
         }
@@ -352,12 +390,12 @@ public struct EDTSCheckbox: View {
         .contentShape(Rectangle())
         .overlay(
             Circle()
-                .fill(EDTSColor.black.opacity(isPressed ? 0.12 : 0))
-                .frame(width: resolvedIconContainerSize + 16, height: resolvedIconContainerSize + 16)
-                .animation(.easeOut(duration: isPressed ? 0.10 : 0.22), value: isPressed)
+                .fill(EDTSColor.black.opacity(isPressed ? rippleOpacity : 0))
+                .frame(width: resolvedIconContainerSize + rippleBleed, height: resolvedIconContainerSize + rippleBleed)
+                .animation(.easeOut(duration: isPressed ? rippleGrowDuration : rippleFadeDuration), value: isPressed)
                 .allowsHitTesting(false)
         )
-        .animation(.easeInOut(duration: 0.25), value: isActive)
+        .animation(.easeInOut(duration: activeStateAnimationDuration), value: isActive)
     }
 
     @ViewBuilder
@@ -370,7 +408,7 @@ public struct EDTSCheckbox: View {
             }
         }
         .foregroundColor(color)
-        .edtsFont(resolvedTitleFontStyle, custom: customTitleFont)
+        .font(customTitleFont ?? resolvedTitleFontStyle)
     }
 
     @ViewBuilder
@@ -383,7 +421,7 @@ public struct EDTSCheckbox: View {
             }
         }
         .foregroundColor(color)
-        .edtsFont(resolvedDescFontStyle, custom: customDescFont)
+        .font(customDescFont ?? resolvedDescFontStyle)
     }
 
     // MARK: - Gesture
@@ -399,7 +437,7 @@ public struct EDTSCheckbox: View {
                 guard checkboxState != .disabled else { return }
                 isPressed = false
 
-                let withinBounds = abs(value.translation.width) < 44 && abs(value.translation.height) < 44
+                let withinBounds = abs(value.translation.width) < dragCancelThreshold && abs(value.translation.height) < dragCancelThreshold
                 if withinBounds {
                     onTapCheckbox?()
                 }
