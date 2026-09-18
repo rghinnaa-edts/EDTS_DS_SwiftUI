@@ -46,6 +46,7 @@ public struct EDTSChip: View {
     
     public var iconSize: CGFloat
     public var iconSpacing: CGFloat
+    public var iconPadding: CGFloat
     
     public var cornerRadius: CGFloat
     public var borderWidth: CGFloat
@@ -75,11 +76,10 @@ public struct EDTSChip: View {
     public var onTapTrailingIcon: (() -> Void)?
     
     // MARK: - Private Variable
-    private let iconBadgePadding: CGFloat = 2
     private let iconBadgeRippleBleed: CGFloat = 2
 
     private var iconBadgeDiameter: CGFloat {
-        resolvedIconSize + (iconBadgePadding * 2)
+        resolvedIconSize + (resolvedIconPadding * 2)
     }
 
     private var iconBadgeRippleSize: CGFloat {
@@ -107,6 +107,10 @@ public struct EDTSChip: View {
         iconSpacing != .zero ? iconSpacing : 4
     }
     
+    private var resolvedIconPadding: CGFloat {
+        iconPadding != .zero ? iconPadding : 2
+    }
+
     private var resolvedPaddingTop: CGFloat { paddingTop ?? 4 }
     private var resolvedPaddingBottom: CGFloat { paddingBottom ?? 4 }
     private var resolvedPaddingLeading: CGFloat { paddingLeading ?? 8 }
@@ -249,6 +253,7 @@ public struct EDTSChip: View {
         iconBgColorTrailingActive: Color? = nil,
         iconSize: CGFloat = .zero,
         iconSpacing: CGFloat = .zero,
+        iconPadding: CGFloat = .zero,
         cornerRadius: CGFloat = .zero,
         borderWidth: CGFloat = .zero,
         borderWidthActive: CGFloat = .zero,
@@ -299,6 +304,7 @@ public struct EDTSChip: View {
         self.iconBgColorTrailingActive = iconBgColorTrailingActive
         self.iconSize = iconSize
         self.iconSpacing = iconSpacing
+        self.iconPadding = iconPadding
         self.cornerRadius = cornerRadius
         self.borderWidth = borderWidth
         self.borderWidthActive = borderWidthActive
@@ -402,7 +408,7 @@ public struct EDTSChip: View {
             .scaledToFit()
             .frame(width: resolvedIconSize, height: resolvedIconSize)
             .foregroundColor(tint)
-            .padding(iconBadgePadding)
+            .padding(resolvedIconPadding)
             .background(bg)
             .clipShape(Circle())
 
@@ -458,7 +464,6 @@ public struct EDTSChip: View {
                     iconBgColorLeading: .white,
                     iconTrailing: Image("ic_placeholder"),
                     iconBgColorTrailing: .white,
-                    iconSize: 50,
                     isActive: false,
                     onTapChip: {},
                     onTapLeadingIcon: { print("Leading icon tapped") },
