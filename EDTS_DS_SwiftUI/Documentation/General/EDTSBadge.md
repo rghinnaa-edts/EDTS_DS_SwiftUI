@@ -150,7 +150,7 @@ EDTSBadge(text: "New", isSkeleton: true)
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `textColor` | `Color` | `EDTSColor.grey70` | Color applied to `text`, and to `icon` when `iconTint` is unset |
+| `textColor` | `Color` | `EDTSColor.grey70` | Color applied to `text`, and to `icon` when `iconTintColorLeading` or `iconTintColorTrailing` is unset |
 | `fontStyle` | `Font?` | `nil` | Explicit font for `text`. When set, this takes priority over `fontName`/`fontSize`/`fontWeight` |
 | `fontName` | `String` | `""` | Custom font family name for `text`. Ignored if `fontStyle` is set. |
 | `fontSize` | `CGFloat` | `0` | Custom font size for `text`. Ignored if `fontStyle` is set. Falls back to `UIFont.systemFontSize` if `0` while `fontName` or `fontWeight` is set |
@@ -163,7 +163,7 @@ EDTSBadge(text: "New", isSkeleton: true)
 | `iconTintColorLeading` | `Color?` | `nil` | Tint applied to `icon` leading. Falls back to `textColor` when `nil` |
 | `iconTintColorTrailing` | `Color?` | `nil` | Tint applied to `icon` trailing. Falls back to `textColor` when `nil` |
 | `iconSpacing` | `CGFloat` | `4.0` | Spacing between the icon and the label. Ignored when `icon` is `nil` (no gap is reserved) |
-| `iconSize` | `CGFloat` | `16.0` | Size of the `icon` |
+| `iconSize` | `CGFloat?` | `16.0` | Size of the `icon` |
 
 ### Background & Border
 
@@ -175,9 +175,9 @@ EDTSBadge(text: "New", isSkeleton: true)
 | `bgColorOrientation` | `Orientation?` | `.vertical` | Gradient direction: .horizontal (leading→trailing) or .vertical (top→bottom) |
 | `cornerRadius` | `CGFloat` | `8.0` | Uniform corner radius applied to the background, border, and skeleton shape, unless overridden by a per-corner value below |
 | `cornerRadiusTopLeft` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
-| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
-| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
-| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Radius of the top-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
+| `cornerRadiusTopRight` | `CGFloat?` | `nil` | Radius of the top-right corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
+| `cornerRadiusBottomLeft` | `CGFloat?` | `nil` | Radius of the bottom-left corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
+| `cornerRadiusBottomRight` | `CGFloat?` | `nil` | Radius of the bottom-right corner. If `nil` and no other corner is set, falls back to `cornerRadius`; if `nil` but another corner *is* set, falls back to `0` |
 | `borderWidth` | `CGFloat` | `0.0` | Width of the badge's stroke border |
 | `borderColor` | `Color` | `.clear` | Color of the badge's stroke border |
 
