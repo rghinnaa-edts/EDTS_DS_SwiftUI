@@ -2,22 +2,6 @@
 
 `EDTSButton` is a SwiftUI button built as a plain `View` (not `ButtonStyle`), combining a `DragGesture(minimumDistance: 0)` for press handling with a custom ripple effect, gradient/solid background support, and per-state (`default` / `danger` / `disabled`) color resolution across label, icon, border, and shadow. Its visual defaults are theme-aware, switching between `klikIDM` and `poinku` token sets via `EDTSColor.theme`.
 
-## Enums
-
-```swift
-public enum BtnState: String {
-    case `default`, danger, disabled
-}
-
-public enum BtnType: String {
-    case primary, secondary, tertiary
-}
-
-public enum BtnSize: String {
-    case small, medium, large
-}
-```
-
 ---
 
 ## Preview
@@ -54,7 +38,7 @@ This relies on the design token types already available in the pod (`EDTSColor`,
 ### 1. Minimal Button
 
 ```swift
-EDTSButton(label: "Continue") {
+EDTSButton(text: "Continue") {
     print("Tapped")
 }
 ```
@@ -66,7 +50,7 @@ EDTSButton(
     btnType: .secondary,
     btnSize: .medium,
     btnState: .danger,
-    label: "Delete"
+    text: "Delete"
 ) {
     deleteItem()
 }
@@ -76,7 +60,7 @@ EDTSButton(
 
 ```swift
 EDTSButton(
-    label: "Favorite",
+    text: "Favorite",
     iconLeading: Image(systemName: "star.fill"),
     iconTrailing: Image(systemName: "chevron.right")
 ) {}
@@ -86,7 +70,7 @@ EDTSButton(
 
 ```swift
 EDTSButton(
-    label: "Gradient",
+    text: "Gradient",
     bgColorStart: EDTSColor.skyblueLeading,
     bgColorEnd: EDTSColor.skyblueTrailing,
     bgColorOrientation: .vertical,
@@ -105,10 +89,28 @@ var attributed: AttributedString {
     return str
 }
 
-EDTSButton(label: nil, labelAttributed: attributed) {}
+EDTSButton(text: nil, textAttributed: attributed) {}
 ```
 
-When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored (internally forced to `nil`).
+When `textAttributed` is non-`nil`, it takes precedence and `text` is ignored (internally forced to `nil`).
+
+---
+
+## Enums
+
+```swift
+public enum BtnState: String {
+    case `default`, danger, disabled
+}
+
+public enum BtnType: String {
+    case primary, secondary, tertiary
+}
+
+public enum BtnSize: String {
+    case small, medium, large
+}
+```
 
 ---
 
@@ -123,15 +125,15 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 | `btnState` | `BtnState` | `.default` | `default`, `danger`, or `disabled`; disabled also blocks the press gesture and action |
 | `action` | `() -> Void` | — | Closure invoked on a completed tap (required) |
 
-### Label
+### Text
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `label` | `String?` | `"Button"` | Plain text label; ignored if `labelAttributed` is set |
-| `labelAttributed` | `AttributedString?` | `nil` | Rich text label; takes precedence over `label` |
-| `labelColor` | `Color?` | theme/type default | Label color in `.default` state |
-| `labelDangerColor` | `Color?` | theme/type default | Label color in `.danger` state |
-| `labelDisabledColor` | `Color?` | theme/type default | Label color in `.disabled` state |
+| `text` | `String?` | `"Button"` | Plain text label; ignored if `textAttributed` is set |
+| `textAttributed` | `AttributedString?` | `nil` | Rich text label; takes precedence over `text` |
+| `textColor` | `Color?` | theme/type default | Text color in `.default` state |
+| `textDangerColor` | `Color?` | theme/type default | Text color in `.danger` state |
+| `textDisabledColor` | `Color?` | theme/type default | Text color in `.disabled` state |
 
 ### Font
 
@@ -157,7 +159,7 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `rippleColor` | `Color?` | auto-resolved | Ripple tint. If unset: `labelColor` at 12% opacity when background is white/clear, otherwise `EDTSColor.grey70` at 12%. Forced to `.clear` when `btnState == .disabled`, and suppressed entirely for gradient backgrounds. Passing `.clear` explicitly disables ripple without opacity applied |
+| `rippleColor` | `Color?` | auto-resolved | Ripple tint. If unset: `textColor` at 12% opacity when background is white/clear, otherwise `EDTSColor.grey70` at 12%. Forced to `.clear` when `btnState == .disabled`, and suppressed entirely for gradient backgrounds. Passing `.clear` explicitly disables ripple without opacity applied |
 
 ### Icon Leading
 
@@ -222,7 +224,7 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 
 | `btnSize` | Corner Radius (klikIDM / poinku) | Padding Top/Bottom | Padding Leading/Trailing | Icon Size |
 | --------- | --------------------------------- | ------------------- | -------------------------- | --------- |
-| `small` | `6` / `4` | `6` | `12` (klikIDM) / `8` (poinku) | `16` |
+| `small` | `6` / `4` | `6` (klikIDM) / `4` (poinku) | `12` (klikIDM) / `8` (poinku) | `16` |
 | `medium` | `6` / `4` | `8` | `12` | `16` |
 | `large` | `6` / `8` | `8` | `12` | `24` |
 
@@ -230,7 +232,7 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 
 ## Type & State Color Defaults
 
-| `btnType` | State | Background | Label / Icon | Border |
+| `btnType` | State | Background | Text / Icon | Border |
 | --------- | ----- | ---------- | ------------- | ------ |
 | `primary` | default | `EDTSColor.blue50` (klikIDM) / `.blue30` (poinku) | `EDTSColor.white` | `EDTSColor.blue50` (klikIDM) / `.blue30` (poinku) |
 | `primary` | danger | `EDTSColor.red30` | `EDTSColor.white` | `EDTSColor.red30` |
@@ -239,10 +241,10 @@ When `labelAttributed` is non-`nil`, it takes precedence and `label` is ignored 
 | `secondary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.red30` |
 | `secondary` | disabled | `EDTSColor.white` | `EDTSColor.grey30` | `EDTSColor.grey30` |
 | `tertiary` | default | `EDTSColor.white` | `EDTSColor.grey60` | `EDTSColor.grey60` |
-| `tertiary` | danger | `EDTSColor.white` | `EDTSColor.errorStrong` | `EDTSColor.disabled` |
+| `tertiary` | danger | `EDTSColor.white` | `EDTSColor.red30` | `EDTSColor.grey30` |
 | `tertiary` | disabled | `EDTSColor.white` | `EDTSColor.grey30` | `EDTSColor.grey30` |
 
-For `secondary` and `tertiary` types, if a custom `labelColor` is supplied but `iconTintColorLeading` / `iconTintColorTrailing` / `borderColor` are not, those unset values inherit the resolved label color automatically.
+For `secondary` and `tertiary` types, if a custom `textColor` is supplied but `iconTintColorLeading` / `iconTintColorTrailing` / `borderColor` are not, those unset values inherit the resolved text color automatically.
 
 ---
 
@@ -255,7 +257,7 @@ For `secondary` and `tertiary` types, if a custom `labelColor` is supplied but `
 | Trigger | `tempResolvedButtonState` changing from `nil` → current state (press) or state → `nil` (release/cancel) |
 | Effect | `.scaleEffect(tempResolvedButtonState != nil ? 0.95 : 1.0)` |
 | Timing | `.animation(.easeInOut(duration: 0.1), value: tempResolvedButtonState)` |
-| Scope | Applied to the whole button view (label, icons, background, border, shadow all scale together) |
+| Scope | Applied to the whole button view (text, icons, background, border, shadow all scale together) |
 | Disabled state | Gesture never sets `tempResolvedButtonState`, so no scale animation occurs when `btnState == .disabled` |
 
 ### Ripple Animation
