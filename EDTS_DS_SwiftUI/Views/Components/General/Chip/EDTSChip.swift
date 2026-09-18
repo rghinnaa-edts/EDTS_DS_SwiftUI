@@ -76,6 +76,18 @@ public struct EDTSChip: View {
     public var onTapTrailingIcon: (() -> Void)?
     
     // MARK: - Private Variable
+    private let defaultFontSize: CGFloat = 12
+    private let defaultIconSize: CGFloat = 16
+    private let defaultIconSpacing: CGFloat = 4
+    private let defaultIconPadding: CGFloat = 2
+    private let defaultPaddingVertical: CGFloat = 4
+    private let defaultPaddingHorizontal: CGFloat = 8
+    private let activeBorderWidthPoinku: CGFloat = 1
+    private let activeBorderWidthKlik: CGFloat = 0
+    private let capsuleCornerRadius: CGFloat = 999
+    private let chipRippleOpacity: Double = 0.12
+    private let iconRippleOpacity: Double = 0.22
+    private let stateAnimationDuration: Double = 0.25
     private let iconBadgeRippleBleed: CGFloat = 2
 
     private var iconBadgeDiameter: CGFloat {
@@ -89,9 +101,9 @@ public struct EDTSChip: View {
     private var customFont: Font {
         let weight = setupFontWeight(from: fontWeight)
         if !fontName.isEmpty {
-            return .custom(fontName, size: fontSize == .zero ? 12 : fontSize)
+            return .custom(fontName, size: fontSize == .zero ? defaultFontSize : fontSize)
         }
-        return .system(size: fontSize == .zero ? 12 : fontSize, weight: weight)
+        return .system(size: fontSize == .zero ? defaultFontSize : fontSize, weight: weight)
     }
     
     private var hasCustomFont: Bool {
@@ -100,21 +112,21 @@ public struct EDTSChip: View {
     
     private var resolvedIconSize: CGFloat {
         if iconSize != .zero { return iconSize }
-        return 16
+        return defaultIconSize
     }
     
     private var resolvedIconSpacing: CGFloat {
-        iconSpacing != .zero ? iconSpacing : 4
+        iconSpacing != .zero ? iconSpacing : defaultIconSpacing
     }
     
     private var resolvedIconPadding: CGFloat {
-        iconPadding != .zero ? iconPadding : 2
+        iconPadding != .zero ? iconPadding : defaultIconPadding
     }
 
-    private var resolvedPaddingTop: CGFloat { paddingTop ?? 4 }
-    private var resolvedPaddingBottom: CGFloat { paddingBottom ?? 4 }
-    private var resolvedPaddingLeading: CGFloat { paddingLeading ?? 8 }
-    private var resolvedPaddingTrailing: CGFloat { paddingTrailing ?? 8 }
+    private var resolvedPaddingTop: CGFloat { paddingTop ?? defaultPaddingVertical }
+    private var resolvedPaddingBottom: CGFloat { paddingBottom ?? defaultPaddingVertical }
+    private var resolvedPaddingLeading: CGFloat { paddingLeading ?? defaultPaddingHorizontal }
+    private var resolvedPaddingTrailing: CGFloat { paddingTrailing ?? defaultPaddingHorizontal }
 
     private var resolvedFontStyle: Font {
         EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Light.font : EDTSFont.Klik.B3.Semibold.font
@@ -134,7 +146,7 @@ public struct EDTSChip: View {
     private var resolvedActiveBorderWidth: CGFloat {
         if borderWidthActive != .zero { return borderWidthActive }
         if borderWidth != .zero { return borderWidth }
-        return EDTSColor.theme == .poinku ? 1 : 0
+        return EDTSColor.theme == .poinku ? activeBorderWidthPoinku : activeBorderWidthKlik
     }
     
     private struct ResolvedValues {
@@ -372,13 +384,12 @@ public struct EDTSChip: View {
             x: values.shadowOffset.width,
             y: values.shadowOffset.height
         )
-        
         .rippleEffect(
-            color: Color.black.opacity(0.12),
-            cornerRadius: cornerRadius != .zero ? cornerRadius : 999,
+            color: Color.black.opacity(chipRippleOpacity),
+            cornerRadius: cornerRadius != .zero ? cornerRadius : capsuleCornerRadius,
             onTap: onTapChip
         )
-        .animation(.easeInOut(duration: 0.25), value: isActive)
+        .animation(.easeInOut(duration: stateAnimationDuration), value: isActive)
     }
     
     @ViewBuilder
@@ -414,7 +425,7 @@ public struct EDTSChip: View {
 
         if isActionable {
             base
-                .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(0.22))
+                .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(iconRippleOpacity))
                 .highPriorityGesture(
                     DragGesture(minimumDistance: 0)
                         .onEnded { _ in
