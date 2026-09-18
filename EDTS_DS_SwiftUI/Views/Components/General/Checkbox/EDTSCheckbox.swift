@@ -44,10 +44,14 @@ public struct EDTSCheckbox: View {
     public let icon: Image?
     public var iconTintColorActive: Color?
     public var iconTintColorInactive: Color?
+    public let iconSize: CGFloat
+    public let iconPadding: CGFloat
 
     public var boxBgColorActive: Color?
     public var boxBgColorInactive: Color?
-
+    public var boxCornerRadius: CGFloat
+    public var boxSize: CGFloat
+    
     public var spacing: CGFloat
     public var labelSpacing: CGFloat
 
@@ -90,8 +94,12 @@ public struct EDTSCheckbox: View {
         icon: Image? = nil,
         iconTintColorActive: Color? = nil,
         iconTintColorInactive: Color? = nil,
+        iconSize: CGFloat = 16,
+        iconPadding: CGFloat = 2,
         boxBgColorActive: Color? = nil,
         boxBgColorInactive: Color? = nil,
+        boxCornerRadius: CGFloat = .zero,
+        boxSize: CGFloat = .zero,
         spacing: CGFloat = .zero,
         labelSpacing: CGFloat = .zero,
         borderWidth: CGFloat = .zero,
@@ -125,8 +133,12 @@ public struct EDTSCheckbox: View {
         self.icon = icon
         self.iconTintColorActive = iconTintColorActive
         self.iconTintColorInactive = iconTintColorInactive
+        self.iconSize = iconSize
+        self.iconPadding = iconPadding
         self.boxBgColorActive = boxBgColorActive
         self.boxBgColorInactive = boxBgColorInactive
+        self.boxCornerRadius = boxCornerRadius
+        self.boxSize = boxSize
         self.spacing = spacing
         self.labelSpacing = labelSpacing
         self.borderWidth = borderWidth
@@ -143,13 +155,12 @@ public struct EDTSCheckbox: View {
     // MARK: - Private Variable
     private let defaultTitleFontSize: CGFloat = 14
     private let defaultDescFontSize: CGFloat = 12
-    private let iconContainerSize: CGFloat = 20
-    private let iconSize: CGFloat = 16
     private let defaultSpacing: CGFloat = 8
     private let defaultLabelSpacing: CGFloat = 4
-    private let cornerRadius: CGFloat = 4
+    private let defaultCornerRadius: CGFloat = 4
     private let defaultBorderWidth: CGFloat = 1
-    private let rippleBleed: CGFloat = 16
+    private let defaultPaddingLeading: CGFloat = 2
+    private let rippleBleedMultiplier: CGFloat = 1.8
     private let rippleOpacity: Double = 0.12
     private let rippleGrowDuration: Double = 0.10
     private let rippleFadeDuration: Double = 0.22
@@ -183,7 +194,7 @@ public struct EDTSCheckbox: View {
     }
 
     private var resolvedIconContainerSize: CGFloat {
-        iconContainerSize
+        boxSize != .zero ? boxSize : (iconSize + (iconPadding * 2))
     }
     
     private var resolvedSpacing: CGFloat {
@@ -194,8 +205,12 @@ public struct EDTSCheckbox: View {
         labelSpacing == .zero ? defaultLabelSpacing : labelSpacing
     }
     
+    private var resolvedPaddingLeading: CGFloat {
+        paddingLeading == .zero ? defaultPaddingLeading : paddingLeading
+    }
+    
     private var resolvedCornerRadius: CGFloat {
-        cornerRadius
+        boxCornerRadius != .zero ? boxCornerRadius : defaultCornerRadius
     }
     
     private var resolvedBorderWidth: CGFloat {
@@ -362,7 +377,7 @@ public struct EDTSCheckbox: View {
         }
         .padding(.top, paddingTop)
         .padding(.bottom, paddingBottom)
-        .padding(.leading, paddingLeading)
+        .padding(.leading, resolvedPaddingLeading)
         .padding(.trailing, paddingTrailing)
         .contentShape(Rectangle())
         .simultaneousGesture(setupPressGesture())
@@ -388,7 +403,7 @@ public struct EDTSCheckbox: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: resolvedCornerRadius))
         .contentShape(Rectangle())
-        .circularRippleEffect(size: resolvedIconContainerSize + rippleBleed, color: EDTSColor.black.opacity(rippleOpacity))
+        .circularRippleEffect(size: resolvedIconContainerSize * rippleBleedMultiplier, color: EDTSColor.black.opacity(rippleOpacity))
         .animation(.easeInOut(duration: activeStateAnimationDuration), value: isActive)
     }
 

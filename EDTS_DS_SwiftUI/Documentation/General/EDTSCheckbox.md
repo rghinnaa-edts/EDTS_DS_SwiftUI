@@ -211,19 +211,23 @@ When no custom description font is supplied, the description uses `EDTSFont.Poin
 | `icon` | `Image?` | `nil` | Custom icon rendered inside the checkbox |
 | `iconTintColorActive` | `Color?` | theme default | Icon tint when `isActive == true` |
 | `iconTintColorInactive` | `Color?` | theme default | Icon tint when `isActive == false` |
+| `iconSize` | `CGFloat` | `16` | Width/height of the icon glyph |
+| `iconPadding` | `CGFloat` | `2` | Padding between the icon glyph and the edge of the checkbox box (used to derive `boxSize` when `boxSize` is left unset) |
 
 The default icon resolution is:
 - `.checked` → `Image("ic_check")`
 - `.indeterminated` → `Image("ic_minus")`
 
-The icon is rendered as a template image and resized to `16pt × 16pt`.
+The icon is rendered as a template image and resized to `iconSize × iconSize` (default `16pt × 16pt`).
 
-### Background
+### Box
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `boxBgColorActive` | `Color?` | theme default | Checkbox box background when `isActive == true` |
 | `boxBgColorInactive` | `Color?` | theme default | Checkbox box background when `isActive == false` |
+| `boxCornerRadius` | `CGFloat` | `0` → resolves to `4` | Corner radius of the checkbox box |
+| `boxSize` | `CGFloat` | `0` → resolves to `iconSize + (iconPadding * 2)` (default `20`) | Width/height of the checkbox box |
 
 ### Layout
 
@@ -233,7 +237,7 @@ The icon is rendered as a template image and resized to `16pt × 16pt`.
 | `labelSpacing` | `CGFloat` | `4` | Vertical spacing between title and description |
 | `paddingTop` | `CGFloat` | `0` | Top content padding |
 | `paddingBottom` | `CGFloat` | `0` | Bottom content padding |
-| `paddingLeading` | `CGFloat` | `0` | Leading content padding |
+| `paddingLeading` | `CGFloat` | `2` | Leading content padding |
 | `paddingTrailing` | `CGFloat` | `0` | Trailing content padding |
 
 ### Border
