@@ -42,7 +42,12 @@ public struct EDTSCardSelectionConfig {
     public var descColor: Color
     public var descActiveColor: Color
     public var bgColor: Color
+    public var bgColorStart: Color?
+    public var bgColorEnd: Color?
+    public var bgColorOrientation: Orientation?
     public var bgActiveColor: Color
+    public var bgActiveColorStart: Color
+    public var bgActiveColorEnd: Color
     public var borderColor: Color
     public var borderActiveColor: Color
     public var borderWidth: CGFloat
@@ -63,7 +68,12 @@ public struct EDTSCardSelectionConfig {
         descColor: Color = EDTSColor.grey50,
         descActiveColor: Color = EDTSColor.grey50,
         bgColor: Color = EDTSColor.white,
+        bgColorStart: Color = EDTSColor.white,
+        bgColorEnd: Color = EDTSColor.white,
+        bgColorOrientation: Orientation? = .vertical,
         bgActiveColor: Color = EDTSColor.white,
+        bgActiveColorStart: Color = EDTSColor.white,
+        bgActiveColorEnd: Color = EDTSColor.white,
         borderColor: Color = EDTSColor.grey20,
         borderActiveColor: Color = EDTSColor.blueDefault,
         borderWidth: CGFloat = 1,
@@ -83,7 +93,12 @@ public struct EDTSCardSelectionConfig {
         self.descColor = descColor
         self.descActiveColor = descActiveColor
         self.bgColor = bgColor
+        self.bgColorStart = bgColorStart
+        self.bgColorEnd = bgColorEnd
+        self.bgColorOrientation = bgColorOrientation
         self.bgActiveColor = bgActiveColor
+        self.bgActiveColorStart = bgActiveColorStart
+        self.bgActiveColorEnd = bgActiveColorEnd
         self.borderColor = borderColor
         self.borderActiveColor = borderActiveColor
         self.borderWidth = borderWidth
@@ -136,6 +151,16 @@ public struct EDTSCardSelectionView: View {
         guard isEnabled else { return style.disabledBgColor }
         return isSelected ? style.bgActiveColor : style.bgColor
     }
+    
+    private var backgroundColorStart: Color? {
+        guard isEnabled else { return style.disabledBgColor }
+        return isSelected ? style.bgActiveColorStart : style.bgColorStart
+    }
+    
+    private var backgroundColorEnd: Color? {
+        guard isEnabled else { return style.disabledBgColor }
+        return isSelected ? style.bgActiveColorEnd : style.bgColorEnd
+    }
 
     private var borderColor: Color {
         guard isEnabled else { return style.disabledBorderColor }
@@ -178,7 +203,8 @@ public struct EDTSCardSelectionView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: style.cornerRadius)
-                .fill(backgroundColor)
+                .fill(containerBackgroundStyle)
+                .animation(.easeOut(duration: Self.selectionAnimationDuration), value: isSelected)
         )
         .overlay(
             RoundedRectangle(cornerRadius: style.cornerRadius)
@@ -192,6 +218,36 @@ public struct EDTSCardSelectionView: View {
             y: style.shadowOffset.height
         )
     }
+    
+    private var containerBackgroundStyle: AnyShapeStyle {
+        if style.bgColorStart != nil || style.bgColorEnd != nil {
+            let orientation = style.bgColorOrientation ?? .horizontal
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [backgroundColorStart ?? .clear, backgroundColorEnd ?? .clear],
+                    startPoint: orientation == .horizontal ? .leading : .top,
+                    endPoint: orientation == .horizontal ? .trailing : .bottom
+                )
+            )
+        } else {
+            return AnyShapeStyle(backgroundColor)
+        }
+    }
+    
+//    private var containerBackgroundActiveStyle: AnyShapeStyle {
+//        if style.bgActiveColorStart != nil || style.bgActiveColorEnd != nil {
+//            let orientation = style.bgColorOrientation ?? .horizontal
+//            return AnyShapeStyle(
+//                LinearGradient(
+//                    colors: [style.bgActiveColorStart ?? .clear, style.bgActiveColorEnd ?? .clear],
+//                    startPoint: orientation == .horizontal ? .leading : .top,
+//                    endPoint: orientation == .horizontal ? .trailing : .bottom
+//                )
+//            )
+//        } else {
+//            return AnyShapeStyle(style.bgActiveColor)
+//        }
+//    }
 }
 
 // MARK: - List
@@ -275,7 +331,7 @@ private struct EDTSCardSelectionListView_PreviewWrapper: View {
     ]
 
     var body: some View {
-        EDTSCardSelectionListView(data: items, selectedIndex: $selectedIndex) { index in
+        EDTSCardSelectionListView(data: items, selectedIndex: $selectedIndex, style: EDTSCardSelectionConfig(bgColorStart: EDTSColor.white, bgColorEnd: EDTSColor.grey20)) { index in
             print("Selected index: \(index)")
         }
         .padding(.vertical, 16)

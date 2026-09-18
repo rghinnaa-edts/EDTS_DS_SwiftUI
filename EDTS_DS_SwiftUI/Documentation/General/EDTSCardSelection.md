@@ -4,10 +4,10 @@ The `EDTSCardSelection` component is a horizontally-scrolling card picker built 
 
 ## Features
 
-- A `CardSelectionModel` per card with `title`/`description` strings, optional `AttributedString` overrides for rich text, and an `isEnabled` flag
+- A `EDTSCardSelectionModel` per card with `title`/`description` strings, optional `AttributedString` overrides for rich text, and an `isEnabled` flag
 - Selected, unselected, and disabled visual states — each independently configurable for title color, description color, background, border, and shadow
 - Solid background per state (no gradient); disabled state gets its own background, border, and text color so it reads clearly as non-interactive
-- Fully customizable via `CardSelectionConfig`: colors, border width, corner radius, and shadow (color, opacity, radius, offset)
+- Fully customizable via `EDTSCardSelectionConfig`: colors, border width, corner radius, and shadow (color, opacity, radius, offset)
 - `EDTSCardSelectionView` for a single standalone card, and `EDTSCardSelectionListView` for a horizontally-scrolling, tap-to-select list
 - Auto-selects the first enabled item on appear when no selection is bound in yet
 - Disabled cards are skipped entirely by selection (tapping one is a no-op)
@@ -25,7 +25,7 @@ The `EDTSCardSelection` component is a horizontally-scrolling card picker built 
 Add to your `Podfile`:
 
 ```ruby
-pod 'EDTS_DS_SwiftUI/CardSelection'
+pod 'EDTS_DS_SwiftUI/EDTSCardSelection'
 ```
 
 Then import it wherever you use the component:
@@ -43,11 +43,11 @@ import EDTS_DS_SwiftUI
 ```swift
 @State private var selectedIndex: Int? = nil
 
-let items: [CardSelectionModel] = [
-    CardSelectionModel(title: "Debit Card", description: "Instant transfer"),
-    CardSelectionModel(title: "Credit Card", description: "Pay later"),
-    CardSelectionModel(title: "E-Wallet", description: "Top up balance"),
-    CardSelectionModel(title: "Bank Transfer", description: "Not available", isEnabled: false)
+let items: [EDTSCardSelectionModel] = [
+    EDTSCardSelectionModel(title: "Debit Card", description: "Instant transfer"),
+    EDTSCardSelectionModel(title: "Credit Card", description: "Pay later"),
+    EDTSCardSelectionModel(title: "E-Wallet", description: "Top up balance"),
+    EDTSCardSelectionModel(title: "Bank Transfer", description: "Not available", isEnabled: false)
 ]
 
 EDTSCardSelectionListView(data: items, selectedIndex: $selectedIndex) { index in
@@ -61,7 +61,7 @@ Renders a horizontally-scrolling row of cards. If `selectedIndex` is `nil` when 
 
 ```swift
 EDTSCardSelectionView(
-    model: CardSelectionModel(title: "Debit Card", description: "Instant transfer"),
+    model: EDTSCardSelectionModel(title: "Debit Card", description: "Instant transfer"),
     isSelected: true
 )
 ```
@@ -71,7 +71,7 @@ Useful when you want to lay cards out yourself (e.g. in a grid) instead of using
 ### Disabled Cards
 
 ```swift
-CardSelectionModel(title: "Bank Transfer", description: "Not available", isEnabled: false)
+EDTSCardSelectionModel(title: "Bank Transfer", description: "Not available", isEnabled: false)
 ```
 
 Disabled cards render with `disabledColor` text, `disabledBgColor` background, and `disabledBorderColor`/`disabledBorderWidth` border regardless of selection state, and are ignored by `EDTSCardSelectionListView`'s tap handling and auto-select logic.
@@ -79,7 +79,7 @@ Disabled cards render with `disabledColor` text, `disabledBgColor` background, a
 ### Custom Styling
 
 ```swift
-let config = CardSelectionConfig(
+let config = EDTSCardSelectionConfig(
     titleColor: EDTSColor.grey70,
     titleActiveColor: EDTSColor.blueDefault,
     descColor: EDTSColor.grey50,
@@ -103,7 +103,7 @@ EDTSCardSelectionListView(data: items, selectedIndex: $selectedIndex, style: con
 
 ## Public Interface
 
-### `CardSelectionModel` — Card Data
+### `EDTSCardSelectionModel` — Card Data
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -114,7 +114,7 @@ EDTSCardSelectionListView(data: items, selectedIndex: $selectedIndex, style: con
 | `titleAttributed` | `AttributedString?` | `nil` | Rich-text override for the title; takes precedence over `title` and carries its own styling |
 | `descriptionAttributed` | `AttributedString?` | `nil` | Rich-text override for the description; takes precedence over `description` and carries its own styling |
 
-### `CardSelectionConfig` — Styling
+### `EDTSCardSelectionConfig` — Styling
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -138,23 +138,23 @@ EDTSCardSelectionListView(data: items, selectedIndex: $selectedIndex, style: con
 | `disabledBorderColor` | `Color` | `EDTSColor.grey20` | Border color when `isEnabled` is `false` |
 | `disabledBorderWidth` | `CGFloat` | `0.5` | Border width when `isEnabled` is `false` |
 
-`CardSelectionConfig.default` provides an instance with every parameter left at its default.
+`EDTSCardSelectionConfig.default` provides an instance with every parameter left at its default.
 
 ### `EDTSCardSelectionView` — Single Card
 
 ```swift
 init(
-    model: CardSelectionModel,
+    model: EDTSCardSelectionModel,
     isSelected: Bool,
-    style: CardSelectionConfig = .default
+    style: EDTSCardSelectionConfig = .default
 )
 ```
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `model` | `CardSelectionModel` | — (required) | The card's content and enabled state |
+| `model` | `EDTSCardSelectionModel` | — (required) | The card's content and enabled state |
 | `isSelected` | `Bool` | — (required) | Whether the card is currently selected |
-| `style` | `CardSelectionConfig` | `.default` | Visual styling to apply |
+| `style` | `EDTSCardSelectionConfig` | `.default` | Visual styling to apply |
 
 The card's title/description color, background, border, and shadow all resolve from `isEnabled` first (disabled wins outright), then from `isSelected`. Border color changes animate with an `.easeOut` curve.
 
@@ -162,18 +162,18 @@ The card's title/description color, background, border, and shadow all resolve f
 
 ```swift
 init(
-    data: [CardSelectionModel],
+    data: [EDTSCardSelectionModel],
     selectedIndex: Binding<Int?>,
-    style: CardSelectionConfig = .default,
+    style: EDTSCardSelectionConfig = .default,
     onSelect: ((Int) -> Void)? = nil
 )
 ```
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `data` | `[CardSelectionModel]` | — (required) | Cards to render, left to right |
+| `data` | `[EDTSCardSelectionModel]` | — (required) | Cards to render, left to right |
 | `selectedIndex` | `Binding<Int?>` | — (required) | Currently selected index; `nil` means nothing selected |
-| `style` | `CardSelectionConfig` | `.default` | Visual styling applied to every card |
+| `style` | `EDTSCardSelectionConfig` | `.default` | Visual styling applied to every card |
 | `onSelect` | `((Int) -> Void)?` | `nil` | Called with the new index whenever selection changes, including the initial auto-select |
 
 ---
