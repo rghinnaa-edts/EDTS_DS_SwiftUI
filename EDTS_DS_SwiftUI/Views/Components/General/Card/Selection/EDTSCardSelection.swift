@@ -233,21 +233,6 @@ public struct EDTSCardSelectionView: View {
             return AnyShapeStyle(backgroundColor)
         }
     }
-    
-//    private var containerBackgroundActiveStyle: AnyShapeStyle {
-//        if style.bgActiveColorStart != nil || style.bgActiveColorEnd != nil {
-//            let orientation = style.bgColorOrientation ?? .horizontal
-//            return AnyShapeStyle(
-//                LinearGradient(
-//                    colors: [style.bgActiveColorStart ?? .clear, style.bgActiveColorEnd ?? .clear],
-//                    startPoint: orientation == .horizontal ? .leading : .top,
-//                    endPoint: orientation == .horizontal ? .trailing : .bottom
-//                )
-//            )
-//        } else {
-//            return AnyShapeStyle(style.bgActiveColor)
-//        }
-//    }
 }
 
 // MARK: - List
