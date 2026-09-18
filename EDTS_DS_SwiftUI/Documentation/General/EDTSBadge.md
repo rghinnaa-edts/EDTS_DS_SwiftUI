@@ -53,7 +53,7 @@ EDTSBadge(text: "New")
 ```swift
 EDTSBadge(
     text: "Promo",
-    icon: Image(systemName: "tag.fill")
+    iconLeading: Image(systemName: "tag.fill")
 )
 ```
 
