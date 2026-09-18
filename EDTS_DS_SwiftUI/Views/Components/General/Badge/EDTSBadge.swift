@@ -8,62 +8,96 @@
 import SwiftUI
 
 public struct EDTSBadge: View {
-    // MARK: - Public API
-    public var label: String
-    public var icon: Image?
-
-    // Styling
-    public var labelColor: Color
-    public var labelFont: Font
-    public var iconTint: Color?
-    public var iconPadding: CGFloat
-
+    public var text: String
+    public var textAttributed: AttributedString?
+    public var textColor: Color
+    public var fontStyle: Font?
+    public var fontName: String
+    public var fontSize: CGFloat
+    public var fontWeight: String?
+    public var iconLeading: Image?
+    public var iconTintColorLeading: Color?
+    public var iconTrailing: Image?
+    public var iconTintColorTrailing: Color?
+    public var iconSize: CGFloat?
+    public var iconSpacing: CGFloat
     public var bgColor: Color
+    public var bgColorStart: Color?
+    public var bgColorEnd: Color?
+    public var bgColorOrientation: Orientation?
     public var cornerRadius: CGFloat
+    public var cornerRadiusTopLeft: CGFloat
+    public var cornerRadiusTopRight: CGFloat
+    public var cornerRadiusBottomLeft: CGFloat
+    public var cornerRadiusBottomRight: CGFloat
     public var borderWidth: CGFloat
     public var borderColor: Color
-
     public var shadowOpacity: Double
     public var shadowOffset: CGSize
     public var shadowRadius: CGFloat
     public var shadowColor: Color
-
     public var paddingTop: CGFloat
     public var paddingBottom: CGFloat
     public var paddingLeading: CGFloat
     public var paddingTrailing: CGFloat
-
     public var isSkeleton: Bool
+    
+    private let minimumSize: CGFloat = 16
 
     // MARK: - Init
+    
     public init(
-        label: String,
-        labelColor: Color = EDTSColor.grey70,
-        labelFont: Font = EDTSFont.Klik.B4.Regular.font,
-        icon: Image? = nil,
-        iconTint: Color? = nil,
-        iconPadding: CGFloat = 2.0,
+        text: String,
+        textAttributed: AttributedString? = nil,
+        textColor: Color = EDTSColor.grey70,
+        fontStyle: Font? = nil,
+        fontName: String = "",
+        fontSize: CGFloat = .zero,
+        fontWeight: String? = nil,
+        iconLeading: Image? = nil,
+        iconTintColorLeading: Color? = nil,
+        iconTrailing: Image? = nil,
+        iconTintColorTrailing: Color? = nil,
+        iconSize: CGFloat = 16.0,
+        iconSpacing: CGFloat = 4.0,
         bgColor: Color = EDTSColor.grey20,
-        cornerRadius: CGFloat = 9.0,
+        bgColorStart: Color? = nil,
+        bgColorEnd: Color? = nil,
+        bgColorOrientation: Orientation? = nil,
+        cornerRadius: CGFloat = 8.0,
+        cornerRadiusTopLeft: CGFloat? = nil,
+        cornerRadiusTopRight: CGFloat? = nil,
+        cornerRadiusBottomLeft: CGFloat? = nil,
+        cornerRadiusBottomRight: CGFloat? = nil,
         borderWidth: CGFloat = 0.0,
         borderColor: Color = .clear,
         shadowOpacity: Double = 0.0,
         shadowOffset: CGSize = .zero,
         shadowRadius: CGFloat = 0.0,
         shadowColor: Color = .black,
-        paddingTop: CGFloat = 1.0,
-        paddingBottom: CGFloat = 1.0,
-        paddingLeading: CGFloat = 4.0,
-        paddingTrailing: CGFloat = 4.0,
+        paddingTop: CGFloat = 2.0,
+        paddingBottom: CGFloat = 2.0,
+        paddingLeading: CGFloat = 8.0,
+        paddingTrailing: CGFloat = 8.0,
         isSkeleton: Bool = false
     ) {
-        self.label = label
-        self.labelColor = labelColor
-        self.labelFont = labelFont
-        self.icon = icon
-        self.iconTint = iconTint
-        self.iconPadding = iconPadding
+        self.text = text
+        self.textAttributed = textAttributed
+        self.textColor = textColor
+        self.fontStyle = fontStyle
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.fontWeight = fontWeight
+        self.iconLeading = iconLeading
+        self.iconTintColorLeading = iconTintColorLeading
+        self.iconTrailing = iconTrailing
+        self.iconTintColorTrailing = iconTintColorTrailing
+        self.iconSize = iconSize
+        self.iconSpacing = iconSpacing
         self.bgColor = bgColor
+        self.bgColorStart = bgColorStart
+        self.bgColorEnd = bgColorEnd
+        self.bgColorOrientation = bgColorOrientation
         self.cornerRadius = cornerRadius
         self.borderWidth = borderWidth
         self.borderColor = borderColor
@@ -76,44 +110,126 @@ public struct EDTSBadge: View {
         self.paddingLeading = paddingLeading
         self.paddingTrailing = paddingTrailing
         self.isSkeleton = isSkeleton
+        
+        let hasCustomCorner = cornerRadiusTopLeft != nil
+            || cornerRadiusTopRight != nil
+            || cornerRadiusBottomLeft != nil
+            || cornerRadiusBottomRight != nil
+
+        if hasCustomCorner {
+            self.cornerRadiusTopLeft = cornerRadiusTopLeft ?? 0.0
+            self.cornerRadiusTopRight = cornerRadiusTopRight ?? 0.0
+            self.cornerRadiusBottomLeft = cornerRadiusBottomLeft ?? 0.0
+            self.cornerRadiusBottomRight = cornerRadiusBottomRight ?? 0.0
+        } else {
+            self.cornerRadiusTopLeft = cornerRadius
+            self.cornerRadiusTopRight = cornerRadius
+            self.cornerRadiusBottomLeft = cornerRadius
+            self.cornerRadiusBottomRight = cornerRadius
+        }
+    }
+    
+    private var containerBackgroundStyle: AnyShapeStyle {
+        if bgColorStart != nil || bgColorEnd != nil {
+            let orientation = bgColorOrientation ?? .horizontal
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [bgColorStart ?? .clear, bgColorEnd ?? .clear],
+                    startPoint: orientation == .horizontal ? .leading : .top,
+                    endPoint: orientation == .horizontal ? .trailing : .bottom
+                )
+            )
+        } else {
+            return AnyShapeStyle(bgColor)
+        }
+    }
+    
+    private var badgeShape: UnevenRoundedShape {
+        UnevenRoundedShape(
+            topLeft: cornerRadiusTopLeft,
+            topRight: cornerRadiusTopRight,
+            bottomLeft: cornerRadiusBottomLeft,
+            bottomRight: cornerRadiusBottomRight
+        )
+    }
+
+    private var contentSpacing: CGFloat {
+        (iconLeading != nil || iconTrailing != nil) ? iconSpacing : 0
+    }
+    
+    func resolvedFont() -> Font {
+        if let fontStyle {
+            return fontStyle
+        }
+
+        if fontName.isEmpty && fontSize <= 0 && fontWeight == nil {
+            if EDTSColor.theme == .poinku {
+                return EDTSFont.Poinku.B4.Medium.font
+            } else {
+                return EDTSFont.Klik.B4.Semibold.font
+            }
+        }
+
+        let size = fontSize > 0 ? fontSize : UIFont.systemFontSize
+        var font: Font = fontName.isEmpty ? .system(size: size) : .custom(fontName, size: size)
+
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+
+        return font
     }
 
     // MARK: - Body
+    
     public var body: some View {
-        HStack(spacing: icon == nil ? 0 : iconPadding) {
-            if let icon {
-                icon
+        HStack(spacing: contentSpacing) {
+            if let iconLeading {
+                iconLeading
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 12, height: 12)
-                    .foregroundStyle(iconTint ?? labelColor)
+                    .frame(width: iconSize, height: iconSize)
+                    .foregroundStyle(iconTintColorLeading ?? textColor)
             }
 
-            Text(label)
-                .font(labelFont)
-                .foregroundStyle(labelColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            if let attributed = textAttributed {
+                Text(attributed)
+                    .font(resolvedFont())
+                    .foregroundStyle(textColor)
+            } else {
+                Text(text)
+                    .font(resolvedFont())
+                    .foregroundStyle(textColor)
+            }
+
+            if let iconTrailing {
+                iconTrailing
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: iconSize, height: iconSize)
+                    .foregroundStyle(iconTintColorTrailing ?? textColor)
+            }
         }
         .padding(EdgeInsets(top: paddingTop, leading: paddingLeading, bottom: paddingBottom, trailing: paddingTrailing))
-        .frame(minWidth: 18, minHeight: 18, alignment: .center)
+        .frame(minWidth: minimumSize, minHeight: minimumSize, alignment: .center)
         .background(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(bgColor)
+            badgeShape
+                .fill(containerBackgroundStyle)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
+            badgeShape
                 .stroke(borderColor, lineWidth: borderWidth)
         )
         .shadow(color: shadowColor.opacity(shadowOpacity), radius: shadowRadius, x: shadowOffset.width, y: shadowOffset.height)
-        .edtsSkeleton(active: isSkeleton, cornerRadius: cornerRadius)
+        .edtsSkeleton(active: isSkeleton, cornerRadius: cornerRadius, cornerRadiusTopLeft: cornerRadiusTopLeft, cornerRadiusTopRight: cornerRadiusTopRight, cornerRadiusBottomLeft: cornerRadiusBottomLeft, cornerRadiusBottomRight: cornerRadiusBottomRight)
     }
 }
 
 #Preview {
     VStack(spacing: 12) {
-        EDTSBadge(label: "Label")
-        EDTSBadge(label: "Label", icon: Image(systemName: "tag.fill"))
+        EDTSBadge(text: "Label")
+        EDTSBadge(text: "Label", iconLeading: Image(systemName: "tag.fill"))
+        EDTSBadge(text: "Label", iconTrailing: Image(systemName: "tag.fill"))
     }
     .padding()
 }
