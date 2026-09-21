@@ -53,7 +53,7 @@ public struct EDTSCheckbox: View {
     public var boxSize: CGFloat
     
     public var spacing: CGFloat
-    public var labelSpacing: CGFloat
+    public var textSpacing: CGFloat
 
     public var borderWidth: CGFloat
     public var borderColorActive: Color?
@@ -68,95 +68,11 @@ public struct EDTSCheckbox: View {
 
     public var onTapCheckbox: (() -> Void)?
 
-    // MARK: - State
-    @State private var isPressed = false
-
-    // MARK: - Initializers
-    public init(
-        checkboxState: EDTSCheckboxState = .default,
-        checkboxType: EDTSCheckboxType = .checked,
-        title: String? = "Title checkbox",
-        titleAttributed: AttributedString? = nil,
-        titleFontStyle: Font? = nil,
-        titleFontName: String = "",
-        titleFontSize: CGFloat = .zero,
-        titleFontWeight: String? = nil,
-        titleColorActive: Color? = nil,
-        titleColorInactive: Color? = nil,
-        desc: String? = "Body text goes here",
-        descAttributed: AttributedString? = nil,
-        descFontStyle: Font? = nil,
-        descFontName: String = "",
-        descFontSize: CGFloat = .zero,
-        descFontWeight: String? = nil,
-        descColorActive: Color? = nil,
-        descColorInactive: Color? = nil,
-        icon: Image? = nil,
-        iconTintColorActive: Color? = nil,
-        iconTintColorInactive: Color? = nil,
-        iconSize: CGFloat = 16,
-        iconPadding: CGFloat = 2,
-        boxBgColorActive: Color? = nil,
-        boxBgColorInactive: Color? = nil,
-        boxCornerRadius: CGFloat = .zero,
-        boxSize: CGFloat = .zero,
-        spacing: CGFloat = .zero,
-        labelSpacing: CGFloat = .zero,
-        borderWidth: CGFloat = .zero,
-        borderColorActive: Color? = nil,
-        borderColorInactive: Color? = nil,
-        paddingTop: CGFloat = .zero,
-        paddingBottom: CGFloat = .zero,
-        paddingLeading: CGFloat = .zero,
-        paddingTrailing: CGFloat = .zero,
-        isActive: Bool = false,
-        onTapCheckbox: (() -> Void)? = nil
-    ) {
-        self.checkboxState = checkboxState
-        self.checkboxType = checkboxType
-        self.title = titleAttributed == nil ? title : nil
-        self.titleAttributed = titleAttributed
-        self.titleFontStyle = titleFontStyle
-        self.titleFontName = titleFontName
-        self.titleFontSize = titleFontSize
-        self.titleFontWeight = titleFontWeight
-        self.titleColorActive = titleColorActive
-        self.titleColorInactive = titleColorInactive
-        self.desc = descAttributed == nil ? desc : nil
-        self.descAttributed = descAttributed
-        self.descFontStyle = descFontStyle
-        self.descFontName = descFontName
-        self.descFontSize = descFontSize
-        self.descFontWeight = descFontWeight
-        self.descColorActive = descColorActive
-        self.descColorInactive = descColorInactive
-        self.icon = icon
-        self.iconTintColorActive = iconTintColorActive
-        self.iconTintColorInactive = iconTintColorInactive
-        self.iconSize = iconSize
-        self.iconPadding = iconPadding
-        self.boxBgColorActive = boxBgColorActive
-        self.boxBgColorInactive = boxBgColorInactive
-        self.boxCornerRadius = boxCornerRadius
-        self.boxSize = boxSize
-        self.spacing = spacing
-        self.labelSpacing = labelSpacing
-        self.borderWidth = borderWidth
-        self.borderColorActive = borderColorActive
-        self.borderColorInactive = borderColorInactive
-        self.paddingTop = paddingTop
-        self.paddingBottom = paddingBottom
-        self.paddingLeading = paddingLeading
-        self.paddingTrailing = paddingTrailing
-        self.isActive = isActive
-        self.onTapCheckbox = onTapCheckbox
-    }
-
     // MARK: - Private Variable
     private let defaultTitleFontSize: CGFloat = 14
     private let defaultDescFontSize: CGFloat = 12
     private let defaultSpacing: CGFloat = 8
-    private let defaultLabelSpacing: CGFloat = 4
+    private let defaultTextSpacing: CGFloat = 4
     private let defaultCornerRadius: CGFloat = 4
     private let defaultBorderWidth: CGFloat = 1
     private let defaultPaddingLeading: CGFloat = 2
@@ -166,22 +82,6 @@ public struct EDTSCheckbox: View {
     private let rippleFadeDuration: Double = 0.22
     private let activeStateAnimationDuration: Double = 0.25
     private let dragCancelThreshold: CGFloat = 44
-    
-    private var resolvedTitleFontStyle: Font {
-        if EDTSColor.theme == .poinku {
-            return EDTSFont.Poinku.B2.Medium.font
-        } else {
-            return EDTSFont.Klik.B2.Medium.font
-        }
-    }
-
-    private var resolvedDescFontStyle: Font {
-        if EDTSColor.theme == .poinku {
-            return EDTSFont.Poinku.B3.Light.font
-        } else {
-            return EDTSFont.Klik.B3.Regular.font
-        }
-    }
 
     private var resolvedIcon: Image? {
         if let icon { return icon }
@@ -201,8 +101,8 @@ public struct EDTSCheckbox: View {
         spacing == .zero ? defaultSpacing : spacing
     }
     
-    private var resolvedLabelSpacing: CGFloat {
-        labelSpacing == .zero ? defaultLabelSpacing : labelSpacing
+    private var resolvedTextSpacing: CGFloat {
+        textSpacing == .zero ? defaultTextSpacing : textSpacing
     }
     
     private var resolvedPaddingLeading: CGFloat {
@@ -223,15 +123,12 @@ public struct EDTSCheckbox: View {
         var boxBgColor: Color
         var iconTintColor: Color
         var borderColor: Color
+        var titleFont: Font
+        var descFont: Font
     }
 
     private var resolvedStyle: ResolvedValues {
-        switch checkboxState {
-        case .default:
-            return resolveDefault()
-        case .disabled:
-            return resolveDisabled()
-        }
+        resolveStyle()
     }
     
     private var customTitleFont: Font? {
@@ -271,89 +168,142 @@ public struct EDTSCheckbox: View {
     private var hasCustomDescFont: Bool {
         !descFontName.isEmpty || descFontSize != .zero || (descFontWeight?.isEmpty == false)
     }
+    
+    // MARK: - State
+    @State private var isPressed = false
+    @State private var isRipplePressed = false
 
-    // MARK: - Setup & Styling
-    private func resolveDefault() -> ResolvedValues {
-        switch isActive {
-        case false:
-            if EDTSColor.theme == .poinku {
-                return ResolvedValues(
-                    titleColor: titleColorInactive ?? EDTSColor.grey70,
-                    descColor: descColorInactive ?? EDTSColor.grey60,
-                    boxBgColor: boxBgColorInactive ?? EDTSColor.white,
-                    iconTintColor: iconTintColorInactive ?? EDTSColor.white,
-                    borderColor: borderColorInactive ?? EDTSColor.grey30
-                )
-            } else {
-                return ResolvedValues(
-                    titleColor: titleColorInactive ?? EDTSColor.grey60,
-                    descColor: descColorInactive ?? EDTSColor.grey50,
-                    boxBgColor: boxBgColorInactive ?? EDTSColor.white,
-                    iconTintColor: iconTintColorInactive ?? EDTSColor.white,
-                    borderColor: borderColorInactive ?? EDTSColor.grey30
-                )
-            }
-
-        case true:
-            if EDTSColor.theme == .poinku {
-                return ResolvedValues(
-                    titleColor: titleColorActive ?? EDTSColor.grey70,
-                    descColor: descColorActive ?? EDTSColor.grey60,
-                    boxBgColor: boxBgColorActive ?? EDTSColor.blue30,
-                    iconTintColor: iconTintColorActive ?? EDTSColor.white,
-                    borderColor: borderColorActive ?? EDTSColor.blue30
-                )
-            } else {
-                return ResolvedValues(
-                    titleColor: titleColorActive ?? EDTSColor.grey60,
-                    descColor: descColorActive ?? EDTSColor.grey50,
-                    boxBgColor: boxBgColorActive ?? EDTSColor.blue50,
-                    iconTintColor: iconTintColorActive ?? EDTSColor.white,
-                    borderColor: borderColorActive ?? EDTSColor.blue50,
-                )
-            }
-        }
+    // MARK: - Initializers
+    public init(
+        checkboxState: EDTSCheckboxState = .default,
+        checkboxType: EDTSCheckboxType = .checked,
+        title: String? = "Title checkbox",
+        titleAttributed: AttributedString? = nil,
+        titleFontStyle: Font? = nil,
+        titleFontName: String = "",
+        titleFontSize: CGFloat = .zero,
+        titleFontWeight: String? = nil,
+        titleColorActive: Color? = nil,
+        titleColorInactive: Color? = nil,
+        desc: String? = "Body text goes here",
+        descAttributed: AttributedString? = nil,
+        descFontStyle: Font? = nil,
+        descFontName: String = "",
+        descFontSize: CGFloat = .zero,
+        descFontWeight: String? = nil,
+        descColorActive: Color? = nil,
+        descColorInactive: Color? = nil,
+        icon: Image? = nil,
+        iconTintColorActive: Color? = nil,
+        iconTintColorInactive: Color? = nil,
+        iconSize: CGFloat = 16,
+        iconPadding: CGFloat = 2,
+        boxBgColorActive: Color? = nil,
+        boxBgColorInactive: Color? = nil,
+        boxCornerRadius: CGFloat = .zero,
+        boxSize: CGFloat = .zero,
+        spacing: CGFloat = .zero,
+        textSpacing: CGFloat = .zero,
+        borderWidth: CGFloat = .zero,
+        borderColorActive: Color? = nil,
+        borderColorInactive: Color? = nil,
+        paddingTop: CGFloat = .zero,
+        paddingBottom: CGFloat = .zero,
+        paddingLeading: CGFloat = .zero,
+        paddingTrailing: CGFloat = .zero,
+        isActive: Bool = false,
+        onTapCheckbox: (() -> Void)? = nil
+    ) {
+        self.checkboxState = checkboxState
+        self.checkboxType = checkboxType
+        self.title = titleAttributed == nil ? title : nil
+        self.titleAttributed = titleAttributed
+        self.titleFontStyle = titleFontStyle
+        self.titleFontName = titleFontName
+        self.titleFontSize = titleFontSize
+        self.titleFontWeight = titleFontWeight
+        self.titleColorActive = titleColorActive
+        self.titleColorInactive = titleColorInactive
+        self.desc = descAttributed == nil ? desc : nil
+        self.descAttributed = descAttributed
+        self.descFontStyle = descFontStyle
+        self.descFontName = descFontName
+        self.descFontSize = descFontSize
+        self.descFontWeight = descFontWeight
+        self.descColorActive = descColorActive
+        self.descColorInactive = descColorInactive
+        self.icon = icon
+        self.iconTintColorActive = iconTintColorActive
+        self.iconTintColorInactive = iconTintColorInactive
+        self.iconSize = iconSize
+        self.iconPadding = iconPadding
+        self.boxBgColorActive = boxBgColorActive
+        self.boxBgColorInactive = boxBgColorInactive
+        self.boxCornerRadius = boxCornerRadius
+        self.boxSize = boxSize
+        self.spacing = spacing
+        self.textSpacing = textSpacing
+        self.borderWidth = borderWidth
+        self.borderColorActive = borderColorActive
+        self.borderColorInactive = borderColorInactive
+        self.paddingTop = paddingTop
+        self.paddingBottom = paddingBottom
+        self.paddingLeading = paddingLeading
+        self.paddingTrailing = paddingTrailing
+        self.isActive = isActive
+        self.onTapCheckbox = onTapCheckbox
     }
 
-    private func resolveDisabled() -> ResolvedValues {
-        switch isActive {
-        case false:
-            if EDTSColor.theme == .poinku {
-                return ResolvedValues(
-                    titleColor: EDTSColor.grey50,
-                    descColor: EDTSColor.grey30,
-                    boxBgColor: EDTSColor.grey20,
-                    iconTintColor: EDTSColor.grey20,
-                    borderColor: EDTSColor.grey30
-                )
-            } else {
-                return ResolvedValues(
-                    titleColor: EDTSColor.grey40,
-                    descColor: EDTSColor.grey30,
-                    boxBgColor: EDTSColor.grey20,
-                    iconTintColor: EDTSColor.grey20,
-                    borderColor: EDTSColor.grey30
-                )
-            }
+    // MARK: - Setup & Styling
+    private func resolveStyle() -> ResolvedValues {
+        let isPoinku = EDTSColor.theme == .poinku
+        let titleFont = customTitleFont ?? (isPoinku ? EDTSFont.Poinku.B2.Medium.font : EDTSFont.Klik.B2.Medium.font)
+        let descFont = customDescFont ?? (isPoinku ? EDTSFont.Poinku.B3.Light.font : EDTSFont.Klik.B3.Regular.font)
 
-        case true:
-            if EDTSColor.theme == .poinku {
-                return ResolvedValues(
-                    titleColor: EDTSColor.grey50,
-                    descColor: EDTSColor.grey30,
-                    boxBgColor: EDTSColor.grey20,
-                    iconTintColor: EDTSColor.grey30,
-                    borderColor: EDTSColor.grey30
-                )
-            } else {
-                return ResolvedValues(
-                    titleColor: EDTSColor.grey40,
-                    descColor: EDTSColor.grey30,
-                    boxBgColor: EDTSColor.grey20,
-                    iconTintColor: EDTSColor.grey40,
-                    borderColor: EDTSColor.grey30
-                )
-            }
+        switch (checkboxState, isActive) {
+        case (.default, false):
+            return ResolvedValues(
+                titleColor: titleColorInactive ?? (isPoinku ? EDTSColor.grey70 : EDTSColor.grey60),
+                descColor: descColorInactive ?? (isPoinku ? EDTSColor.grey60 : EDTSColor.grey50),
+                boxBgColor: boxBgColorInactive ?? EDTSColor.white,
+                iconTintColor: iconTintColorInactive ?? EDTSColor.white,
+                borderColor: borderColorInactive ?? EDTSColor.grey30,
+                titleFont: titleFont,
+                descFont: descFont
+            )
+
+        case (.default, true):
+            return ResolvedValues(
+                titleColor: titleColorActive ?? (isPoinku ? EDTSColor.grey70 : EDTSColor.grey60),
+                descColor: descColorActive ?? (isPoinku ? EDTSColor.grey60 : EDTSColor.grey50),
+                boxBgColor: boxBgColorActive ?? (isPoinku ? EDTSColor.blue30 : EDTSColor.blue50),
+                iconTintColor: iconTintColorActive ?? EDTSColor.white,
+                borderColor: borderColorActive ?? (isPoinku ? EDTSColor.blue30 : EDTSColor.blue50),
+                titleFont: titleFont,
+                descFont: descFont
+            )
+
+        case (.disabled, false):
+            return ResolvedValues(
+                titleColor: isPoinku ? EDTSColor.grey50 : EDTSColor.grey40,
+                descColor: EDTSColor.grey30,
+                boxBgColor: EDTSColor.grey20,
+                iconTintColor: EDTSColor.grey20,
+                borderColor: EDTSColor.grey30,
+                titleFont: titleFont,
+                descFont: descFont
+            )
+
+        case (.disabled, true):
+            return ResolvedValues(
+                titleColor: isPoinku ? EDTSColor.grey50 : EDTSColor.grey40,
+                descColor: EDTSColor.grey30,
+                boxBgColor: EDTSColor.grey20,
+                iconTintColor: isPoinku ? EDTSColor.grey30 : EDTSColor.grey40,
+                borderColor: EDTSColor.grey30,
+                titleFont: titleFont,
+                descFont: descFont
+            )
         }
     }
 
@@ -365,12 +315,12 @@ public struct EDTSCheckbox: View {
             iconBox(values: values)
 
             if hasTitle || hasDesc {
-                VStack(alignment: .leading, spacing: resolvedLabelSpacing) {
+                VStack(alignment: .leading, spacing: resolvedTextSpacing) {
                     if hasTitle {
-                        titleView(color: values.titleColor)
+                        titleView(color: values.titleColor, font: values.titleFont)
                     }
                     if hasDesc {
-                        descView(color: values.descColor)
+                        descView(color: values.descColor, font: values.descFont)
                     }
                 }
             }
@@ -403,12 +353,13 @@ public struct EDTSCheckbox: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: resolvedCornerRadius))
         .contentShape(Rectangle())
-        .circularRippleEffect(size: resolvedIconContainerSize * rippleBleedMultiplier, color: EDTSColor.black.opacity(rippleOpacity))
+        .circularRippleEffect(size: resolvedIconContainerSize * rippleBleedMultiplier, color: EDTSColor.black.opacity(rippleOpacity), trigger: $isRipplePressed)
+        .allowsHitTesting(checkboxState != .disabled)
         .animation(.easeInOut(duration: activeStateAnimationDuration), value: isActive)
     }
 
     @ViewBuilder
-    private func titleView(color: Color) -> some View {
+    private func titleView(color: Color, font: Font) -> some View {
         Group {
             if let titleAttributed {
                 Text(titleAttributed)
@@ -417,11 +368,11 @@ public struct EDTSCheckbox: View {
             }
         }
         .foregroundColor(color)
-        .font(customTitleFont ?? resolvedTitleFontStyle)
+        .font(font)
     }
 
     @ViewBuilder
-    private func descView(color: Color) -> some View {
+    private func descView(color: Color, font: Font) -> some View {
         Group {
             if let descAttributed {
                 Text(descAttributed)
@@ -430,7 +381,7 @@ public struct EDTSCheckbox: View {
             }
         }
         .foregroundColor(color)
-        .font(customDescFont ?? resolvedDescFontStyle)
+        .font(font)
     }
 
     // MARK: - Gesture
@@ -440,11 +391,13 @@ public struct EDTSCheckbox: View {
                 guard checkboxState != .disabled else { return }
                 if !isPressed {
                     isPressed = true
+                    isRipplePressed = true
                 }
             }
             .onEnded { value in
                 guard checkboxState != .disabled else { return }
                 isPressed = false
+                isRipplePressed = false
 
                 let withinBounds = abs(value.translation.width) < dragCancelThreshold && abs(value.translation.height) < dragCancelThreshold
                 if withinBounds {
@@ -458,8 +411,6 @@ public struct EDTSCheckbox: View {
 #Preview("Preview") {
     struct PreviewWrapper: View {
         @State private var isChecked1 = false
-        @State private var isChecked2 = true
-        @State private var isChecked3 = true
 
         var body: some View {
             VStack(alignment: .leading, spacing: 16) {
@@ -473,16 +424,14 @@ public struct EDTSCheckbox: View {
                 EDTSCheckbox(
                     title: "Checked",
                     desc: "Body text goes here",
-                    isActive: isChecked3,
-                    onTapCheckbox: { isChecked3.toggle() }
+                    isActive: true
                 )
                 
                 EDTSCheckbox(
                     checkboxType: .indeterminated,
                     title: "Indeterminate",
                     desc: "Body text goes here",
-                    isActive: isChecked2,
-                    onTapCheckbox: { isChecked2.toggle() }
+                    isActive: true
                 )
 
                 EDTSCheckbox(

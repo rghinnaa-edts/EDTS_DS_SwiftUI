@@ -234,7 +234,7 @@ The icon is rendered as a template image and resized to `iconSize × iconSize` (
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `spacing` | `CGFloat` | `8` | Spacing between the checkbox box and the title/description content |
-| `labelSpacing` | `CGFloat` | `4` | Vertical spacing between title and description |
+| `textSpacing` | `CGFloat` | `4` | Vertical spacing between title and description |
 | `paddingTop` | `CGFloat` | `0` | Top content padding |
 | `paddingBottom` | `CGFloat` | `0` | Bottom content padding |
 | `paddingLeading` | `CGFloat` | `2` | Leading content padding |
