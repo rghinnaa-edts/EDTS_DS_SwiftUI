@@ -77,6 +77,7 @@ public enum EDTSToastDismissEdge {
     case bottom
 }
 
+@MainActor
 public class EDTSToastManager: ObservableObject {
     // MARK: - Singleton
     public static let toast = EDTSToastManager()
@@ -152,10 +153,7 @@ public class EDTSToastManager: ObservableObject {
     }
 
     private func animationCurve(for animation: EDTSToastAnimation) -> Animation {
-        switch animation {
-        case .fade:  return .easeInOut(duration: 0.15)
-        case .slide: return .easeInOut(duration: 0.25)
-        }
+        .easeInOut(duration: animationDuration(for: animation))
     }
 
     private func animationDuration(for animation: EDTSToastAnimation) -> TimeInterval {
@@ -264,8 +262,8 @@ private struct EDTSToastHostModifier: ViewModifier {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         dragTranslation = offscreenTranslation(for: edge)
                     }
-                    EDTSToastManager.toast.dismiss(animated: false)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        EDTSToastManager.toast.dismiss(animated: false)
                         dragTranslation = .zero
                     }
                 } else {
@@ -286,7 +284,9 @@ private struct EDTSToastHostModifier: ViewModifier {
 
     private var screenWidth: CGFloat {
         #if canImport(UIKit)
-        return UIScreen.main.bounds.width
+        return (UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.screen.bounds.width) ?? 400
         #else
         return 400
         #endif
@@ -294,7 +294,9 @@ private struct EDTSToastHostModifier: ViewModifier {
 
     private var screenHeight: CGFloat {
         #if canImport(UIKit)
-        return UIScreen.main.bounds.height
+        return (UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.screen.bounds.height) ?? 800
         #else
         return 800
         #endif

@@ -39,7 +39,7 @@ public struct EDTSToast: View {
 
     public var shadowOpacity: Float
     public var shadowRadius: CGFloat
-    public var shadowOffset: CGSize
+    public var shadowOffset: CGSize?
     public var shadowColor: Color?
 
     public var paddingTop: CGFloat
@@ -53,9 +53,10 @@ public struct EDTSToast: View {
     // MARK: - Private Variable
     private let defaultValue: CGFloat = -1.0
     private let defaultFontSize: CGFloat = 12
+    private let defaultShadowColorOpacity: Double = 0.18
 
     private var hasCustomFont: Bool {
-        fontStyle != nil || !fontName.isEmpty || fontSize != defaultValue || (fontWeight?.isEmpty == false)
+        !fontName.isEmpty || fontSize != defaultValue || (fontWeight?.isEmpty == false)
     }
 
     private var resolvedFont: Font {
@@ -77,6 +78,8 @@ public struct EDTSToast: View {
         var tempIconSize: CGFloat = 16
         var tempSpacing: CGFloat = 8
         var tempCornerRadius: CGFloat = 8
+        var tempBorderColor: Color?
+        var tempBorderWidth: CGFloat = 0
         var tempShadowOpacity: Float = 1.0
         var tempShadowRadius: CGFloat = 4
         var tempShadowOffset: CGSize = CGSize(width: 0, height: 2)
@@ -107,7 +110,7 @@ public struct EDTSToast: View {
         borderColor: Color? = nil,
         shadowOpacity: Float = -1.0,
         shadowRadius: CGFloat = -1.0,
-        shadowOffset: CGSize = .zero,
+        shadowOffset: CGSize? = nil,
         shadowColor: Color? = nil,
         paddingTop: CGFloat = -1.0,
         paddingBottom: CGFloat = -1.0,
@@ -187,7 +190,7 @@ public struct EDTSToast: View {
         .clipShape(RoundedRectangle(cornerRadius: values.tempCornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: values.tempCornerRadius)
-                .stroke(borderColor ?? .clear, lineWidth: borderWidth == defaultValue ? 0 : borderWidth)
+                .stroke(values.tempBorderColor ?? .clear, lineWidth: values.tempBorderWidth)
         )
         .shadow(
             color: (values.tempShadowColor ?? .clear).opacity(Double(values.tempShadowOpacity)),
@@ -210,17 +213,20 @@ public struct EDTSToast: View {
 
         values.tempLabelColor = textColor ?? EDTSColor.white
         values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.white
-        values.tempIconSize = iconSize == defaultValue ? 16 : iconSize
-        values.tempSpacing = spacing == defaultValue ? 8 : spacing
-        values.tempCornerRadius = cornerRadius == defaultValue ? 8 : cornerRadius
-        values.tempShadowOpacity = shadowOpacity == Float(defaultValue) ? 1.0 : shadowOpacity
-        values.tempShadowRadius = shadowRadius == defaultValue ? 4 : shadowRadius
-        values.tempShadowOffset = shadowOffset == .zero ? CGSize(width: 0, height: 2) : shadowOffset
-        values.tempShadowColor = shadowColor ?? Color(red: 112 / 255, green: 114 / 255, blue: 125 / 255).opacity(0.4)
-        values.tempPaddingTop = paddingTop == defaultValue ? 16 : paddingTop
-        values.tempPaddingBottom = paddingBottom == defaultValue ? 16 : paddingBottom
-        values.tempPaddingLeading = paddingLeading == defaultValue ? 16 : paddingLeading
-        values.tempPaddingTrailing = paddingTrailing == defaultValue ? 16 : paddingTrailing
+        values.tempBorderColor = borderColor ?? .clear
+        values.tempShadowColor = shadowColor ?? EDTSColor.grey50.opacity(defaultShadowColorOpacity)
+
+        if iconSize != defaultValue { values.tempIconSize = iconSize }
+        if spacing != defaultValue { values.tempSpacing = spacing }
+        if cornerRadius != defaultValue { values.tempCornerRadius = cornerRadius }
+        if borderWidth != defaultValue { values.tempBorderWidth = borderWidth }
+        if shadowOpacity != Float(defaultValue) { values.tempShadowOpacity = shadowOpacity }
+        if shadowRadius != defaultValue { values.tempShadowRadius = shadowRadius }
+        if let shadowOffset { values.tempShadowOffset = shadowOffset }
+        if paddingTop != defaultValue { values.tempPaddingTop = paddingTop }
+        if paddingBottom != defaultValue { values.tempPaddingBottom = paddingBottom }
+        if paddingLeading != defaultValue { values.tempPaddingLeading = paddingLeading }
+        if paddingTrailing != defaultValue { values.tempPaddingTrailing = paddingTrailing }
 
         return values
     }
