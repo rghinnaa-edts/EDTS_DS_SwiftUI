@@ -7,9 +7,6 @@ The `EDTSToggle` component is a lightweight, animated on/off switch built for **
 - Animated on/off states with spring-based indicator transition
 - Configurable track and indicator colors for both `off` and `on` states
 - Optional icon swap between `off` and `on` states, with independent tint colors per state
-- Adjustable sizing: track width, indicator size, and indicator padding
-- Configurable drop shadow on the track container
-- Optional title / description labels rendered alongside the track, with independent font/color styling and `AttributedString` support
 - Two-way state binding (`@Binding<Bool>`) plus an optional `onToggle` closure for observing taps
 
 ---
@@ -35,8 +32,6 @@ Then import it wherever you use the component:
 ```swift
 import EDTS_DS_SwiftUI
 ```
- 
-This relies on the design token types already available in the pod (`EDTSColor`, `EDTSFont`)
  
 ---
 
@@ -75,6 +70,20 @@ EDTSToggle(
 )
 ```
 
+### Custom Spacing
+
+```swift
+EDTSToggle(
+    isActive: $isOn,
+    title: "Dark Mode",
+    desc: "Switch to a darker color theme",
+    spacing: 16,     // distance between the track and the label stack
+    textSpacing: 8   // distance between title and desc
+)
+```
+
+`spacing` only has a visible effect when a label is shown (`title`, `desc`, `titleAttributed`, or `descAttributed` is non-empty/non-nil); with no label, the track renders alone and no spacing is applied.
+
 ### Custom Sizing
 
 ```swift
@@ -102,7 +111,7 @@ EDTSToggle(
 )
 ```
 
-Labels only appear when `title`, `desc`, `titleAttributed`, or `descAttributed` is non-empty/non-nil; the track-to-label spacing is `8pt` when a label is shown and `0` otherwise.
+Labels only appear when `title`, `desc`, `titleAttributed`, or `descAttributed` is non-empty/non-nil; the track-to-label spacing is controlled by `spacing` (`8pt` by default) when a label is shown, and `0` otherwise.
 
 ### With onToggle Closure
 
@@ -138,8 +147,6 @@ EDTSToggle(isActive: $isOn) { newValue in
 | `descColor` | `Color` | `EDTSColor.grey60` | Color applied to `desc` |
 | `descFont` | `Font` | `EDTSFont.Klik.B3.Regular.font` | Font applied to `desc` |
 
-> Note: `titleColor`/`titleFont`/`descColor`/`descFont` have no effect when `titleAttributed`/`descAttributed` is used, since those render as-is via `Text(_:)`.
-
 ### State
 
 | Parameter | Type | Default | Description |
@@ -167,6 +174,13 @@ EDTSToggle(isActive: $isOn) { newValue in
 | `cornerRadius` | `CGFloat?` | `nil` | Corner radius applied to the track. When `nil`, it's derived automatically as `(indicatorSize + indicatorPadding * 2) / 2` (i.e. half the track height), producing a fully rounded pill |
 | `iconPadding` | `CGFloat` | `0` | Inset applied to the icon (`icon`/`iconActive`) within its `indicatorSize x indicatorSize` frame. Larger values shrink the icon relative to the indicator |
 
+### Spacing
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `spacing` | `CGFloat` | `8` | Horizontal distance between the track and the label stack (title/desc). Only applied when a label is shown; ignored (no gap) when there's no `title`, `desc`, `titleAttributed`, or `descAttributed` |
+| `textSpacing` | `CGFloat` | `4` | Vertical distance between `title`/`titleAttributed` and `desc`/`descAttributed` within the label stack |
+
 ### Shadow
 
 | Parameter | Type | Default | Description |
@@ -175,8 +189,6 @@ EDTSToggle(isActive: $isOn) { newValue in
 | `shadowOffset` | `CGSize` | `.zero` | Offset of the track container drop shadow |
 | `shadowRadius` | `CGFloat` | `0.0` | Blur radius of the track container drop shadow |
 | `shadowColor` | `Color` | `.black` | Color of the track container drop shadow |
-
-> Note: the indicator (knob) itself always renders with a fixed built-in shadow (`opacity: 0.15`, `offset: (0, 1)`, `radius: 3.0`, `color: EDTSColor.grey50`), separate from the configurable track shadow above.
 
 ---
 
