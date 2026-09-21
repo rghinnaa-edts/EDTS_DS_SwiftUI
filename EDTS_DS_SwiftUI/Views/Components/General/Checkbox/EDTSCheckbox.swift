@@ -49,20 +49,20 @@ public struct EDTSCheckbox: View {
 
     public var boxBgColorActive: Color?
     public var boxBgColorInactive: Color?
-    public var boxCornerRadius: CGFloat
-    public var boxSize: CGFloat
+    public var boxCornerRadius: CGFloat?
+    public var boxSize: CGFloat?
     
-    public var spacing: CGFloat
-    public var textSpacing: CGFloat
+    public var spacing: CGFloat?
+    public var textSpacing: CGFloat?
 
-    public var borderWidth: CGFloat
+    public var borderWidth: CGFloat?
     public var borderColorActive: Color?
     public var borderColorInactive: Color?
 
-    public var paddingTop: CGFloat
-    public var paddingBottom: CGFloat
-    public var paddingLeading: CGFloat
-    public var paddingTrailing: CGFloat
+    public var paddingTop: CGFloat?
+    public var paddingBottom: CGFloat?
+    public var paddingLeading: CGFloat?
+    public var paddingTrailing: CGFloat?
 
     public var isActive: Bool
 
@@ -94,27 +94,27 @@ public struct EDTSCheckbox: View {
     }
 
     private var resolvedIconContainerSize: CGFloat {
-        boxSize != .zero ? boxSize : (iconSize + (iconPadding * 2))
+        boxSize ?? (iconSize + (iconPadding * 2))
     }
     
     private var resolvedSpacing: CGFloat {
-        spacing == .zero ? defaultSpacing : spacing
+        spacing ?? defaultSpacing
     }
     
     private var resolvedTextSpacing: CGFloat {
-        textSpacing == .zero ? defaultTextSpacing : textSpacing
+        textSpacing ?? defaultTextSpacing
     }
     
     private var resolvedPaddingLeading: CGFloat {
-        paddingLeading == .zero ? defaultPaddingLeading : paddingLeading
+        paddingLeading ?? defaultPaddingLeading
     }
     
     private var resolvedCornerRadius: CGFloat {
-        boxCornerRadius != .zero ? boxCornerRadius : defaultCornerRadius
+        boxCornerRadius ?? defaultCornerRadius
     }
     
     private var resolvedBorderWidth: CGFloat {
-        borderWidth == .zero ? defaultBorderWidth : borderWidth
+        borderWidth ?? defaultBorderWidth
     }
     
     private struct ResolvedValues {
@@ -200,17 +200,17 @@ public struct EDTSCheckbox: View {
         iconPadding: CGFloat = 2,
         boxBgColorActive: Color? = nil,
         boxBgColorInactive: Color? = nil,
-        boxCornerRadius: CGFloat = .zero,
-        boxSize: CGFloat = .zero,
-        spacing: CGFloat = .zero,
-        textSpacing: CGFloat = .zero,
-        borderWidth: CGFloat = .zero,
+        boxCornerRadius: CGFloat? = nil,
+        boxSize: CGFloat? = nil,
+        spacing: CGFloat? = nil,
+        textSpacing: CGFloat? = nil,
+        borderWidth: CGFloat? = nil,
         borderColorActive: Color? = nil,
         borderColorInactive: Color? = nil,
-        paddingTop: CGFloat = .zero,
-        paddingBottom: CGFloat = .zero,
-        paddingLeading: CGFloat = .zero,
-        paddingTrailing: CGFloat = .zero,
+        paddingTop: CGFloat? = nil,
+        paddingBottom: CGFloat? = nil,
+        paddingLeading: CGFloat? = nil,
+        paddingTrailing: CGFloat? = nil,
         isActive: Bool = false,
         onTapCheckbox: (() -> Void)? = nil
     ) {

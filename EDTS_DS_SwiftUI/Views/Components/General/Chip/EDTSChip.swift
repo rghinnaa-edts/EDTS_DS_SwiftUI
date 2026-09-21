@@ -88,14 +88,14 @@ public struct EDTSChip: View {
     private let chipRippleOpacity: Double = 0.12
     private let iconRippleOpacity: Double = 0.22
     private let stateAnimationDuration: Double = 0.25
-    private let iconBadgeRippleBleed: CGFloat = 2
+    private let iconBadgeRippleBleedMultiplier: CGFloat = 1
 
     private var iconBadgeDiameter: CGFloat {
         resolvedIconSize + (resolvedIconPadding * 2)
     }
 
     private var iconBadgeRippleSize: CGFloat {
-        iconBadgeDiameter + (iconBadgeRippleBleed * 2)
+        iconBadgeDiameter * iconBadgeRippleBleedMultiplier
     }
     
     private var customFont: Font {
