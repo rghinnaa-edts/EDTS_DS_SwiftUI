@@ -5,13 +5,6 @@
 //  Created by Yovita Handayiani on 18/09/26.
 //
 
-//
-//  EDTSToastManager.swift
-//  EDTS_DS_SwiftUI
-//
-//  Created by Yovita Handayiani on 18/09/26.
-//
-
 import SwiftUI
 import Combine
 import UIKit
@@ -84,8 +77,7 @@ public enum EDTSToastDismissEdge {
     case bottom
 }
 
-// MARK: - EDTSToastManager
-public final class EDTSToastManager: ObservableObject {
+public class EDTSToastManager: ObservableObject {
     // MARK: - Singleton
     public static let toast = EDTSToastManager()
     private init() {}

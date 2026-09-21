@@ -5,13 +5,6 @@
 //  Created by Yovita Handayiani on 18/09/26.
 //
 
-//
-//  EDTSToast.swift
-//  EDTS_DS_SwiftUI
-//
-//  Created by Yovita Handayiani on 18/09/26.
-//
-
 import SwiftUI
 
 // MARK: - Enums
@@ -61,16 +54,24 @@ public struct EDTSToast: View {
     private let defaultValue: CGFloat = -1.0
     private let defaultFontSize: CGFloat = 12
 
-    private var customFont: Font? {
+    private var hasCustomFont: Bool {
+        fontStyle != nil || !fontName.isEmpty || fontSize != defaultValue || (fontWeight?.isEmpty == false)
+    }
+
+    private var resolvedFont: Font {
         if let fontStyle { return fontStyle }
-        guard !fontName.isEmpty else { return nil }
-        return .custom(fontName, size: fontSize == defaultValue ? defaultFontSize : fontSize)
+        guard hasCustomFont else {
+            return EDTSColor.theme == .poinku ? EDTSFont.Poinku.B3.Light.font : EDTSFont.Klik.B3.Regular.font
+        }
+        let weight = setupFontWeight(from: fontWeight ?? "")
+        if !fontName.isEmpty {
+            return .custom(fontName, size: fontSize == defaultValue ? defaultFontSize : fontSize)
+        }
+        return .system(size: fontSize == defaultValue ? defaultFontSize : fontSize, weight: weight)
     }
 
     private struct ResolvedValues {
         var tempBgColor: Color?
-        var tempFontSize: CGFloat = 12
-        var tempFontWeight: String = "regular"
         var tempLabelColor: Color?
         var tempIconTintColorLeading: Color?
         var tempIconSize: CGFloat = 16
@@ -164,7 +165,7 @@ public struct EDTSToast: View {
                     Text(text ?? "")
                 }
             }
-            .font(customFont ?? .system(size: values.tempFontSize, weight: setupFontWeight(from: values.tempFontWeight)))
+            .font(resolvedFont)
             .foregroundColor(values.tempLabelColor)
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
@@ -207,8 +208,6 @@ public struct EDTSToast: View {
             values.tempBgColor = bgColor ?? EDTSColor.errorStrong
         }
 
-        values.tempFontSize = fontSize == defaultValue ? 12 : fontSize
-        values.tempFontWeight = (fontWeight?.isEmpty ?? true) ? "regular" : fontWeight!
         values.tempLabelColor = textColor ?? EDTSColor.white
         values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.white
         values.tempIconSize = iconSize == defaultValue ? 16 : iconSize
@@ -261,6 +260,40 @@ public struct EDTSToast: View {
             toastState: .info,
             text: "Item added to cart",
             iconLeading: Image(systemName: "checkmark.circle.fill"),
+            buttonIcon: EDTSButtonIcon(
+                btnType: .primary,
+                btnSize: .small,
+                btnState: .default,
+                icon: Image(systemName: "xmark"),
+                iconTintColor: EDTSColor.white,
+                bgColor: .clear,
+                rippleColor: .clear,
+                paddingTop: 0,
+                paddingBottom: 0,
+                paddingLeading: 0,
+                paddingTrailing: 0
+            ) {}
+        )
+        
+        EDTSToast(
+            toastState: .info,
+            text: "Item added to cart",
+            iconLeading: Image(systemName: "checkmark.circle.fill"),
+            button: EDTSButton(
+                btnType: .primary,
+                btnSize: .small,
+                btnState: .default,
+                text: "Retry",
+                textColor: EDTSColor.white,
+                fontSize: 12,
+                fontWeight: "semibold",
+                bgColor: .clear,
+                rippleColor: .clear,
+                paddingTop: 0,
+                paddingBottom: 0,
+                paddingLeading: 0,
+                paddingTrailing: 0
+            ) {},
             buttonIcon: EDTSButtonIcon(
                 btnType: .primary,
                 btnSize: .small,
