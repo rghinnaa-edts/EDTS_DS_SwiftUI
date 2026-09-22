@@ -9,11 +9,18 @@ struct StickyPromoHeaderView: View {
     let progress: CGFloat
     let claimedCount: Int
     var multiplier: Int = 1
+    var badgeMultiplier: Int = 0
+    var showBadge: Bool = false
     var onLihatTap: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ProgressBarView(progress: progress, multiplier: multiplier)
+            ProgressBarView(
+                progress: progress,
+                multiplier: multiplier,
+                badgeMultiplier: badgeMultiplier,
+                showBadge: showBadge
+            )
 
             HStack(spacing: 8) {
                 (
