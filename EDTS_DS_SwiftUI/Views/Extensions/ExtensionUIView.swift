@@ -355,7 +355,8 @@ public struct CircularRippleModifier: ViewModifier {
                     }
                     .onEnded { _ in
                         releaseRipple()
-                    }
+                    },
+                including: trigger == nil ? .all : .none
             )
             .onChange(of: trigger?.wrappedValue ?? false) { isPressed in
                 guard trigger != nil else { return }
