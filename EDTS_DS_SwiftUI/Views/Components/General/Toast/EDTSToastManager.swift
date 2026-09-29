@@ -60,10 +60,10 @@ public enum EDTSToastSwipeDirection: String {
 }
 
 public enum EDTSToastOffsetDirection {
-    case top(CGFloat)
-    case bottom(CGFloat)
+    case top(Double)
+    case bottom(Double)
 
-    var value: CGFloat {
+    var value: Double {
         switch self {
         case .top(let value):    return value
         case .bottom(let value): return value
@@ -93,7 +93,7 @@ public class EDTSToastManager: ObservableObject {
     struct ToastItem {
         let id = UUID()
         var toast: EDTSToast
-        var horizontalPadding: CGFloat
+        var horizontalPadding: Double
         var offsetY: EDTSToastOffsetDirection
         var animation: EDTSToastAnimation
         var swipeDirection: EDTSToastSwipeDirection
@@ -109,7 +109,7 @@ public class EDTSToastManager: ObservableObject {
     public func show(
         _ toast: EDTSToast,
         duration: EDTSToastDuration = .long,
-        horizontalPadding: CGFloat = 16.0,
+        horizontalPadding: Double = 16.0,
         offsetY: EDTSToastOffsetDirection = .bottom(60.0),
         animation: EDTSToastAnimation = .fade,
         swipeDirection: EDTSToastSwipeDirection = .horizontal
@@ -173,16 +173,16 @@ private struct EDTSToastHostModifier: ViewModifier {
     @State private var dragTranslation: CGSize = .zero
     
     // MARK: - Private Variable
-    private let hiddenScale: CGFloat = 0.8
+    private let hiddenScale: Double = 0.8
     private let scaleCurveX1: Double = 0.0
     private let scaleCurveY1: Double = 0.0
     private let scaleCurveX2: Double = 0.2
     private let scaleCurveY2: Double = 1.0
     private let toastZIndex: Double = 999
 
-    private let swipeThresholdWidthRatio: CGFloat = 0.4
-    private let swipeThresholdHeight: CGFloat = 50
-    private let swipeMomentumThreshold: CGFloat = 80
+    private let swipeThresholdWidthRatio: Double = 0.4
+    private let swipeThresholdHeight: Double = 50
+    private let swipeMomentumThreshold: Double = 80
     private let swipeDismissDuration: Double = 0.25
     private let swipeCancelSpringResponse: Double = 0.3
     private let swipeCancelSpringDamping: Double = 0.7
@@ -213,7 +213,7 @@ private struct EDTSToastHostModifier: ViewModifier {
             }
     }
 
-    private func scale(for item: EDTSToastManager.ToastItem) -> CGFloat {
+    private func scale(for item: EDTSToastManager.ToastItem) -> Double {
         guard item.animation == .fade else { return 1 }
         return (manager.isVisible || manager.isDismissing) ? 1 : hiddenScale
     }
@@ -223,7 +223,7 @@ private struct EDTSToastHostModifier: ViewModifier {
         return manager.isVisible ? 1 : 0
     }
 
-    private func slideOffset(for item: EDTSToastManager.ToastItem) -> CGFloat {
+    private func slideOffset(for item: EDTSToastManager.ToastItem) -> Double {
         guard item.animation == .slide, !manager.isVisible else { return 0 }
         switch item.offsetY {
         case .top:    return -screenHeight
@@ -272,9 +272,9 @@ private struct EDTSToastHostModifier: ViewModifier {
             .onEnded { value in
                 let edge = item.swipeDirection.dismissEdge(offsetY: item.offsetY)
 
-                let axialDistance: CGFloat
-                let momentum: CGFloat
-                let threshold: CGFloat
+                let axialDistance: Double
+                let momentum: Double
+                let threshold: Double
 
                 switch edge {
                 case .trailing:
@@ -389,6 +389,7 @@ public extension View {
                 }
             }
             .padding()
+            .edtsToastHost()
         }
     }
     return PreviewWrapper()
