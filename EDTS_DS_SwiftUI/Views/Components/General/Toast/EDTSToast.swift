@@ -27,8 +27,8 @@ public struct EDTSToast: View {
 
     public var bgColor: Color?
 
-    public let iconLeading: Image?
-    public var iconTintColorLeading: Color?
+    public let icon: Image?
+    public var iconTintColor: Color?
     public var iconSize: CGFloat
 
     public var spacing: CGFloat
@@ -51,6 +51,14 @@ public struct EDTSToast: View {
     public var buttonIcon: EDTSButtonIcon?
 
     // MARK: - Private Variable
+    private let defaultIconSize: CGFloat = 16
+    private let defaultSpacing: CGFloat = 8
+    private let defaultCornerRadius: CGFloat = 8
+    private let defaultBorderWidth: CGFloat = 0
+    private let defaultShadowOpacity: Float = 1.0
+    private let defaultShadowRadius: CGFloat = 4
+    private let defaultShadowOffset: CGSize = CGSize(width: 0, height: 2)
+    private let defaultPadding: CGFloat = 16
     private let defaultValue: CGFloat = -1.0
     private let defaultFontSize: CGFloat = 12
     private let defaultShadowColorOpacity: Double = 0.18
@@ -74,20 +82,20 @@ public struct EDTSToast: View {
     private struct ResolvedValues {
         var tempBgColor: Color?
         var tempLabelColor: Color?
-        var tempIconTintColorLeading: Color?
-        var tempIconSize: CGFloat = 16
-        var tempSpacing: CGFloat = 8
-        var tempCornerRadius: CGFloat = 8
+        var tempIconTintColor: Color?
+        var tempIconSize: CGFloat = .zero
+        var tempSpacing: CGFloat = .zero
+        var tempCornerRadius: CGFloat = .zero
         var tempBorderColor: Color?
-        var tempBorderWidth: CGFloat = 0
-        var tempShadowOpacity: Float = 1.0
-        var tempShadowRadius: CGFloat = 4
-        var tempShadowOffset: CGSize = CGSize(width: 0, height: 2)
+        var tempBorderWidth: CGFloat = .zero
+        var tempShadowOpacity: Float = .zero
+        var tempShadowRadius: CGFloat = .zero
+        var tempShadowOffset: CGSize = .zero
         var tempShadowColor: Color?
-        var tempPaddingTop: CGFloat = 16
-        var tempPaddingBottom: CGFloat = 16
-        var tempPaddingLeading: CGFloat = 16
-        var tempPaddingTrailing: CGFloat = 16
+        var tempPaddingTop: CGFloat = .zero
+        var tempPaddingBottom: CGFloat = .zero
+        var tempPaddingLeading: CGFloat = .zero
+        var tempPaddingTrailing: CGFloat = .zero
     }
 
     // MARK: - Initializer
@@ -101,8 +109,8 @@ public struct EDTSToast: View {
         fontSize: CGFloat = -1.0,
         fontWeight: String? = nil,
         bgColor: Color? = nil,
-        iconLeading: Image? = nil,
-        iconTintColorLeading: Color? = nil,
+        icon: Image? = nil,
+        iconTintColor: Color? = nil,
         iconSize: CGFloat = -1.0,
         spacing: CGFloat = -1.0,
         cornerRadius: CGFloat = -1.0,
@@ -128,8 +136,8 @@ public struct EDTSToast: View {
         self.fontSize = fontSize
         self.fontWeight = fontWeight
         self.bgColor = bgColor
-        self.iconLeading = iconLeading
-        self.iconTintColorLeading = iconTintColorLeading
+        self.icon = icon
+        self.iconTintColor = iconTintColor
         self.iconSize = iconSize
         self.spacing = spacing
         self.cornerRadius = cornerRadius
@@ -152,13 +160,13 @@ public struct EDTSToast: View {
         let values = setupToastState()
 
         HStack(alignment: .center, spacing: values.tempSpacing) {
-            if let iconLeading {
-                iconLeading
+            if let icon {
+                icon
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
                     .frame(width: values.tempIconSize, height: values.tempIconSize)
-                    .foregroundColor(values.tempIconTintColorLeading)
+                    .foregroundColor(values.tempIconTintColor)
             }
 
             Group {
@@ -212,21 +220,21 @@ public struct EDTSToast: View {
         }
 
         values.tempLabelColor = textColor ?? EDTSColor.white
-        values.tempIconTintColorLeading = iconTintColorLeading ?? EDTSColor.white
+        values.tempIconTintColor = iconTintColor ?? EDTSColor.white
         values.tempBorderColor = borderColor ?? .clear
         values.tempShadowColor = shadowColor ?? EDTSColor.grey50.opacity(defaultShadowColorOpacity)
 
-        if iconSize != defaultValue { values.tempIconSize = iconSize }
-        if spacing != defaultValue { values.tempSpacing = spacing }
-        if cornerRadius != defaultValue { values.tempCornerRadius = cornerRadius }
-        if borderWidth != defaultValue { values.tempBorderWidth = borderWidth }
-        if shadowOpacity != Float(defaultValue) { values.tempShadowOpacity = shadowOpacity }
-        if shadowRadius != defaultValue { values.tempShadowRadius = shadowRadius }
-        if let shadowOffset { values.tempShadowOffset = shadowOffset }
-        if paddingTop != defaultValue { values.tempPaddingTop = paddingTop }
-        if paddingBottom != defaultValue { values.tempPaddingBottom = paddingBottom }
-        if paddingLeading != defaultValue { values.tempPaddingLeading = paddingLeading }
-        if paddingTrailing != defaultValue { values.tempPaddingTrailing = paddingTrailing }
+        values.tempIconSize = iconSize == defaultValue ? defaultIconSize : iconSize
+        values.tempSpacing = spacing == defaultValue ? defaultSpacing : spacing
+        values.tempCornerRadius = cornerRadius == defaultValue ? defaultCornerRadius : cornerRadius
+        values.tempBorderWidth = borderWidth == defaultValue ? defaultBorderWidth : borderWidth
+        values.tempShadowOpacity = shadowOpacity == Float(defaultValue) ? defaultShadowOpacity : shadowOpacity
+        values.tempShadowRadius = shadowRadius == defaultValue ? defaultShadowRadius : shadowRadius
+        values.tempShadowOffset = shadowOffset ?? defaultShadowOffset
+        values.tempPaddingTop = paddingTop == defaultValue ? defaultPadding : paddingTop
+        values.tempPaddingBottom = paddingBottom == defaultValue ? defaultPadding : paddingBottom
+        values.tempPaddingLeading = paddingLeading == defaultValue ? defaultPadding : paddingLeading
+        values.tempPaddingTrailing = paddingTrailing == defaultValue ? defaultPadding : paddingTrailing
 
         return values
     }
@@ -238,13 +246,13 @@ public struct EDTSToast: View {
         EDTSToast(
             toastState: .info,
             text: "This is an info toast message",
-            iconLeading: Image(systemName: "info.circle.fill")
+            icon: Image(systemName: "info.circle.fill")
         )
 
         EDTSToast(
             toastState: .danger,
             text: "Something went wrong",
-            iconLeading: Image(systemName: "exclamationmark.triangle.fill"),
+            icon: Image(systemName: "exclamationmark.triangle.fill"),
             button: EDTSButton(
                 btnType: .primary,
                 btnSize: .small,
@@ -265,7 +273,7 @@ public struct EDTSToast: View {
         EDTSToast(
             toastState: .info,
             text: "Item added to cart",
-            iconLeading: Image(systemName: "checkmark.circle.fill"),
+            icon: Image(systemName: "checkmark.circle.fill"),
             buttonIcon: EDTSButtonIcon(
                 btnType: .primary,
                 btnSize: .small,
@@ -284,7 +292,7 @@ public struct EDTSToast: View {
         EDTSToast(
             toastState: .info,
             text: "Item added to cart",
-            iconLeading: Image(systemName: "checkmark.circle.fill"),
+            icon: Image(systemName: "checkmark.circle.fill"),
             button: EDTSButton(
                 btnType: .primary,
                 btnSize: .small,

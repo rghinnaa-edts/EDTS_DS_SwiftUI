@@ -1,8 +1,6 @@
 # EDTSToast
 
-`EDTSToast` is a SwiftUI toast message built as a plain `View`, with an `info` / `danger` state, an optional leading icon, a plain or `AttributedString` label, and optional trailing action slots (an [`EDTSButton`](https://github.com/rghinnaa-edts/EDTS_DS/blob/main/EDTS_DS/Documentation/EDTSButton.md) and/or an [`EDTSButtonIcon`](https://github.com/rghinnaa-edts/EDTS_DS/blob/main/EDTS_DS/Documentation/EDTSButtonIcon.md)). Its visual defaults are theme-aware, switching between `klikIDM` and `poinku` token sets via `EDTSColor.theme`.
-
-Toasts are presented through the companion `EDTSToastManager` singleton and the `edtsToastHost()` view modifier, which handle placement, auto-dismiss, show/hide animation, and swipe-to-dismiss.
+`EDTSToast` is a SwiftUI toast message built as a plain `View`, with an `info` / `danger` state, an optional leading icon, a plain or `AttributedString` label, and optional trailing action slots (an [`EDTSButton`](https://github.com/rghinnaa-edts/EDTS_DS/blob/main/EDTS_DS/Documentation/EDTSButton.md) and/or an [`EDTSButtonIcon`](https://github.com/rghinnaa-edts/EDTS_DS/blob/main/EDTS_DS/Documentation/EDTSButtonIcon.md)).
 
 ---
 
@@ -62,6 +60,8 @@ struct MyApp: App {
 }
 ```
 
+> `edtsToastHost()` expands the modified view to fill all available space (`maxWidth: .infinity, maxHeight: .infinity`), so attach it to your root view rather than to a small child view.
+
 ---
 
 ## Basic Usage
@@ -81,7 +81,7 @@ EDTSToastManager.toast.show(
     EDTSToast(
         toastState: .danger,
         text: "Something went wrong",
-        iconLeading: Image(systemName: "exclamationmark.triangle.fill")
+        icon: Image(systemName: "exclamationmark.triangle.fill")
     )
 )
 ```
@@ -93,7 +93,7 @@ EDTSToastManager.toast.show(
     EDTSToast(
         toastState: .danger,
         text: "Failed to upload file",
-        iconLeading: Image(systemName: "exclamationmark.triangle.fill"),
+        icon: Image(systemName: "exclamationmark.triangle.fill"),
         button: EDTSButton(
             btnType: .primary,
             btnSize: .small,
@@ -123,7 +123,7 @@ EDTSToastManager.toast.show(
 EDTSToastManager.toast.show(
     EDTSToast(
         text: "Item added to cart",
-        iconLeading: Image(systemName: "checkmark.circle.fill"),
+        icon: Image(systemName: "checkmark.circle.fill"),
         buttonIcon: EDTSButtonIcon(
             btnType: .primary,
             btnSize: .small,
@@ -200,7 +200,7 @@ EDTSToastManager.toast.dismiss(animated: false)   // immediate
 EDTSToast(
     toastState: .info,
     text: "This is an info toast message",
-    iconLeading: Image(systemName: "info.circle.fill")
+    icon: Image(systemName: "info.circle.fill")
 )
 ```
 
@@ -280,12 +280,12 @@ public enum EDTSToastOffsetDirection {
 | `bgColor` | `Color?` | theme/state default (see table below) | Solid background color |
 | `cornerRadius` | `CGFloat` | `8` | Corner radius of the background, border, and clip shape |
 
-#### Icon Leading
+#### Icon
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `iconLeading` | `Image?` | `nil` | Icon shown before the label, rendered as a template image |
-| `iconTintColorLeading` | `Color?` | `EDTSColor.white` | Tint applied to `iconLeading` |
+| `icon` | `Image?` | `nil` | Icon shown before the label, rendered as a template image |
+| `iconTintColor` | `Color?` | `EDTSColor.white` | Tint applied to `icon` |
 | `iconSize` | `CGFloat` | `16` | Width/height of the icon |
 | `spacing` | `CGFloat` | `8` | Spacing between the icon, label, and trailing actions in the `HStack` |
 
@@ -350,7 +350,7 @@ Calling `show` while another toast is visible dismisses the current one immediat
 
 | API | Description |
 | --- | ----------- |
-| `View.edtsToastHost()` | Overlays the current toast on top of the modified view (`zIndex 999`). Apply once at the root of your hierarchy |
+| `View.edtsToastHost()` | Overlays the current toast on top of the modified view (`zIndex 999`). The modified view is expanded to fill all available space, so apply it once at the root of your hierarchy |
 
 ---
 
@@ -369,7 +369,7 @@ Calling `show` while another toast is visible dismisses the current one immediat
 
 | `animation` | Curve | Transition |
 | ----------- | ----- | ---------- |
-| `.fade` | `.easeInOut(duration: 0.15)` | Opacity combined with a scale from `0.8` |
+| `.fade` | Opacity: `.linear`, `0.15s` in / `0.075s` out. Scale: cubic-bezier `(0, 0, 0.2, 1)`, `0.15s`, on show only | Fades in while scaling up from `0.8`; fades out without scaling |
 | `.slide` | `.easeInOut(duration: 0.25)` | Moves in/out from the anchored edge (`.top` slides from top, `.bottom` slides from bottom) |
 
 ### Swipe-to-Dismiss
@@ -381,8 +381,8 @@ Calling `show` while another toast is visible dismisses the current one immediat
 | Distance threshold | `40%` of screen width (horizontal) / `50pt` (vertical) |
 | Momentum threshold | Predicted extra travel of more than `80pt` counts as a fast swipe |
 | Dismiss condition | Either the distance threshold **or** the momentum threshold is met |
-| Dismiss animation | `.easeInOut(duration: 0.2)`, sliding the toast fully off-screen, then removed without further animation |
-| Cancel animation | `.interpolatingSpring(stiffness: 300, damping: 20)`, snapping back to its resting position |
+| Dismiss animation | `.easeInOut(duration: 0.25)`, sliding the toast fully off-screen, then removed without further animation |
+| Cancel animation | `.spring(response: 0.3, dampingFraction: 0.7)`, snapping back to its resting position |
 
 ### Auto-Dismiss Timer
 

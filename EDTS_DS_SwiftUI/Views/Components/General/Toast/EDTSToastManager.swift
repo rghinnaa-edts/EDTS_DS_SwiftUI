@@ -81,10 +81,17 @@ public enum EDTSToastDismissEdge {
 public class EDTSToastManager: ObservableObject {
     // MARK: - Singleton
     public static let toast = EDTSToastManager()
+    
+    // MARK: - Private Variable
+    let fadeInDuration: Double = 0.15
+    let fadeOutDuration: Double = 0.075
+    let slideDuration: Double = 0.25
+    
     private init() {}
 
     // MARK: - Internal state
     struct ToastItem {
+        let id = UUID()
         var toast: EDTSToast
         var horizontalPadding: CGFloat
         var offsetY: EDTSToastOffsetDirection
@@ -94,6 +101,7 @@ public class EDTSToastManager: ObservableObject {
 
     @Published var toastItem: ToastItem?
     @Published var isVisible: Bool = false
+    @Published var isDismissing: Bool = false
 
     private var dismissWorkItem: DispatchWorkItem?
 
@@ -108,18 +116,15 @@ public class EDTSToastManager: ObservableObject {
     ) {
         dismiss(animated: false)
 
-        let item = ToastItem(
+        isDismissing = false
+        isVisible = false
+        toastItem = ToastItem(
             toast: toast,
             horizontalPadding: horizontalPadding,
             offsetY: offsetY,
             animation: animation,
             swipeDirection: swipeDirection
         )
-
-        toastItem = item
-        withAnimation(animationCurve(for: animation)) {
-            isVisible = true
-        }
 
         if let interval = duration.timeInterval {
             let work = DispatchWorkItem { [weak self] in
@@ -135,31 +140,29 @@ public class EDTSToastManager: ObservableObject {
         dismissWorkItem?.cancel()
         dismissWorkItem = nil
 
-        guard toastItem != nil else { return }
-        let animation = toastItem?.animation ?? .fade
+        guard let item = toastItem else { return }
 
         if animated {
-            withAnimation(animationCurve(for: animation)) {
-                isVisible = false
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + animationDuration(for: animation)) { [weak self] in
-                guard let self, self.isVisible == false else { return }
+            isDismissing = true
+            isVisible = false
+
+            let id = item.id
+            DispatchQueue.main.asyncAfter(deadline: .now() + outDuration(for: item.animation)) { [weak self] in
+                guard let self, self.toastItem?.id == id, self.isVisible == false else { return }
                 self.toastItem = nil
+                self.isDismissing = false
             }
         } else {
             isVisible = false
+            isDismissing = false
             toastItem = nil
         }
     }
 
-    private func animationCurve(for animation: EDTSToastAnimation) -> Animation {
-        .easeInOut(duration: animationDuration(for: animation))
-    }
-
-    private func animationDuration(for animation: EDTSToastAnimation) -> TimeInterval {
+    private func outDuration(for animation: EDTSToastAnimation) -> TimeInterval {
         switch animation {
-        case .fade:  return 0.15
-        case .slide: return 0.25
+        case .fade:  return fadeOutDuration
+        case .slide: return slideDuration
         }
     }
 }
@@ -168,18 +171,63 @@ public class EDTSToastManager: ObservableObject {
 private struct EDTSToastHostModifier: ViewModifier {
     @ObservedObject private var manager = EDTSToastManager.toast
     @State private var dragTranslation: CGSize = .zero
+    
+    // MARK: - Private Variable
+    private let hiddenScale: CGFloat = 0.8
+    private let scaleCurveX1: Double = 0.0
+    private let scaleCurveY1: Double = 0.0
+    private let scaleCurveX2: Double = 0.2
+    private let scaleCurveY2: Double = 1.0
+    private let toastZIndex: Double = 999
+
+    private let swipeThresholdWidthRatio: CGFloat = 0.4
+    private let swipeThresholdHeight: CGFloat = 50
+    private let swipeMomentumThreshold: CGFloat = 80
+    private let swipeDismissDuration: Double = 0.25
+    private let swipeCancelSpringResponse: Double = 0.3
+    private let swipeCancelSpringDamping: Double = 0.7
+
+    private let fallbackScreenWidth: CGFloat = 400
+    private let fallbackScreenHeight: CGFloat = 800
 
     func body(content: Content) -> some View {
-        content.overlay(alignment: overlayAlignment) {
-            if manager.isVisible, let item = manager.toastItem {
-                item.toast
-                    .padding(.horizontal, item.horizontalPadding)
-                    .padding(edgeInset(item), item.offsetY.value)
-                    .offset(dragTranslation)
-                    .transition(transition(for: item))
-                    .gesture(dragGesture(for: item))
-                    .zIndex(999)
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: overlayAlignment) {
+                if let item = manager.toastItem {
+                    item.toast
+                        .padding(.horizontal, item.horizontalPadding)
+                        .padding(edgeInset(item), item.offsetY.value)
+                        .scaleEffect(scale(for: item))
+                        .animation(.timingCurve(scaleCurveX1, scaleCurveY1, scaleCurveX2, scaleCurveY2, duration: manager.fadeInDuration), value: manager.isVisible)
+                        .opacity(opacity(for: item))
+                        .animation(.linear(duration: manager.isVisible ? manager.fadeInDuration : manager.fadeOutDuration), value: manager.isVisible)
+                        .offset(x: dragTranslation.width,
+                                y: dragTranslation.height + slideOffset(for: item))
+                        .animation(.easeInOut(duration: manager.slideDuration), value: manager.isVisible)
+                        .gesture(dragGesture(for: item))
+                        .id(item.id)
+                        .zIndex(toastZIndex)
+                        .onAppear { manager.isVisible = true }
+                }
             }
+    }
+
+    private func scale(for item: EDTSToastManager.ToastItem) -> CGFloat {
+        guard item.animation == .fade else { return 1 }
+        return (manager.isVisible || manager.isDismissing) ? 1 : hiddenScale
+    }
+
+    private func opacity(for item: EDTSToastManager.ToastItem) -> Double {
+        guard item.animation == .fade else { return 1 }
+        return manager.isVisible ? 1 : 0
+    }
+
+    private func slideOffset(for item: EDTSToastManager.ToastItem) -> CGFloat {
+        guard item.animation == .slide, !manager.isVisible else { return 0 }
+        switch item.offsetY {
+        case .top:    return -screenHeight
+        case .bottom: return screenHeight
         }
     }
 
@@ -195,18 +243,6 @@ private struct EDTSToastHostModifier: ViewModifier {
         switch item.offsetY {
         case .top:    return .top
         case .bottom: return .bottom
-        }
-    }
-
-    private func transition(for item: EDTSToastManager.ToastItem) -> AnyTransition {
-        switch item.animation {
-        case .fade:
-            return .opacity.combined(with: .scale(scale: 0.8))
-        case .slide:
-            switch item.offsetY {
-            case .top:    return .move(edge: .top)
-            case .bottom: return .move(edge: .bottom)
-            }
         }
     }
 
@@ -244,30 +280,30 @@ private struct EDTSToastHostModifier: ViewModifier {
                 case .trailing:
                     axialDistance = dragTranslation.width
                     momentum = value.predictedEndTranslation.width - value.translation.width
-                    threshold = screenWidth * 0.4
+                    threshold = screenWidth * swipeThresholdWidthRatio
                 case .bottom:
                     axialDistance = dragTranslation.height
                     momentum = value.predictedEndTranslation.height - value.translation.height
-                    threshold = 50
+                    threshold = swipeThresholdHeight
                 case .top:
                     axialDistance = -dragTranslation.height
                     momentum = -(value.predictedEndTranslation.height - value.translation.height)
-                    threshold = 50
+                    threshold = swipeThresholdHeight
                 }
 
-                let isFastSwipe = momentum > 80
+                let isFastSwipe = momentum > swipeMomentumThreshold
                 let isFarEnough = axialDistance > threshold
 
                 if isFastSwipe || isFarEnough {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(.easeInOut(duration: swipeDismissDuration)) {
                         dragTranslation = offscreenTranslation(for: edge)
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + swipeDismissDuration) {
                         EDTSToastManager.toast.dismiss(animated: false)
                         dragTranslation = .zero
                     }
                 } else {
-                    withAnimation(.interpolatingSpring(stiffness: 300, damping: 20)) {
+                    withAnimation(.spring(response: swipeCancelSpringResponse, dampingFraction: swipeCancelSpringDamping)) {
                         dragTranslation = .zero
                     }
                 }
@@ -286,9 +322,9 @@ private struct EDTSToastHostModifier: ViewModifier {
         #if canImport(UIKit)
         return (UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
-            .first?.screen.bounds.width) ?? 400
+            .first?.screen.bounds.width) ?? fallbackScreenWidth
         #else
-        return 400
+        return fallbackScreenWidth
         #endif
     }
 
@@ -296,9 +332,9 @@ private struct EDTSToastHostModifier: ViewModifier {
         #if canImport(UIKit)
         return (UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
-            .first?.screen.bounds.height) ?? 800
+            .first?.screen.bounds.height) ?? fallbackScreenHeight
         #else
-        return 800
+        return fallbackScreenHeight
         #endif
     }
 }
@@ -319,7 +355,7 @@ public extension View {
                         EDTSToast(
                             toastState: .info,
                             text: "Saved successfully",
-                            iconLeading: Image(systemName: "checkmark.circle.fill")
+                            icon: Image(systemName: "checkmark.circle.fill")
                         )
                     )
                 }
@@ -329,7 +365,7 @@ public extension View {
                         EDTSToast(
                             toastState: .danger,
                             text: "Failed to upload file",
-                            iconLeading: Image(systemName: "exclamationmark.triangle.fill"),
+                            icon: Image(systemName: "exclamationmark.triangle.fill"),
                             button: EDTSButton(
                                 btnType: .primary,
                                 btnSize: .small,
@@ -353,7 +389,6 @@ public extension View {
                 }
             }
             .padding()
-            .edtsToastHost()
         }
     }
     return PreviewWrapper()
