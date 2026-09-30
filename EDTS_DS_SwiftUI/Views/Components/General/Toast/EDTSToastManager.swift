@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Combine
-import UIKit
 
 // MARK: - Enums
 public enum EDTSToastAnimation: String {
@@ -167,10 +166,19 @@ public class EDTSToastManager: ObservableObject {
     }
 }
 
+// MARK: - Size Preference
+private struct EDTSToastSizeKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
 // MARK: - Host Modifier
 private struct EDTSToastHostModifier: ViewModifier {
     @ObservedObject private var manager = EDTSToastManager.toast
     @State private var dragTranslation: CGSize = .zero
+    @State private var screenSize: CGSize = .zero
     
     // MARK: - Private Variable
     private let hiddenScale: Double = 0.8
@@ -190,9 +198,33 @@ private struct EDTSToastHostModifier: ViewModifier {
     private let fallbackScreenWidth: CGFloat = 400
     private let fallbackScreenHeight: CGFloat = 800
 
+    private var screenWidth: CGFloat {
+        screenSize.width > 0 ? screenSize.width : fallbackScreenWidth
+    }
+
+    private var screenHeight: CGFloat {
+        screenSize.height > 0 ? screenSize.height : fallbackScreenHeight
+    }
+    
+    private var overlayAlignment: Alignment {
+        guard let offsetY = manager.toastItem?.offsetY else { return .bottom }
+        switch offsetY {
+        case .top:    return .top
+        case .bottom: return .bottom
+        }
+    }
+
+
     func body(content: Content) -> some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(key: EDTSToastSizeKey.self, value: proxy.size)
+                }
+            )
+            .onPreferenceChange(EDTSToastSizeKey.self) { screenSize = $0 }
             .overlay(alignment: overlayAlignment) {
                 if let item = manager.toastItem {
                     item.toast
@@ -228,14 +260,6 @@ private struct EDTSToastHostModifier: ViewModifier {
         switch item.offsetY {
         case .top:    return -screenHeight
         case .bottom: return screenHeight
-        }
-    }
-
-    private var overlayAlignment: Alignment {
-        guard let offsetY = manager.toastItem?.offsetY else { return .bottom }
-        switch offsetY {
-        case .top:    return .top
-        case .bottom: return .bottom
         }
     }
 
@@ -316,26 +340,6 @@ private struct EDTSToastHostModifier: ViewModifier {
         case .bottom:   return CGSize(width: 0, height: screenHeight)
         case .top:      return CGSize(width: 0, height: -screenHeight)
         }
-    }
-
-    private var screenWidth: CGFloat {
-        #if canImport(UIKit)
-        return (UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.screen.bounds.width) ?? fallbackScreenWidth
-        #else
-        return fallbackScreenWidth
-        #endif
-    }
-
-    private var screenHeight: CGFloat {
-        #if canImport(UIKit)
-        return (UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.screen.bounds.height) ?? fallbackScreenHeight
-        #else
-        return fallbackScreenHeight
-        #endif
     }
 }
 
