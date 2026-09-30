@@ -52,6 +52,7 @@ public struct EDTSButton: View {
     
     public var rippleColor: Color?
     public var cornerRadius: Double?
+    public var maxWidth: Double?
     
     public let iconLeading: Image?
     public var iconTintColorLeading: Color?
@@ -110,6 +111,7 @@ public struct EDTSButton: View {
         bgColorOrientation: Orientation? = nil,
         rippleColor: Color? = nil,
         cornerRadius: Double? = nil,
+        maxWidth: Double? = nil,
         iconLeading: Image? = nil,
         iconTintColorLeading: Color? = nil,
         iconDangerTintColorLeading: Color? = nil,
@@ -156,6 +158,7 @@ public struct EDTSButton: View {
         self.bgColorOrientation = bgColorOrientation
         self.rippleColor = rippleColor
         self.cornerRadius = cornerRadius
+        self.maxWidth = maxWidth
         self.iconLeading = iconLeading
         self.iconTintColorLeading = iconTintColorLeading
         self.iconDangerTintColorLeading = iconDangerTintColorLeading
@@ -265,6 +268,7 @@ public struct EDTSButton: View {
             .padding(.bottom, values.tempPaddingBottom)
             .padding(.leading, values.tempPaddingLeading)
             .padding(.trailing, values.tempPaddingTrailing)
+            .frame(maxWidth: maxWidth.map { CGFloat($0) })
             .background(setupBackground(values: values))
             .overlay(
                 RoundedRectangle(cornerRadius: values.tempCornerRadius)

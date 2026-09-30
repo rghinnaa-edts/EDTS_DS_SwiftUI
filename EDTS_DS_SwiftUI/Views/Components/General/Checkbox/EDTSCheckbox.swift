@@ -27,7 +27,7 @@ public struct EDTSCheckbox: View {
     public let titleAttributed: AttributedString?
     public var titleFontStyle: Font?
     public var titleFontName: String
-    public var titleFontSize: CGFloat
+    public var titleFontSize: Double
     public var titleFontWeight: String?
     public var titleColorActive: Color?
     public var titleColorInactive: Color?
@@ -36,7 +36,7 @@ public struct EDTSCheckbox: View {
     public let descAttributed: AttributedString?
     public var descFontStyle: Font?
     public var descFontName: String
-    public var descFontSize: CGFloat
+    public var descFontSize: Double
     public var descFontWeight: String?
     public var descColorActive: Color?
     public var descColorInactive: Color?
@@ -44,44 +44,44 @@ public struct EDTSCheckbox: View {
     public let icon: Image?
     public var iconTintColorActive: Color?
     public var iconTintColorInactive: Color?
-    public let iconSize: CGFloat
-    public let iconPadding: CGFloat
+    public let iconSize: Double
+    public let iconPadding: Double
 
     public var boxBgColorActive: Color?
     public var boxBgColorInactive: Color?
-    public var boxCornerRadius: CGFloat?
-    public var boxSize: CGFloat?
+    public var boxCornerRadius: Double?
+    public var boxSize: Double?
     
-    public var spacing: CGFloat?
-    public var textSpacing: CGFloat?
+    public var spacing: Double?
+    public var textSpacing: Double?
 
-    public var borderWidth: CGFloat?
+    public var borderWidth: Double?
     public var borderColorActive: Color?
     public var borderColorInactive: Color?
 
-    public var paddingTop: CGFloat?
-    public var paddingBottom: CGFloat?
-    public var paddingLeading: CGFloat?
-    public var paddingTrailing: CGFloat?
+    public var paddingTop: Double
+    public var paddingBottom: Double
+    public var paddingLeading: Double?
+    public var paddingTrailing: Double
 
     public var isActive: Bool
 
     public var onTapCheckbox: (() -> Void)?
 
     // MARK: - Private Variable
-    private let defaultTitleFontSize: CGFloat = 14
-    private let defaultDescFontSize: CGFloat = 12
-    private let defaultSpacing: CGFloat = 8
-    private let defaultTextSpacing: CGFloat = 4
-    private let defaultCornerRadius: CGFloat = 4
-    private let defaultBorderWidth: CGFloat = 1
-    private let defaultPaddingLeading: CGFloat = 2
-    private let rippleBleedMultiplier: CGFloat = 1.8
+    private let defaultTitleFontSize: Double = 14
+    private let defaultDescFontSize: Double = 12
+    private let defaultSpacing: Double = 8
+    private let defaultTextSpacing: Double = 4
+    private let defaultCornerRadius: Double = 4
+    private let defaultBorderWidth: Double = 1
+    private let defaultPaddingLeading: Double = 2
+    private let rippleBleedMultiplier: Double = 1.8
     private let rippleOpacity: Double = 0.12
     private let rippleGrowDuration: Double = 0.10
     private let rippleFadeDuration: Double = 0.22
     private let activeStateAnimationDuration: Double = 0.25
-    private let dragCancelThreshold: CGFloat = 44
+    private let dragCancelThreshold: Double = 44
 
     private var resolvedIcon: Image? {
         if let icon { return icon }
@@ -93,27 +93,27 @@ public struct EDTSCheckbox: View {
         }
     }
 
-    private var resolvedIconContainerSize: CGFloat {
+    private var resolvedIconContainerSize: Double {
         boxSize ?? (iconSize + (iconPadding * 2))
     }
     
-    private var resolvedSpacing: CGFloat {
+    private var resolvedSpacing: Double {
         spacing ?? defaultSpacing
     }
     
-    private var resolvedTextSpacing: CGFloat {
+    private var resolvedTextSpacing: Double {
         textSpacing ?? defaultTextSpacing
     }
     
-    private var resolvedPaddingLeading: CGFloat {
+    private var resolvedPaddingLeading: Double {
         paddingLeading ?? defaultPaddingLeading
     }
     
-    private var resolvedCornerRadius: CGFloat {
+    private var resolvedCornerRadius: Double {
         boxCornerRadius ?? defaultCornerRadius
     }
     
-    private var resolvedBorderWidth: CGFloat {
+    private var resolvedBorderWidth: Double {
         borderWidth ?? defaultBorderWidth
     }
     
@@ -181,7 +181,7 @@ public struct EDTSCheckbox: View {
         titleAttributed: AttributedString? = nil,
         titleFontStyle: Font? = nil,
         titleFontName: String = "",
-        titleFontSize: CGFloat = .zero,
+        titleFontSize: Double = .zero,
         titleFontWeight: String? = nil,
         titleColorActive: Color? = nil,
         titleColorInactive: Color? = nil,
@@ -189,28 +189,28 @@ public struct EDTSCheckbox: View {
         descAttributed: AttributedString? = nil,
         descFontStyle: Font? = nil,
         descFontName: String = "",
-        descFontSize: CGFloat = .zero,
+        descFontSize: Double = .zero,
         descFontWeight: String? = nil,
         descColorActive: Color? = nil,
         descColorInactive: Color? = nil,
         icon: Image? = nil,
         iconTintColorActive: Color? = nil,
         iconTintColorInactive: Color? = nil,
-        iconSize: CGFloat = 16,
-        iconPadding: CGFloat = 2,
+        iconSize: Double = 16,
+        iconPadding: Double = 2,
         boxBgColorActive: Color? = nil,
         boxBgColorInactive: Color? = nil,
-        boxCornerRadius: CGFloat? = nil,
-        boxSize: CGFloat? = nil,
-        spacing: CGFloat? = nil,
-        textSpacing: CGFloat? = nil,
-        borderWidth: CGFloat? = nil,
+        boxCornerRadius: Double? = nil,
+        boxSize: Double? = nil,
+        spacing: Double? = nil,
+        textSpacing: Double? = nil,
+        borderWidth: Double? = nil,
         borderColorActive: Color? = nil,
         borderColorInactive: Color? = nil,
-        paddingTop: CGFloat? = nil,
-        paddingBottom: CGFloat? = nil,
-        paddingLeading: CGFloat? = nil,
-        paddingTrailing: CGFloat? = nil,
+        paddingTop: Double = .zero,
+        paddingBottom: Double = .zero,
+        paddingLeading: Double? = nil,
+        paddingTrailing: Double = .zero,
         isActive: Bool = false,
         onTapCheckbox: (() -> Void)? = nil
     ) {
