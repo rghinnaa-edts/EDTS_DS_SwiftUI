@@ -162,6 +162,7 @@ public enum ChipState: String {
 | -------------- | ---- | ------- | ----------- |
 | `iconSize` | `CGFloat` | `0` → resolves to `16` | Width/height of each icon glyph |
 | `iconSpacing` | `CGFloat` | `0` → resolves to `4` | Spacing in the `HStack` between icon(s) and label |
+| `iconPadding` | `CGFloat` | `0` → resolves to `2` | Padding between the icon glyph and the edge of its circular badge |
 
 ### Shape & Border
 
@@ -223,14 +224,13 @@ public enum ChipState: String {
 
 | Constant | Value | Description |
 | -------- | ----- | ----------- |
-| `iconBadgePadding` | `2` (fixed) | Padding between the icon glyph and the edge of its circular badge |
 | `iconBadgeRippleBleed` | `2` (fixed) | Extra radius the ripple extends beyond the badge |
 | `iconBadgeDiameter` | `resolvedIconSize + 4` | Circular badge size (glyph + padding) |
 | `iconBadgeRippleSize` | `iconBadgeDiameter + 4` | Size passed to `circularRippleEffect` |
 
 ---
 
-## Interaction & Animation
+## Animation
 
 | Aspect | Value |
 | ------ | ----- |

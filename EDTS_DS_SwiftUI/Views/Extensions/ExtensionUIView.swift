@@ -180,9 +180,10 @@ extension View {
     
     public func circularRippleEffect(
         size: CGFloat = 32,
-        color: Color = Color.black.opacity(0.22)
+        color: Color = Color.black.opacity(0.22),
+        trigger: Binding<Bool>? = nil
     ) -> some View {
-        modifier(CircularRippleModifier(size: size, color: color))
+        modifier(CircularRippleModifier(size: size, color: color, trigger: trigger))
     }
 }
 
@@ -317,6 +318,7 @@ private struct CircularRippleInstance: Identifiable {
 public struct CircularRippleModifier: ViewModifier {
     var size: CGFloat = 32
     var color: Color = Color.black.opacity(0.22)
+    var trigger: Binding<Bool>? = nil
 
     @State private var ripples: [CircularRippleInstance] = []
     @State private var isRippleActive: Bool = false
@@ -352,17 +354,19 @@ public struct CircularRippleModifier: ViewModifier {
                         addRipple()
                     }
                     .onEnded { _ in
-                        isRippleActive = false
-                        if let activeRippleID {
-                            let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
-                            let remaining = max(growDuration - elapsed, 0)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
-                                releasedRippleIDs.insert(activeRippleID)
-                            }
-                        }
-                        activeRippleID = nil
+                        releaseRipple()
                     }
             )
+            .onChange(of: trigger?.wrappedValue ?? false) { isPressed in
+                guard trigger != nil else { return }
+                if isPressed {
+                    guard !isRippleActive else { return }
+                    isRippleActive = true
+                    addRipple()
+                } else {
+                    releaseRipple()
+                }
+            }
     }
 
     private func addRipple() {
@@ -370,6 +374,18 @@ public struct CircularRippleModifier: ViewModifier {
         ripples.append(ripple)
         activeRippleID = ripple.id
         rippleStartTime = Date()
+    }
+
+    private func releaseRipple() {
+        isRippleActive = false
+        if let activeRippleID {
+            let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
+            let remaining = max(growDuration - elapsed, 0)
+            DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
+                releasedRippleIDs.insert(activeRippleID)
+            }
+        }
+        activeRippleID = nil
     }
 }
 
