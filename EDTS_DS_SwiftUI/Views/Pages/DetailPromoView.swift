@@ -6,184 +6,11 @@
 //
 
 import SwiftUI
-import Combine
-
-// MARK: - Reusable Badge Component
-
-struct BadgeView: View {
-    let text: String
-    let textColor: Color
-    let backgroundColor: Color
-    var horizontalPadding: CGFloat = 10
-    var verticalPadding: CGFloat = 6
-
-    var body: some View {
-        Text(text)
-            .font(EDTSFont.Klik.B3.Semibold.font)
-            .foregroundColor(textColor)
-            .lineLimit(1)
-            .padding(.horizontal, horizontalPadding)
-            .padding(.vertical, verticalPadding)
-            .background(backgroundColor)
-            .cornerRadius(6)
-    }
-}
-
-// MARK: - Reusable Progress Bar Component
-
-struct ProgressBarView: View {
-    let progress: CGFloat
-    var multiplier: Int = 1
-    var badgeMultiplier: Int = 0
-    var showBadge: Bool = false
-
-    var trackColor: Color = EDTSColor.grey20
-    var completedTrackColor: Color = EDTSColor.blue30
-
-    private let indicatorSize: CGFloat = 8
-    private let badgeSize: CGFloat = 16
-    private let trackHeight: CGFloat = 6
-    private let trackFillPadding: CGFloat = 1
-
-    private var gradient: LinearGradient {
-        LinearGradient(
-            colors: [EDTSColor.skyblueLeading, EDTSColor.skyblueTrailing],
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-    }
-
-    var body: some View {
-        GeometryReader { geometry in
-            let trackWidth = max(0, geometry.size.width - badgeSize / 2)
-            let clampedProgress = max(0, min(progress, 1))
-
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(trackColor)
-                    .frame(width: trackWidth, height: trackHeight)
-
-                LapFillView(
-                    targetProgress: clampedProgress,
-                    multiplier: multiplier,
-                    trackWidth: trackWidth,
-                    trackHeight: trackHeight,
-                    trackFillPadding: trackFillPadding,
-                    indicatorSize: indicatorSize,
-                    gradient: gradient,
-                    completedTrackColor: completedTrackColor,
-                    showBadge: showBadge
-                )
-
-                if showBadge {
-                    ZStack {
-                        Circle()
-                            .fill(gradient)
-                            .frame(width: badgeSize, height: badgeSize)
-
-                        Text("x\(badgeMultiplier)")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    .offset(x: trackWidth - badgeSize / 2)
-                    .transition(.opacity)
-                }
-            }
-            .frame(width: geometry.size.width, height: badgeSize)
-            .animation(.easeInOut(duration: 0.2), value: showBadge)
-        }
-        .frame(height: badgeSize)
-    }
-}
-
-// MARK: - Lap Fill (internal — grows the current lap's gradient fill
-
-private struct LapFillView: View {
-    let targetProgress: CGFloat
-    let multiplier: Int
-    let trackWidth: CGFloat
-    let trackHeight: CGFloat
-    let trackFillPadding: CGFloat
-    let indicatorSize: CGFloat
-    let gradient: LinearGradient
-    let completedTrackColor: Color
-    let showBadge: Bool
-
-    @State private var displayProgress: CGFloat = 0
-    @State private var lastHandledProgress: CGFloat = -1
-    @State private var lastHandledMultiplier: Int = -1
-
-    private let growDuration = 0.3
-    private let shrinkDuration = 0.25
-    private let overlayFadeDuration = 0.2
-
-    private var showCompletedOverlay: Bool {
-        showBadge && displayProgress > 0
-    }
-
-    var body: some View {
-        let innerWidth = max(0, trackWidth - trackFillPadding * 2)
-        let innerHeight = max(0, trackHeight - trackFillPadding * 2)
-        let fillWidth = innerWidth * displayProgress
-
-        ZStack(alignment: .leading) {
-            Capsule()
-                .fill(completedTrackColor)
-                .frame(width: innerWidth, height: innerHeight)
-                .opacity(showCompletedOverlay ? 1 : 0)
-                .animation(.easeInOut(duration: overlayFadeDuration), value: showCompletedOverlay)
-
-            Capsule()
-                .fill(gradient)
-                .frame(width: fillWidth, height: innerHeight)
-
-            Circle()
-                .fill(gradient)
-                .frame(width: indicatorSize, height: indicatorSize)
-                .offset(x: max(0, fillWidth - indicatorSize / 2))
-                .opacity(displayProgress >= 1 ? 0 : 1)
-        }
-        .padding(trackFillPadding)
-        .onAppear {
-            lastHandledMultiplier = multiplier
-            advance(to: targetProgress)
-        }
-        .onReceive(Just(multiplier)) { newMultiplier in
-            guard newMultiplier != lastHandledMultiplier else { return }
-            let didIncreaseLap = newMultiplier > lastHandledMultiplier
-            lastHandledMultiplier = newMultiplier
-
-            if didIncreaseLap {
-                displayProgress = 0
-                advance(to: targetProgress)
-            } else {
-                withAnimation(.easeInOut(duration: shrinkDuration)) {
-                    displayProgress = 0
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + shrinkDuration) {
-                    advance(to: targetProgress)
-                }
-            }
-        }
-        .onReceive(Just(targetProgress)) { newProgress in
-            guard multiplier == lastHandledMultiplier else { return }
-            guard newProgress != lastHandledProgress else { return }
-            advance(to: newProgress)
-        }
-    }
-
-    private func advance(to newProgress: CGFloat) {
-        lastHandledProgress = newProgress
-        withAnimation(.easeInOut(duration: growDuration)) {
-            displayProgress = newProgress
-        }
-    }
-}
 
 // MARK: - Detail Promo View
 
 struct DetailPromoView: View {
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.presentationMode) private var presentationMode
 
     @State private var isGridView: Bool = false
     @State private var isFloatingBarHidden: Bool = false
@@ -191,10 +18,14 @@ struct DetailPromoView: View {
     private let scrollHideThreshold: CGFloat = 100
     @State private var lastDragTranslationY: CGFloat = 0
     @State private var approximateScrollOffset: CGFloat = 0
-    @State private var totalProductQuantity: Int = 0
+    @State private var quantities: [UUID: Int] = [:]
+    private var totalProductQuantity: Int { quantities.values.reduce(0, +) }
     private let pointsPerUnit = 40
     private let pointsPerBar = 100
     private let progressLimit = 300
+
+    // Navigation
+    @State private var showSearchPromo: Bool = false
 
     private var promoProgressState: (multiplier: Int, progress: CGFloat, badgeMultiplier: Int, showBadge: Bool) {
         let totalPoints = min(totalProductQuantity * pointsPerUnit, progressLimit)
@@ -230,7 +61,9 @@ struct DetailPromoView: View {
                 StickyPromoHeaderView(
                     progress: promoProgressState.progress,
                     claimedCount: 1,
-                    multiplier: promoProgressState.multiplier
+                    multiplier: promoProgressState.multiplier,
+                    badgeMultiplier: promoProgressState.badgeMultiplier,
+                    showBadge: promoProgressState.showBadge
                 )
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .zIndex(1)
@@ -259,9 +92,7 @@ struct DetailPromoView: View {
 
                     ProductStaggeredListView(
                         products: Self.sampleProducts,
-                        onQuantityChange: { total in
-                            totalProductQuantity = total
-                        }
+                        quantities: $quantities
                     )
                         .padding(.bottom, 16)
                 }
@@ -279,7 +110,7 @@ struct DetailPromoView: View {
                     }
             )
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomInsetCompat {
             PromoFloatingActionBar(
                 itemCountText: "(1 Barang)",
                 priceText: "Rp50.000"
@@ -290,6 +121,15 @@ struct DetailPromoView: View {
         }
         .background(EDTSColor.white)
         .navigationBarHidden(true)
+        .background(
+            NavigationLink(
+                destination: SearchPromoView(quantities: $quantities),
+                isActive: $showSearchPromo
+            ) {
+                EmptyView()
+            }
+            .hidden()
+        )
     }
 
     // MARK: - Scroll handling
@@ -314,7 +154,7 @@ struct DetailPromoView: View {
         hideBarWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: workItem)
     }
-    
+
     private func handleStickyHeaderVisibility() {
         let shouldShowSticky = approximateScrollOffset > nestedCardBottomThreshold
         guard shouldShowSticky != showStickyHeader else { return }
@@ -329,7 +169,7 @@ struct DetailPromoView: View {
     private var toolbar: some View {
         HStack(spacing: 8) {
             Button(action: {
-                dismiss()
+                presentationMode.wrappedValue.dismiss()
             }) {
                 Image("ic_arrow_left")
                     .renderingMode(.template)
@@ -345,6 +185,7 @@ struct DetailPromoView: View {
             Spacer()
 
             Button(action: {
+                showSearchPromo = true
             }) {
                 Image("ic_search")
                     .renderingMode(.template)
@@ -375,7 +216,7 @@ struct DetailPromoView: View {
             .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Nested Promo Card (top + bottom stacked)
+    // MARK: - Nested Promo Card
     private var nestedCard: some View {
         VStack(spacing: -12) {
             nestedCardTop
@@ -473,7 +314,7 @@ struct DetailPromoView: View {
         )
     }
 
-    // MARK: - Promo Info Section (title + detail rows)
+    // MARK: - Promo Info Section
 
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -689,10 +530,30 @@ extension DetailPromoView {
     ]
 }
 
+// MARK: - Bottom Inset Compatibility (safeAreaInset is iOS 15+)
+
+extension View {
+    @ViewBuilder
+    func bottomInsetCompat<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        if #available(iOS 15.0, *) {
+            self.safeAreaInset(edge: .bottom, spacing: 0) {
+                content()
+            }
+        } else {
+            self
+                .padding(.bottom, 80)
+                .overlay(content(), alignment: .bottom)
+        }
+    }
+}
+
 // MARK: - Preview
 
 struct DetailPromoView_Previews: PreviewProvider {
     static var previews: some View {
-        DetailPromoView()
+        NavigationView {
+            DetailPromoView()
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }

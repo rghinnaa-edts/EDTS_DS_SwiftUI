@@ -464,12 +464,16 @@ struct ProductCardView: View {
 
 struct ProductStaggeredListView: View {
     let products: [ProductCardModel]
-    /// Called with the sum of all product quantities whenever any of them
-    /// changes. Invoked directly from the Binding's setter below (not via
+
+    /// Quantities per product, owned by the parent (DetailPromoView) so they
+    /// are shared between the detail page and the search page.
+    @Binding var quantities: [UUID: Int]
+
+    /// Optional: called with the sum of all product quantities whenever any of
+    /// them changes. Invoked directly from the Binding's setter below (not via
     /// `.onChange(of:)`, which is iOS 14+) to stay iOS 13-compatible.
     var onQuantityChange: (Int) -> Void = { _ in }
 
-    @State private var quantities: [UUID: Int] = [:]
     @State private var activeProductID: UUID? = nil
 
     private var leftColumn: [ProductCardModel] {

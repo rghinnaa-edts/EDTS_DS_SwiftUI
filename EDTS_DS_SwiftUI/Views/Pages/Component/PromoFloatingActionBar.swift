@@ -3,6 +3,11 @@
 //  EDTS_DS_SwiftUI
 //
 
+//
+//  PromoFloatingActionBar.swift
+//  EDTS_DS_SwiftUI
+//
+
 import SwiftUI
 
 // MARK: - Sort / Filter Pill
@@ -100,13 +105,17 @@ struct CartSummaryCardView: View {
 struct PromoFloatingActionBar: View {
     let itemCountText: String
     let priceText: String
+    /// Set to false to hide the Urutkan / Filter pill (e.g. when search has no results).
+    var showSortFilter: Bool = true
     var onSortTap: () -> Void = {}
     var onFilterTap: () -> Void = {}
     var onCartTap: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 12) {
-            SortFilterPillView(onSortTap: onSortTap, onFilterTap: onFilterTap)
+            if showSortFilter {
+                SortFilterPillView(onSortTap: onSortTap, onFilterTap: onFilterTap)
+            }
 
             CartSummaryCardView(
                 itemCountText: itemCountText,

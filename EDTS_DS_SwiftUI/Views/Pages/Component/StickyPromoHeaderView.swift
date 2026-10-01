@@ -47,6 +47,10 @@ struct StickyPromoHeaderView: View {
         .padding(.top, 12)
         .padding(.bottom, 8)
         .padding(.horizontal, 16)
-        .background(EDTSColor.white)
+        .background(
+            Rectangle()
+                .fill(EDTSColor.white)
+                .shadow(color: Color.black.opacity(0.12), radius: 3, x: 0, y: 2)
+        )
     }
 }

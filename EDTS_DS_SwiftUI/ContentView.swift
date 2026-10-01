@@ -16,7 +16,10 @@ struct ContentView: View {
 //            Text("Hello, world!")
 //        }
 //        .padding()
-        DetailPromoView()
+        NavigationView {
+            DetailPromoView()
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
