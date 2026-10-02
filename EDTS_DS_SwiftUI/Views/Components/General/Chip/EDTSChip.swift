@@ -99,11 +99,13 @@ public struct EDTSChip: View {
     }
     
     private var customFont: Font {
+        let size = fontSize == .zero ? defaultFontSize : fontSize
         let weight = setupFontWeight(from: fontWeight)
         if !fontName.isEmpty {
-            return .custom(fontName, size: fontSize == .zero ? defaultFontSize : fontSize)
+            let font = Font.custom(fontName, size: size)
+            return fontWeight.isEmpty ? font : font.weight(weight)
         }
-        return .system(size: fontSize == .zero ? defaultFontSize : fontSize, weight: weight)
+        return .system(size: size, weight: weight)
     }
     
     private var hasCustomFont: Bool {
