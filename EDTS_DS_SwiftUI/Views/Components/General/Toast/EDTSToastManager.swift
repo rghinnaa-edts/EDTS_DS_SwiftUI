@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import Combine
 
 // MARK: - Enums
@@ -76,10 +77,18 @@ public enum EDTSToastDismissEdge {
     case bottom
 }
 
+// MARK: - Passthrough Window
+private final class EDTSToastWindow: UIWindow {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let view = super.hitTest(point, with: event)
+        return view === rootViewController?.view ? nil : view
+    }
+}
+
 @MainActor
 public class EDTSToastManager: ObservableObject {
     // MARK: - Singleton
-    public static let toast = EDTSToastManager()
+    static let shared = EDTSToastManager()
     
     // MARK: - Private Variable
     let fadeInDuration: Double = 0.15
@@ -103,9 +112,31 @@ public class EDTSToastManager: ObservableObject {
     @Published var isDismissing: Bool = false
 
     private var dismissWorkItem: DispatchWorkItem?
+    private var toastWindow: EDTSToastWindow?
 
-    // MARK: - Show
-    public func show(
+    private func showWindow() {
+        if toastWindow == nil {
+            let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first else { return }
+
+            let window = EDTSToastWindow(windowScene: scene)
+            window.windowLevel = .alert + 1
+            window.backgroundColor = .clear
+
+            let host = UIHostingController(rootView: EDTSToastHostView())
+            host.view.backgroundColor = .clear
+            window.rootViewController = host
+
+            toastWindow = window
+        }
+        toastWindow?.isHidden = false
+    }
+
+    private func hideWindow() {
+        toastWindow?.isHidden = true
+    }
+
+    public static func show(
         _ toast: EDTSToast,
         duration: EDTSToastDuration = .long,
         horizontalPadding: Double = 16.0,
@@ -113,29 +144,57 @@ public class EDTSToastManager: ObservableObject {
         animation: EDTSToastAnimation = .fade,
         swipeDirection: EDTSToastSwipeDirection = .horizontal
     ) {
-        dismiss(animated: false)
+        shared.present(toast, duration: duration, horizontalPadding: horizontalPadding,
+                       offsetY: offsetY, animation: animation, swipeDirection: swipeDirection)
+    }
+    
+    public static func dismiss(animated: Bool = true) {
+        shared.remove(animated: animated)
+    }
+
+    
+    // MARK: - present
+    private func present(
+        _ toast: EDTSToast,
+        duration: EDTSToastDuration = .long,
+        horizontalPadding: Double = 16.0,
+        offsetY: EDTSToastOffsetDirection = .bottom(60.0),
+        animation: EDTSToastAnimation = .fade,
+        swipeDirection: EDTSToastSwipeDirection = .horizontal
+    ) {
+        dismissWorkItem?.cancel()
+        dismissWorkItem = nil
 
         isDismissing = false
         isVisible = false
-        toastItem = ToastItem(
+
+        let item = ToastItem(
             toast: toast,
             horizontalPadding: horizontalPadding,
             offsetY: offsetY,
             animation: animation,
             swipeDirection: swipeDirection
         )
+        toastItem = item
+        showWindow()
+
+        let id = item.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            guard let self, self.toastItem?.id == id else { return }
+            self.isVisible = true
+        }
 
         if let interval = duration.timeInterval {
             let work = DispatchWorkItem { [weak self] in
-                self?.dismiss(animated: true)
+                self?.remove(animated: true)
             }
             dismissWorkItem = work
             DispatchQueue.main.asyncAfter(deadline: .now() + interval, execute: work)
         }
     }
 
-    // MARK: - Dismiss
-    public func dismiss(animated: Bool = true) {
+    // MARK: - remove
+    private func remove(animated: Bool = true) {
         dismissWorkItem?.cancel()
         dismissWorkItem = nil
 
@@ -150,11 +209,13 @@ public class EDTSToastManager: ObservableObject {
                 guard let self, self.toastItem?.id == id, self.isVisible == false else { return }
                 self.toastItem = nil
                 self.isDismissing = false
+                self.hideWindow()
             }
         } else {
             isVisible = false
             isDismissing = false
             toastItem = nil
+            hideWindow()
         }
     }
 
@@ -176,7 +237,7 @@ private struct EDTSToastSizeKey: PreferenceKey {
 
 // MARK: - Host Modifier
 private struct EDTSToastHostModifier: ViewModifier {
-    @ObservedObject private var manager = EDTSToastManager.toast
+    @ObservedObject private var manager = EDTSToastManager.shared
     @State private var dragTranslation: CGSize = .zero
     @State private var screenSize: CGSize = .zero
     
@@ -240,7 +301,7 @@ private struct EDTSToastHostModifier: ViewModifier {
                         .gesture(dragGesture(for: item))
                         .id(item.id)
                         .zIndex(toastZIndex)
-                        .onAppear { manager.isVisible = true }
+                        .onChange(of: item.id) { _ in dragTranslation = .zero }
                 }
             }
     }
@@ -323,7 +384,7 @@ private struct EDTSToastHostModifier: ViewModifier {
                         dragTranslation = offscreenTranslation(for: edge)
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + swipeDismissDuration) {
-                        EDTSToastManager.toast.dismiss(animated: false)
+                        EDTSToastManager.dismiss(animated: false)
                         dragTranslation = .zero
                     }
                 } else {
@@ -343,19 +404,50 @@ private struct EDTSToastHostModifier: ViewModifier {
     }
 }
 
-public extension View {
-    func edtsToastHost() -> some View {
-        modifier(EDTSToastHostModifier())
+// MARK: - Host View
+private struct EDTSToastHostView: View {
+    var body: some View {
+        Color.clear
+            .allowsHitTesting(false)
+            .modifier(EDTSToastHostModifier())
     }
 }
 
 // MARK: - Preview
 #Preview("Preview") {
     struct PreviewWrapper: View {
+        @State private var showSheet = false
+        @State private var showFullScreen = false
+
+        var body: some View {
+            VStack(spacing: 16) {
+                ToastButtons()
+
+                Divider()
+
+                Button("Open sheet") { showSheet = true }
+                Button("Open full screen sheet") { showFullScreen = true }
+            }
+            .padding()
+            .sheet(isPresented: $showSheet) {
+                if #available(iOS 16.0, *) {
+                    SheetContent(title: "Sheet") { showSheet = false }
+                        .presentationDetents([.medium, .large])
+                } else {
+                    SheetContent(title: "Sheet") { showSheet = false }
+                }
+            }
+            .fullScreenCover(isPresented: $showFullScreen) {
+                SheetContent(title: "Full screen sheet") { showFullScreen = false }
+            }
+        }
+    }
+
+    struct ToastButtons: View {
         var body: some View {
             VStack(spacing: 16) {
                 Button("Show info toast") {
-                    EDTSToastManager.toast.show(
+                    EDTSToastManager.show(
                         EDTSToast(
                             toastState: .info,
                             text: "Saved successfully",
@@ -365,7 +457,7 @@ public extension View {
                 }
 
                 Button("Show danger toast (slide, with action)") {
-                    EDTSToastManager.toast.show(
+                    EDTSToastManager.show(
                         EDTSToast(
                             toastState: .danger,
                             text: "Failed to upload file",
@@ -391,10 +483,42 @@ public extension View {
                         animation: .slide
                     )
                 }
+
+                Button("Show toast at top (long)") {
+                    EDTSToastManager.show(
+                        EDTSToast(
+                            toastState: .info,
+                            text: "Toast shown from the top",
+                            icon: Image(systemName: "info.circle.fill")
+                        ),
+                        duration: .long,
+                        offsetY: .top(60),
+                        swipeDirection: .vertical
+                    )
+                }
             }
-            .padding()
-            .edtsToastHost()
         }
     }
+
+    struct SheetContent: View {
+        let title: String
+        let onClose: () -> Void
+
+        var body: some View {
+            VStack(spacing: 16) {
+                Text(title)
+                    .font(.headline)
+
+                ToastButtons()
+
+                Button("Close", action: onClose)
+                    .padding(.top, 8)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground))
+        }
+    }
+
     return PreviewWrapper()
 }
