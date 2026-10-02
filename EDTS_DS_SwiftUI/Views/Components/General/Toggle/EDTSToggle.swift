@@ -43,6 +43,11 @@ public struct EDTSToggle: View {
     private var iconActiveTintColor: Color
     private var iconPadding: CGFloat
 
+    // MARK: - Layout Spacing
+
+    private var spacing: CGFloat
+    private var textSpacing: CGFloat
+
     // MARK: - Shadow
 
     private var shadowColor: Color
@@ -83,6 +88,8 @@ public struct EDTSToggle: View {
         iconTintColor: Color = EDTSColor.white,
         iconActiveTintColor: Color = EDTSColor.white,
         iconPadding: CGFloat = 0,
+        spacing: CGFloat = 8,
+        textSpacing: CGFloat = 4,
         cornerRadius: CGFloat? = nil,
         shadowColor: Color = .black,
         shadowOpacity: Double = 0.0,
@@ -111,6 +118,8 @@ public struct EDTSToggle: View {
         self.iconTintColor = iconTintColor
         self.iconActiveTintColor = iconActiveTintColor
         self.iconPadding = iconPadding
+        self.spacing = spacing
+        self.textSpacing = textSpacing
         self.cornerRadius = cornerRadius
         self.shadowColor = shadowColor
         self.shadowOpacity = shadowOpacity
@@ -141,7 +150,7 @@ public struct EDTSToggle: View {
     // MARK: - Body
 
     public var body: some View {
-        HStack(alignment: .center, spacing: hasLabel ? 8 : 0) {
+        HStack(alignment: .center, spacing: hasLabel ? spacing : 0) {
             trackView
             if hasLabel {
                 labelStack
@@ -195,7 +204,7 @@ public struct EDTSToggle: View {
     // MARK: - Labels
 
     private var labelStack: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: textSpacing) {
             if let titleAttributed {
                 Text(titleAttributed)
             } else if let title, !title.isEmpty {
@@ -270,3 +279,19 @@ public struct EDTSToggle: View {
     return PreviewWrapper()
 }
 
+#Preview("Custom spacing") {
+    struct PreviewWrapper: View {
+        @State private var isOn = true
+        var body: some View {
+            EDTSToggle(
+                isActive: $isOn,
+                title: "Title Here",
+                desc: "Body text",
+                spacing: 8,
+                textSpacing: 4
+            )
+            .padding()
+        }
+    }
+    return PreviewWrapper()
+}
