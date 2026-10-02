@@ -82,9 +82,9 @@ public enum KlikIDMColor {
 
     //MARK: Support
 
-    public static let errorStrong = Color(red: 238.0/255.0, green: 43.0/255.0, blue: 46.0/255.0)
+    public static let errorStrong = Color(red: 187.0/255.0, green: 0.0/255.0, blue: 0.0/255.0)
     public static let errorWeak = Color(red: 255.0/255.0, green: 237.0/255.0, blue: 238.0/255.0)
-    public static let successStrong = Color(red: 143.0/255.0, green: 199.0/255.0, blue: 66.0/255.0)
+    public static let successStrong = Color(red: 87.0/255.0, green: 143.0/255.0, blue: 33.0/255.0)
     public static let successWeak = Color(red: 235.0/255.0, green: 255.0/255.0, blue: 208.0/255.0)
     public static let warningStrong = Color(red: 255.0/255.0, green: 125.0/255.0, blue: 29.0/255.0)
     public static let warningWeak = Color(red: 255.0/255.0, green: 240.0/255.0, blue: 230.0/255.0)
