@@ -118,7 +118,7 @@ public enum ChipState: String {
 | -------------- | ---- | ------- | ----------- |
 | `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override, settable directly via the initializer; takes precedence over `fontName`/`fontSize`/`fontWeight` and the theme default |
 | `fontName` | `String` | `""` | Custom font family name |
-| `fontSize` | `CGFloat` | `0` | Custom font size; resolves to `12` if left at `0` whenever the custom-font path is active (see note below) |
+| `fontSize` | `Double` | `0` | Custom font size; resolves to `12` if left at `0` whenever the custom-font path is active (see note below) |
 | `fontWeight` | `String` | `""` | Custom font weight keyword, applied via `setupFontWeight(from:)` |
 
 > With no custom font set, the label uses `EDTSFont.Poinku.B3.Light` (poinku) or `EDTSFont.Klik.B3.Semibold` (klikIDM). Note that `fontWeight` alone — even with `fontName` and `fontSize` left default — is enough to switch away from the theme default and build a custom system font at that weight.
@@ -140,7 +140,7 @@ public enum ChipState: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `iconLeading` | `Image?` | `nil` | Icon shown before the label |
+| `iconLeading` | `Image?` | `nil` | Icon shown before the text |
 | `iconTintColorLeading` | `Color?` | theme default | Tint when inactive |
 | `iconTintColorLeadingActive` | `Color?` | falls back to `iconTintColorLeading`, then theme default | Tint when active |
 | `iconBgColorLeading` | `Color?` | `.clear` | Circular badge background when inactive |
@@ -150,7 +150,7 @@ public enum ChipState: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `iconTrailing` | `Image?` | `nil` | Icon shown after the label |
+| `iconTrailing` | `Image?` | `nil` | Icon shown after the text |
 | `iconTintColorTrailing` | `Color?` | theme default | Tint when inactive |
 | `iconTintColorTrailingActive` | `Color?` | falls back to `iconTintColorTrailing`, then theme default | Tint when active |
 | `iconBgColorTrailing` | `Color?` | `.clear` | Circular badge background when inactive |
@@ -160,17 +160,17 @@ public enum ChipState: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `iconSize` | `CGFloat` | `0` → resolves to `16` | Width/height of each icon glyph |
-| `iconSpacing` | `CGFloat` | `0` → resolves to `4` | Spacing in the `HStack` between icon(s) and label |
-| `iconPadding` | `CGFloat` | `0` → resolves to `2` | Padding between the icon glyph and the edge of its circular badge |
+| `iconSize` | `Double` | `0` → resolves to `16` | Width/height of each icon glyph |
+| `iconSpacing` | `Double` | `0` → resolves to `4` | Spacing in the `HStack` between icon(s) and text |
+| `iconPadding` | `Double` | `0` → resolves to `2` | Padding between the icon glyph and the edge of its circular badge |
 
 ### Shape & Border
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `cornerRadius` | `CGFloat` | `0` | `0` renders a `Capsule`; any non-zero value renders a `RoundedRectangle(cornerRadius:)` |
-| `borderWidth` | `CGFloat` | `0` | Border width when inactive; used as-is (no theme fallback) |
-| `borderWidthActive` | `CGFloat` | `0` → falls back to `borderWidth`, then theme default | Border width when active. Resolution order: `borderWidthActive` if non-zero → `borderWidth` if non-zero → `1` (poinku) / `0` (klikIDM) |
+| `cornerRadius` | `Double` | `0` | `0` renders a `Capsule`; any non-zero value renders a `RoundedRectangle(cornerRadius:)` |
+| `borderWidth` | `Double` | `0` | Border width when inactive; used as-is (no theme fallback) |
+| `borderWidthActive` | `Double` | `0` → falls back to `borderWidth`, then theme default | Border width when active. Resolution order: `borderWidthActive` if non-zero → `borderWidth` if non-zero → `1` (poinku) / `0` (klikIDM) |
 | `borderColor` | `Color?` | `.clear` (inactive) | Border color when inactive |
 | `borderColorActive` | `Color?` | falls back to `borderColor`, then theme default (`EDTSColor.blue40` poinku / `.clear` klikIDM) | Border color when active |
 
@@ -178,10 +178,10 @@ public enum ChipState: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `shadowOpacity` | `Float` | `0` | Shadow opacity when inactive |
-| `shadowOpacityActive` | `Float` | `0` → falls back to `shadowOpacity` | Shadow opacity when active |
-| `shadowRadius` | `CGFloat` | `0` | Shadow blur radius when inactive |
-| `shadowRadiusActive` | `CGFloat` | `0` → falls back to `shadowRadius` | Shadow blur radius when active |
+| `shadowOpacity` | `Double` | `0` | Shadow opacity when inactive |
+| `shadowOpacityActive` | `Double` | `0` → falls back to `shadowOpacity` | Shadow opacity when active |
+| `shadowRadius` | `Double` | `0` | Shadow blur radius when inactive |
+| `shadowRadiusActive` | `Double` | `0` → falls back to `shadowRadius` | Shadow blur radius when active |
 | `shadowOffset` | `CGSize` | `.zero` | Shadow offset when inactive |
 | `shadowOffsetActive` | `CGSize` | `.zero` → falls back to `shadowOffset` | Shadow offset when active |
 | `shadowColor` | `Color?` | `.clear` | Shadow color when inactive |
@@ -191,10 +191,10 @@ public enum ChipState: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `paddingTop` | `CGFloat?` | `nil` → `4` | Top content padding |
-| `paddingBottom` | `CGFloat?` | `nil` → `4` | Bottom content padding |
-| `paddingLeading` | `CGFloat?` | `nil` → `8` | Leading content padding |
-| `paddingTrailing` | `CGFloat?` | `nil` → `8` | Trailing content padding |
+| `paddingTop` | `Double?` | `nil` → `4` | Top content padding |
+| `paddingBottom` | `Double?` | `nil` → `4` | Bottom content padding |
+| `paddingLeading` | `Double?` | `nil` → `8` | Leading content padding |
+| `paddingTrailing` | `Double?` | `nil` → `8` | Trailing content padding |
 
 ### State & Delegates
 
@@ -224,9 +224,9 @@ public enum ChipState: String {
 
 | Constant | Value | Description |
 | -------- | ----- | ----------- |
-| `iconBadgeRippleBleed` | `2` (fixed) | Extra radius the ripple extends beyond the badge |
-| `iconBadgeDiameter` | `resolvedIconSize + 4` | Circular badge size (glyph + padding) |
-| `iconBadgeRippleSize` | `iconBadgeDiameter + 4` | Size passed to `circularRippleEffect` |
+| `iconBadgeDiameter` | `resolvedIconSize + (resolvedIconPadding * 2)` | Circular badge size (glyph + padding on both sides); scales with the public `iconPadding` property, not a fixed constant |
+| `iconBadgeRippleBleedMultiplier` | `1` (fixed) | Multiplier applied to `iconBadgeDiameter` to compute the ripple size |
+| `iconBadgeRippleSize` | `iconBadgeDiameter * iconBadgeRippleBleedMultiplier` | Size passed to `circularRippleEffect`. With the multiplier fixed at `1`, this currently equals `iconBadgeDiameter` exactly — **the ripple no longer bleeds beyond the badge**, unlike the previous fixed `+4` bleed |
 
 ---
 
@@ -236,7 +236,7 @@ public enum ChipState: String {
 | ------ | ----- |
 | Chip tap | `.rippleEffect(color: .black.opacity(0.12), cornerRadius: cornerRadius != 0 ? cornerRadius : 999, onTap: onTapChip)` over the whole chip |
 | Icon tap | Each icon badge uses `.circularRippleEffect(size: iconBadgeRippleSize, color: .black.opacity(0.22))` plus a `.highPriorityGesture(DragGesture(minimumDistance: 0))` that fires its own `onTap` closure, taking priority over the chip-level ripple gesture so the two never both fire from one tap |
-| State transition | `.animation(.easeInOut(duration: 0.25), value: isActive)` animates every resolved style value (background, label/icon color, border, shadow) together whenever `isActive` changes |
+| State transition | `.animation(.easeInOut(duration: 0.25), value: isActive)` animates every resolved style value (background, text/icon color, border, shadow) together whenever `isActive` changes |
 
 ---
 
