@@ -11,55 +11,42 @@ import SwiftUI
 
 public struct EDTSToggle: View {
 
-    // MARK: - Content
-
-    private let title: String?
-    private let titleAttributed: AttributedString?
-    private let desc: String?
-    private let descAttributed: AttributedString?
-
-    // MARK: - Text Styling
-
+    private var title: String?
+    private var titleAttributed: AttributedString?
     private var titleColor: Color
-    private var titleFont: Font
+    private var titleFontStyle: Font?
+    private var titleFontName: String
+    private var titleFontSize: Double
+    private var desc: String?
+    private var descAttributed: AttributedString?
     private var descColor: Color
-    private var descFont: Font
-
-    // MARK: - Track / Indicator
-
+    private var descFontStyle: Font?
+    private var descFontName: String
+    private var descFontSize: Double
     private var trackTintColor: Color
     private var trackActiveTintColor: Color
-    private var trackWidth: CGFloat
+    private var trackWidth: Double
     private var indicatorTintColor: Color
     private var indicatorActiveTintColor: Color
-    private var indicatorPadding: CGFloat
-    private var indicatorSize: CGFloat
-
-    // MARK: - Icon
-
+    private var indicatorPadding: Double
+    private var indicatorSize: Double
     private var icon: Image?
     private var iconActive: Image?
     private var iconTintColor: Color
     private var iconActiveTintColor: Color
     private var iconPadding: CGFloat
-
-    // MARK: - Layout Spacing
-
-    private var spacing: CGFloat
-    private var textSpacing: CGFloat
-
-    // MARK: - Shadow
-
+    private var spacing: Double
+    private var textSpacing: Double
     private var shadowColor: Color
     private var shadowOpacity: Double
     private var shadowOffset: CGSize
-    private var shadowRadius: CGFloat
-
-    // MARK: - Corner Radius
-
-    private var cornerRadius: CGFloat?
-
-    // MARK: - State
+    private var shadowRadius: Double
+    private var indicatorShadowColor: Color
+    private var indicatorShadowOpacity: Double
+    private var indicatorShadowOffset: CGSize
+    private var indicatorShadowRadius: Double
+    private var cornerRadius: Double?
+    private var toggleAnimation: Animation
 
     @Binding private var isActive: Bool
     private var onToggle: ((Bool) -> Void)?
@@ -71,41 +58,54 @@ public struct EDTSToggle: View {
         title: String? = nil,
         titleAttributed: AttributedString? = nil,
         titleColor: Color = EDTSColor.grey70,
-        titleFont: Font = EDTSFont.Klik.B2.Medium.font,
+        titleFontStyle: Font? = nil,
+        titleFontName: String = "",
+        titleFontSize: Double = .zero,
         desc: String? = nil,
         descAttributed: AttributedString? = nil,
         descColor: Color = EDTSColor.grey60,
-        descFont: Font = EDTSFont.Klik.B3.Regular.font,
+        descFontStyle: Font? = nil,
+        descFontName: String = "",
+        descFontSize: Double = .zero,
         trackTintColor: Color = EDTSColor.grey30,
         trackActiveTintColor: Color = EDTSColor.blue50,
-        trackWidth: CGFloat = 44,
+        trackWidth: Double = 44,
         indicatorTintColor: Color = EDTSColor.white,
         indicatorActiveTintColor: Color = EDTSColor.white,
-        indicatorPadding: CGFloat = 2,
-        indicatorSize: CGFloat = 16,
+        indicatorPadding: Double = 2,
+        indicatorSize: Double = 16,
         icon: Image? = nil,
         iconActive: Image? = nil,
         iconTintColor: Color = EDTSColor.white,
         iconActiveTintColor: Color = EDTSColor.white,
         iconPadding: CGFloat = 0,
-        spacing: CGFloat = 8,
-        textSpacing: CGFloat = 4,
-        cornerRadius: CGFloat? = nil,
+        spacing: Double = 8,
+        textSpacing: Double = 4,
+        cornerRadius: Double? = nil,
         shadowColor: Color = .black,
         shadowOpacity: Double = 0.0,
         shadowOffset: CGSize = .zero,
-        shadowRadius: CGFloat = 0.0,
+        shadowRadius: Double = 0.0,
+        indicatorShadowColor: Color = EDTSColor.grey50,
+        indicatorShadowOpacity: Double = 0.15,
+        indicatorShadowOffset: CGSize = CGSize(width: 0, height: 1),
+        indicatorShadowRadius: Double = 3,
+        toggleAnimation: Animation = .spring(response: 0.25, dampingFraction: 0.75),
         onToggle: ((Bool) -> Void)? = nil
     ) {
         self._isActive = isActive
         self.title = title
         self.titleAttributed = titleAttributed
         self.titleColor = titleColor
-        self.titleFont = titleFont
+        self.titleFontStyle = titleFontStyle
+        self.titleFontName = titleFontName
+        self.titleFontSize = titleFontSize
         self.desc = desc
         self.descAttributed = descAttributed
         self.descColor = descColor
-        self.descFont = descFont
+        self.descFontStyle = descFontStyle
+        self.descFontName = descFontName
+        self.descFontSize = descFontSize
         self.trackTintColor = trackTintColor
         self.trackActiveTintColor = trackActiveTintColor
         self.trackWidth = trackWidth
@@ -125,10 +125,13 @@ public struct EDTSToggle: View {
         self.shadowOpacity = shadowOpacity
         self.shadowOffset = shadowOffset
         self.shadowRadius = shadowRadius
+        self.indicatorShadowColor = indicatorShadowColor
+        self.indicatorShadowOpacity = indicatorShadowOpacity
+        self.indicatorShadowOffset = indicatorShadowOffset
+        self.indicatorShadowRadius = indicatorShadowRadius
+        self.toggleAnimation = toggleAnimation
         self.onToggle = onToggle
     }
-
-    // MARK: - Derived
 
     private var hasLabel: Bool {
         (title?.isEmpty == false) || (desc?.isEmpty == false) ||
@@ -147,6 +150,34 @@ public struct EDTSToggle: View {
         isActive ? (iconActive ?? icon) : icon
     }
 
+    // MARK: - Fonts
+
+    private var setupTitleFont: Font {
+        if let titleFontStyle {
+            return titleFontStyle
+        }
+
+        if titleFontName.isEmpty && titleFontSize <= 0 {
+            return EDTSFont.Klik.B2.Medium.font
+        }
+
+        let size = titleFontSize > 0 ? CGFloat(titleFontSize) : UIFont.systemFontSize
+        return titleFontName.isEmpty ? .system(size: size) : .custom(titleFontName, size: size)
+    }
+
+    private var setupDescFont: Font {
+        if let descFontStyle {
+            return descFontStyle
+        }
+
+        if descFontName.isEmpty && descFontSize <= 0 {
+            return EDTSFont.Klik.B3.Regular.font
+        }
+
+        let size = descFontSize > 0 ? CGFloat(descFontSize) : UIFont.systemFontSize
+        return descFontName.isEmpty ? .system(size: size) : .custom(descFontName, size: size)
+    }
+
     // MARK: - Body
 
     public var body: some View {
@@ -158,7 +189,7 @@ public struct EDTSToggle: View {
         }
     }
 
-    // MARK: - Track + Indicator
+    // MARK: - Track and Indicator
 
     private var trackView: some View {
         ZStack(alignment: isActive ? .trailing : .leading) {
@@ -166,7 +197,7 @@ public struct EDTSToggle: View {
                 .fill(isActive ? trackActiveTintColor : trackTintColor)
                 .frame(width: trackWidth, height: containerHeight)
                 .shadow(
-                    color: shadowColor.opacity(Double(shadowOpacity)),
+                    color: shadowColor.opacity(shadowOpacity),
                     radius: shadowRadius,
                     x: shadowOffset.width,
                     y: shadowOffset.height
@@ -180,14 +211,19 @@ public struct EDTSToggle: View {
         .onTapGesture {
             handleToggleTap()
         }
-        .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isActive)
+        .animation(toggleAnimation, value: isActive)
     }
 
     private var indicatorView: some View {
-        Circle()
+        RoundedRectangle(cornerRadius: resolvedCornerRadius, style: .continuous)
             .fill(isActive ? indicatorActiveTintColor : indicatorTintColor)
             .frame(width: indicatorSize, height: indicatorSize)
-            .shadow(color: EDTSColor.grey50.opacity(0.15), radius: 3, x: 0, y: 1)
+            .shadow(
+                color: indicatorShadowColor.opacity(indicatorShadowOpacity),
+                radius: indicatorShadowRadius,
+                x: indicatorShadowOffset.width,
+                y: indicatorShadowOffset.height
+            )
             .overlay {
                 if let currentImage {
                     currentImage
@@ -209,7 +245,7 @@ public struct EDTSToggle: View {
                 Text(titleAttributed)
             } else if let title, !title.isEmpty {
                 Text(title)
-                    .font(titleFont)
+                    .font(setupTitleFont)
                     .foregroundColor(titleColor)
             }
 
@@ -217,7 +253,7 @@ public struct EDTSToggle: View {
                 Text(descAttributed)
             } else if let desc, !desc.isEmpty {
                 Text(desc)
-                    .font(descFont)
+                    .font(setupDescFont)
                     .foregroundColor(descColor)
             }
         }
@@ -272,23 +308,6 @@ public struct EDTSToggle: View {
                 iconTintColor: EDTSColor.grey50,
                 iconActiveTintColor: EDTSColor.blue50,
                 iconPadding: 2
-            )
-            .padding()
-        }
-    }
-    return PreviewWrapper()
-}
-
-#Preview("Custom spacing") {
-    struct PreviewWrapper: View {
-        @State private var isOn = true
-        var body: some View {
-            EDTSToggle(
-                isActive: $isOn,
-                title: "Title Here",
-                desc: "Body text",
-                spacing: 8,
-                textSpacing: 4
             )
             .padding()
         }
