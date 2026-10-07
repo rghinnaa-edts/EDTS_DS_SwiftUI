@@ -17,7 +17,7 @@ public struct EDTSButtonIcon: View {
     public var iconTintColor: Color?
     public var iconDangerTintColor: Color?
     public var iconDisabledTintColor: Color?
-    public var iconSize: CGFloat
+    public var iconSize: Double
     
     public var bgColor: Color?
     public var bgDangerColor: Color?
@@ -27,24 +27,24 @@ public struct EDTSButtonIcon: View {
     public var bgColorOrientation: Orientation?
 
     public var rippleColor: Color?
-    public var cornerRadius: CGFloat
+    public var cornerRadius: Double?
 
-    public var borderWidth: CGFloat
+    public var borderWidth: Double
     public var borderColor: Color?
     public var borderDangerColor: Color?
     public var borderDisabledColor: Color?
 
     public var shadowOpacity: Double
-    public var shadowRadius: CGFloat
+    public var shadowRadius: Double
     public var shadowOffset: CGSize
     public var shadowColor: Color?
     public var shadowDangerColor: Color?
     public var shadowDisabledColor: Color?
 
-    public var paddingTop: CGFloat
-    public var paddingBottom: CGFloat
-    public var paddingLeading: CGFloat
-    public var paddingTrailing: CGFloat
+    public var paddingTop: Double?
+    public var paddingBottom: Double?
+    public var paddingLeading: Double?
+    public var paddingTrailing: Double?
 
     public var badge: EDTSSignifier?
 
@@ -52,8 +52,6 @@ public struct EDTSButtonIcon: View {
 
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
-    private let defaultValue: CGFloat = -1.0
-    private let dragCancelThreshold: CGFloat = 44
 
     // MARK: - Initializers
     public init(
@@ -64,7 +62,7 @@ public struct EDTSButtonIcon: View {
         iconTintColor: Color? = nil,
         iconDisabledTintColor: Color? = nil,
         iconDangerTintColor: Color? = nil,
-        iconSize: CGFloat = .zero,
+        iconSize: Double = .zero,
         bgColor: Color? = nil,
         bgDisabledColor: Color? = nil,
         bgDangerColor: Color? = nil,
@@ -72,21 +70,21 @@ public struct EDTSButtonIcon: View {
         bgColorEnd: Color? = nil,
         bgColorOrientation: Orientation? = nil,
         rippleColor: Color? = nil,
-        cornerRadius: CGFloat = -1.0,
-        borderWidth: CGFloat = .zero,
+        cornerRadius: Double? = nil,
+        borderWidth: Double = .zero,
         borderColor: Color? = nil,
         borderDisabledColor: Color? = nil,
         borderDangerColor: Color? = nil,
         shadowOpacity: Double = .zero,
-        shadowRadius: CGFloat = .zero,
+        shadowRadius: Double = .zero,
         shadowOffset: CGSize = .zero,
         shadowColor: Color? = nil,
         shadowDisabledColor: Color? = nil,
         shadowDangerColor: Color? = nil,
-        paddingTop: CGFloat = -1.0,
-        paddingBottom: CGFloat = -1.0,
-        paddingLeading: CGFloat = -1.0,
-        paddingTrailing: CGFloat = -1.0,
+        paddingTop: Double? = nil,
+        paddingBottom: Double? = nil,
+        paddingLeading: Double? = nil,
+        paddingTrailing: Double? = nil,
         badge: EDTSSignifier? = nil,
         action: @escaping () -> Void
     ) {
@@ -125,21 +123,22 @@ public struct EDTSButtonIcon: View {
     }
 
     // MARK: - Private Variable
-    private static let cornerRadiusPoinku: CGFloat = 8
-    private static let cornerRadiusKlik: CGFloat = 4
-    private static let iconSizeSmall: CGFloat = 16
-    private static let iconSizeMedium: CGFloat = 16
-    private static let iconSizeLarge: CGFloat = 24
-    private static let paddingSmall: CGFloat = 4
-    private static let paddingSmallHorizontalKlik: CGFloat = 8
-    private static let paddingMediumPoinku: CGFloat = 6
-    private static let paddingMediumKlik: CGFloat = 8
-    private static let paddingLarge: CGFloat = 8
+    private static let cornerRadiusPoinku: Double = 8
+    private static let cornerRadiusKlik: Double = 4
+    private static let iconSizeSmall: Double = 16
+    private static let iconSizeMedium: Double = 16
+    private static let iconSizeLarge: Double = 24
+    private static let paddingSmall: Double = 4
+    private static let paddingSmallHorizontalKlik: Double = 8
+    private static let paddingMediumPoinku: Double = 6
+    private static let paddingMediumKlik: Double = 8
+    private static let paddingLarge: Double = 8
     private static let rippleOpacity: Double = 0.12
-    private static let borderWidthDefault: CGFloat = 1
-    private static let pressedScale: CGFloat = 0.95
-    private static let restingScale: CGFloat = 1.0
+    private static let borderWidthDefault: Double = 1
+    private static let pressedScale: Double = 0.95
+    private static let restingScale: Double = 1.0
     private static let pressAnimationDuration: Double = 0.1
+    private let dragCancelThreshold: Double = 44
     
     private var resolvedButtonSize: BtnSize {
         btnSize
@@ -158,13 +157,13 @@ public struct EDTSButtonIcon: View {
         var tempBgColor: Color?
         var tempRippleColor: Color?
         var tempBorderColor: Color?
-        var tempBorderWidth: CGFloat = .zero
-        var tempIconSize: CGFloat = .zero
-        var tempCornerRadius: CGFloat = -1.0
-        var tempPaddingTop: CGFloat = -1.0
-        var tempPaddingBottom: CGFloat = -1.0
-        var tempPaddingLeading: CGFloat = -1.0
-        var tempPaddingTrailing: CGFloat = -1.0
+        var tempBorderWidth: Double = .zero
+        var tempIconSize: Double = .zero
+        var tempCornerRadius: Double = .zero
+        var tempPaddingTop: Double = .zero
+        var tempPaddingBottom: Double = .zero
+        var tempPaddingLeading: Double = .zero
+        var tempPaddingTrailing: Double = .zero
         var tempShadowColor: Color?
     }
 
@@ -245,48 +244,48 @@ public struct EDTSButtonIcon: View {
         switch resolvedButtonSize {
         case .small:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? Self.cornerRadiusPoinku : cornerRadius
+                values.tempCornerRadius = cornerRadius ?? Self.cornerRadiusPoinku
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? Self.cornerRadiusKlik : cornerRadius
-                values.tempPaddingLeading = paddingLeading == defaultValue ? Self.paddingSmallHorizontalKlik : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? Self.paddingSmallHorizontalKlik : paddingTrailing
+                values.tempCornerRadius = cornerRadius ?? Self.cornerRadiusKlik
+                values.tempPaddingLeading = paddingLeading ?? Self.paddingSmallHorizontalKlik
+                values.tempPaddingTrailing = paddingTrailing ?? Self.paddingSmallHorizontalKlik
             }
 
             values.tempIconSize = iconSize == .zero ? Self.iconSizeSmall : iconSize
-            values.tempPaddingTop = paddingTop == defaultValue ? Self.paddingSmall : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? Self.paddingSmall : paddingBottom
-            values.tempPaddingLeading = paddingLeading == defaultValue ? Self.paddingSmall : paddingLeading
-            values.tempPaddingTrailing = paddingTrailing == defaultValue ? Self.paddingSmall : paddingTrailing
+            values.tempPaddingTop = paddingTop ?? Self.paddingSmall
+            values.tempPaddingBottom = paddingBottom ?? Self.paddingSmall
+            values.tempPaddingLeading = paddingLeading ?? Self.paddingSmall
+            values.tempPaddingTrailing = paddingTrailing ?? Self.paddingSmall
 
         case .medium:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? Self.cornerRadiusPoinku : cornerRadius
-                values.tempPaddingTop = paddingTop == defaultValue ? Self.paddingMediumPoinku : paddingTop
-                values.tempPaddingBottom = paddingBottom == defaultValue ? Self.paddingMediumPoinku : paddingBottom
-                values.tempPaddingLeading = paddingLeading == defaultValue ? Self.paddingMediumPoinku : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? Self.paddingMediumPoinku : paddingTrailing
+                values.tempCornerRadius = cornerRadius ?? Self.cornerRadiusPoinku
+                values.tempPaddingTop = paddingTop ?? Self.paddingMediumPoinku
+                values.tempPaddingBottom = paddingBottom ?? Self.paddingMediumPoinku
+                values.tempPaddingLeading = paddingLeading ?? Self.paddingMediumPoinku
+                values.tempPaddingTrailing = paddingTrailing ?? Self.paddingMediumPoinku
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? Self.cornerRadiusKlik : cornerRadius
-                values.tempPaddingTop = paddingTop == defaultValue ? Self.paddingMediumKlik : paddingTop
-                values.tempPaddingBottom = paddingBottom == defaultValue ? Self.paddingMediumKlik : paddingBottom
-                values.tempPaddingLeading = paddingLeading == defaultValue ? Self.paddingMediumKlik : paddingLeading
-                values.tempPaddingTrailing = paddingTrailing == defaultValue ? Self.paddingMediumKlik : paddingTrailing
+                values.tempCornerRadius = cornerRadius ?? Self.cornerRadiusKlik
+                values.tempPaddingTop = paddingTop ?? Self.paddingMediumKlik
+                values.tempPaddingBottom = paddingBottom ?? Self.paddingMediumKlik
+                values.tempPaddingLeading = paddingLeading ?? Self.paddingMediumKlik
+                values.tempPaddingTrailing = paddingTrailing ?? Self.paddingMediumKlik
             }
 
             values.tempIconSize = iconSize == .zero ? Self.iconSizeMedium : iconSize
 
         case .large:
             if EDTSColor.theme == .poinku {
-                values.tempCornerRadius = cornerRadius == defaultValue ? Self.cornerRadiusPoinku : cornerRadius
+                values.tempCornerRadius = cornerRadius ?? Self.cornerRadiusPoinku
             } else {
-                values.tempCornerRadius = cornerRadius == defaultValue ? Self.cornerRadiusKlik : cornerRadius
+                values.tempCornerRadius = cornerRadius ?? Self.cornerRadiusKlik
             }
 
             values.tempIconSize = iconSize == .zero ? Self.iconSizeLarge : iconSize
-            values.tempPaddingTop = paddingTop == defaultValue ? Self.paddingLarge : paddingTop
-            values.tempPaddingBottom = paddingBottom == defaultValue ? Self.paddingLarge : paddingBottom
-            values.tempPaddingLeading = paddingLeading == defaultValue ? Self.paddingLarge : paddingLeading
-            values.tempPaddingTrailing = paddingTrailing == defaultValue ? Self.paddingLarge : paddingTrailing
+            values.tempPaddingTop = paddingTop ?? Self.paddingLarge
+            values.tempPaddingBottom = paddingBottom ?? Self.paddingLarge
+            values.tempPaddingLeading = paddingLeading ?? Self.paddingLarge
+            values.tempPaddingTrailing = paddingTrailing ?? Self.paddingLarge
         }
 
         return values
