@@ -433,7 +433,8 @@ public struct EDTSDialog: View {
             btnType: .primary,
             btnSize: .large,
             btnState: btnPrimaryState,
-            text: btnPrimaryText ?? "Button"
+            text: btnPrimaryText ?? "Button",
+            maxWidth: .infinity
         ) {
             onPrimaryTap?()
         }
@@ -444,7 +445,8 @@ public struct EDTSDialog: View {
             btnType: .secondary,
             btnSize: .large,
             btnState: btnSecondaryState,
-            text: btnSecondaryText ?? "Button"
+            text: btnSecondaryText ?? "Button",
+            maxWidth: .infinity
         ) {
             onSecondaryTap?()
         }
