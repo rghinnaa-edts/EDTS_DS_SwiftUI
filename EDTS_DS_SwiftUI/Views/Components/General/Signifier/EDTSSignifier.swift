@@ -14,40 +14,40 @@ public struct EDTSSignifier: View {
     public var textColor: Color?
     public var fontStyle: Font?
     public var fontName: String
-    public var fontSize: CGFloat
+    public var fontSize: Double
     public var fontWeight: String?
 
     public var bgColor: Color?
     public var bgColorStart: Color?
     public var bgColorEnd: Color?
     public var bgColorOrientation: Orientation?
-    public var cornerRadius: CGFloat?
-    public var borderWidth: CGFloat
+    public var cornerRadius: Double?
+    public var borderWidth: Double
     public var borderColor: Color?
     
-    public var shadowOpacity: Float
+    public var shadowOpacity: Double
     public var shadowOffset: CGSize
-    public var shadowRadius: CGFloat
+    public var shadowRadius: Double
     public var shadowColor: Color?
 
-    public var paddingTop: CGFloat?
-    public var paddingBottom: CGFloat?
-    public var paddingLeading: CGFloat
-    public var paddingTrailing: CGFloat
+    public var paddingTop: Double?
+    public var paddingBottom: Double?
+    public var paddingLeading: Double
+    public var paddingTrailing: Double
 
-    public var offsetY: CGFloat
-    public var offsetX: CGFloat
+    public var offsetY: Double
+    public var offsetX: Double
 
     public var isSkeleton: Bool
     public var isIndicator: Bool
     
     // MARK: - Private Variable
-    private static let defaultFontSize: CGFloat = 16
-    private static let poinkuHeight: CGFloat = 12
-    private static let poinkuPaddingVertical: CGFloat = 0
-    private static let klikIndicatorHeight: CGFloat = 8
-    private static let klikBadgeHeight: CGFloat = 16
-    private static let klikPaddingVertical: CGFloat = 1
+    private static let defaultFontSize: Double = 16
+    private static let poinkuHeight: Double = 12
+    private static let poinkuPaddingVertical: Double = 0
+    private static let klikIndicatorHeight: Double = 8
+    private static let klikBadgeHeight: Double = 16
+    private static let klikPaddingVertical: Double = 1
     
     private var customFont: Font? {
         if let fontStyle { return fontStyle }
@@ -63,13 +63,13 @@ public struct EDTSSignifier: View {
     }
     
     private struct ResolvedValues {
-        var tempHeight: CGFloat = .zero
+        var tempHeight: Double = .zero
         var tempTextColor: Color?
         var tempFontStyle: Font?
         var tempBgColor: Color?
         var tempBorderColor: Color?
-        var tempPaddingTop: CGFloat = -1.0
-        var tempPaddingBottom: CGFloat = -1.0
+        var tempPaddingTop: Double = .zero
+        var tempPaddingBottom: Double = .zero
     }
     
     private var resolvedShape: EDTSShape {
@@ -86,25 +86,25 @@ public struct EDTSSignifier: View {
         textColor: Color? = nil,
         fontStyle: Font? = nil,
         fontName: String = "",
-        fontSize: CGFloat = .zero,
+        fontSize: Double = .zero,
         fontWeight: String? = nil,
         bgColor: Color? = nil,
         bgColorStart: Color? = nil,
         bgColorEnd: Color? = nil,
         bgColorOrientation: Orientation? = nil,
-        cornerRadius: CGFloat? = nil,
-        borderWidth: CGFloat = .zero,
+        cornerRadius: Double? = nil,
+        borderWidth: Double = .zero,
         borderColor: Color? = nil,
-        shadowOpacity: Float = .zero,
+        shadowOpacity: Double = .zero,
         shadowOffset: CGSize = .zero,
-        shadowRadius: CGFloat = .zero,
+        shadowRadius: Double = .zero,
         shadowColor: Color? = nil,
-        paddingTop: CGFloat? = nil,
-        paddingBottom: CGFloat? = nil,
-        paddingLeading: CGFloat = 2,
-        paddingTrailing: CGFloat = 2,
-        offsetY: CGFloat = 4.5,
-        offsetX: CGFloat = 2.5,
+        paddingTop: Double? = nil,
+        paddingBottom: Double? = nil,
+        paddingLeading: Double = 2,
+        paddingTrailing: Double = 2,
+        offsetY: Double = 4.5,
+        offsetX: Double = 2.5,
         isSkeleton: Bool = false,
         isIndicator: Bool = false
     ) {
@@ -163,7 +163,7 @@ public struct EDTSSignifier: View {
             .clipShape(resolvedShape)
             .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: borderWidth))
             .shadow(
-                color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
+                color: (shadowColor ?? .clear).opacity(shadowOpacity),
                 radius: shadowRadius,
                 x: shadowOffset.width,
                 y: shadowOffset.height
