@@ -372,9 +372,9 @@ private struct EDTSCoachmarkView: View {
                     Text("\(currentStep) \(setupStepConjunction) \(totalSteps)")
                         .edtsFont(setupStepFont)
                         .foregroundColor(setupStepColor)
-                }
 
-                Spacer()
+                    Spacer()
+                }
 
                 if !hideSkipButton(step) {
                     EDTSButton(
@@ -397,7 +397,8 @@ private struct EDTSCoachmarkView: View {
                         text: step.btnFilledText ?? (currentStep == totalSteps ? "Mengerti" : "Berikutnya"),
                         fontSize: 12,
                         fontWeight: "semibold",
-                        bgColor: btnFilledTint
+                        bgColor: btnFilledTint,
+                        maxWidth: type == .single ? .infinity : nil
                     ) {
                         advance()
                     }
@@ -699,4 +700,43 @@ public extension View {
         }
     }
     return PreviewWrapper()
+}
+
+// MARK: - Preview (Single Type)
+
+#Preview("Single Coachmark") {
+    struct PreviewSingleWrapper: View {
+        @State private var showCoachmark = false
+
+        var body: some View {
+            VStack(spacing: 24) {
+                Spacer()
+
+                Button("Add to cart") {}
+                    .padding()
+                    .background(EDTSColor.blue50)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .coachmarkTarget("addToCart")
+
+                Button("Show Single Coachmark") { showCoachmark = true }
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .edtsCoachmark(
+                isPresented: $showCoachmark,
+                steps: [
+                    EDTSCoachmarkStepConfig(
+                        title: "Add items here",
+                        description: "Tap this button to add the current item to your cart.",
+                        targetID: "addToCart",
+                        btnFilledText: "Got it"
+                    )
+                ],
+                type: .single
+            )
+        }
+    }
+    return PreviewSingleWrapper()
 }
