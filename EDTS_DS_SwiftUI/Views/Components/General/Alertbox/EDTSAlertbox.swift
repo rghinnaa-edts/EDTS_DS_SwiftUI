@@ -298,7 +298,8 @@ public struct EDTSAlertbox: View {
                 EDTSButton(
                     btnType: .primary,
                     btnSize: .large,
-                    text: btnText ?? "Button"
+                    text: btnText ?? "Button",
+                    maxWidth: .infinity
                 ) {
                     onButtonTap?()
                 }
