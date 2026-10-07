@@ -46,6 +46,22 @@ public struct EDTSCardMyCoupon: View {
     private let defaultTitleFontWeight: String = "semibold"
     private let defaultDescFontWeight: String = "regular"
 
+    private let contentSpacing: CGFloat = 8
+    private let textSpacing: CGFloat = 4
+    private let titleBadgeSpacing: CGFloat = 4
+    private let contentPadding: CGFloat = 12
+
+    private let pressedScale: CGFloat = 0.97
+    private let restingScale: CGFloat = 1
+    private let pressAnimationDuration: Double = 0.1
+
+    private let leadingIconContainerSize: CGFloat = 32
+    private let leadingIconSize: CGFloat = 24
+    private let leadingIconGradientStartOpacity: Double = 0.5
+    private let leadingIconGradientEndRadius: CGFloat = 24
+    private let leadingIconBgOpacity: Double = 0.3
+    private let trailingIconSize: CGFloat = 16
+
     private var resolvedTitleFont: Font {
         if let titleFontStyle { return titleFontStyle }
         let size = titleFontSize ?? defaultTitleFontSize
@@ -122,10 +138,10 @@ public struct EDTSCardMyCoupon: View {
 
     // MARK: - Body
     public var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: contentSpacing) {
             leadingIconView
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .center, spacing: 4) {
+            VStack(alignment: .leading, spacing: textSpacing) {
+                HStack(alignment: .center, spacing: titleBadgeSpacing) {
                     titleView
                     if let badge {
                         badge
@@ -138,18 +154,17 @@ public struct EDTSCardMyCoupon: View {
 
             trailingIconView
         }
-        .padding(12)
+        .padding(contentPadding)
         .background(backgroundView)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        .scaleEffect(isPressed ? 0.97 : 1)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .scaleEffect(isPressed ? pressedScale : restingScale)
+        .animation(.easeInOut(duration: pressAnimationDuration), value: isPressed)
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in isPressed = true }
                 .onEnded { _ in
                     isPressed = false
-                    // Mirrors UIKit's `guard !cvBadge.isSkeleton else { return }`.
                     guard badge?.isSkeleton != true else { return }
                     onTap?()
                 }
@@ -162,24 +177,24 @@ public struct EDTSCardMyCoupon: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [color.opacity(0.5), color],
+                        colors: [color.opacity(leadingIconGradientStartOpacity), color],
                         center: .topLeading,
                         startRadius: 0,
-                        endRadius: 24
+                        endRadius: leadingIconGradientEndRadius
                     )
                 )
-                .opacity(0.3)
+                .opacity(leadingIconBgOpacity)
 
             if let iconLeading {
                 iconLeading
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: leadingIconSize, height: leadingIconSize)
                     .foregroundColor(iconTintColorLeading ?? EDTSColor.white)
             }
         }
-        .frame(width: 32, height: 32)
+        .frame(width: leadingIconContainerSize, height: leadingIconContainerSize)
     }
 
     private var trailingIconView: some View {
@@ -190,13 +205,13 @@ public struct EDTSCardMyCoupon: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                Image(systemName: "chevron.right")
+                Image("ic_placeholder")
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
             }
         }
-        .frame(width: 16, height: 16)
+        .frame(width: trailingIconSize, height: trailingIconSize)
         .foregroundColor(iconTintColorTrailing ?? EDTSColor.white)
     }
 
@@ -264,6 +279,8 @@ public struct EDTSCardMyCoupon: View {
                 iconLeading: Image(systemName: "shippingbox.fill"),
                 isLiquidGlassBg: false,
                 onTap: {}
+            )
+            EDTSCardMyCoupon(
             )
         }
         .padding()
