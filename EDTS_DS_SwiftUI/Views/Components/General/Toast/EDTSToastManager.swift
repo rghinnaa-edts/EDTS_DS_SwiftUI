@@ -79,9 +79,27 @@ public enum EDTSToastDismissEdge {
 
 // MARK: - Passthrough Window
 private final class EDTSToastWindow: UIWindow {
+    var toastHeight: CGFloat = 0
+    var toastOffset: CGFloat = 0
+    var toastHorizontalPadding: CGFloat = 0
+    var isTop: Bool = false
+
+    private var interactiveRect: CGRect {
+        guard toastHeight > 0 else { return .zero }
+        let y = isTop
+            ? safeAreaInsets.top + toastOffset
+            : bounds.height - safeAreaInsets.bottom - toastOffset - toastHeight
+        return CGRect(
+            x: toastHorizontalPadding,
+            y: y,
+            width: bounds.width - toastHorizontalPadding * 2,
+            height: toastHeight
+        ).insetBy(dx: -8, dy: -8)
+    }
+
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let view = super.hitTest(point, with: event)
-        return view === rootViewController?.view ? nil : view
+        guard interactiveRect.contains(point) else { return nil }
+        return super.hitTest(point, with: event)
     }
 }
 
@@ -113,7 +131,7 @@ public class EDTSToastManager: ObservableObject {
 
     private var dismissWorkItem: DispatchWorkItem?
     private var toastWindow: EDTSToastWindow?
-
+    
     private func showWindow() {
         if toastWindow == nil {
             let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
@@ -133,7 +151,25 @@ public class EDTSToastManager: ObservableObject {
     }
 
     private func hideWindow() {
+        toastWindow?.toastHeight = 0
         toastWindow?.isHidden = true
+    }
+
+    private func updateToastLayout(for item: ToastItem) {
+        guard let window = toastWindow else { return }
+
+        let availableWidth = window.bounds.width - item.horizontalPadding * 2
+        let size = UIHostingController(rootView: item.toast)
+            .sizeThatFits(in: CGSize(width: availableWidth, height: .greatestFiniteMagnitude))
+
+        window.toastHeight = size.height
+        window.toastOffset = item.offsetY.value
+        window.toastHorizontalPadding = item.horizontalPadding
+        if case .top = item.offsetY {
+            window.isTop = true
+        } else {
+            window.isTop = false
+        }
     }
 
     public static func show(
@@ -177,6 +213,7 @@ public class EDTSToastManager: ObservableObject {
         )
         toastItem = item
         showWindow()
+        updateToastLayout(for: item)
 
         let id = item.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
