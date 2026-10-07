@@ -17,12 +17,14 @@ public struct EDTSToggle: View {
     private var titleFontStyle: Font?
     private var titleFontName: String
     private var titleFontSize: Double
+    private var titleFontWeight: String
     private var desc: String?
     private var descAttributed: AttributedString?
     private var descColor: Color
     private var descFontStyle: Font?
     private var descFontName: String
     private var descFontSize: Double
+    private var descFontWeight: String
     private var trackTintColor: Color
     private var trackActiveTintColor: Color
     private var trackWidth: Double
@@ -61,12 +63,14 @@ public struct EDTSToggle: View {
         titleFontStyle: Font? = nil,
         titleFontName: String = "",
         titleFontSize: Double = .zero,
+        titleFontWeight: String = "",
         desc: String? = nil,
         descAttributed: AttributedString? = nil,
         descColor: Color = EDTSColor.grey60,
         descFontStyle: Font? = nil,
         descFontName: String = "",
         descFontSize: Double = .zero,
+        descFontWeight: String = "",
         trackTintColor: Color = EDTSColor.grey30,
         trackActiveTintColor: Color = EDTSColor.blue50,
         trackWidth: Double = 44,
@@ -100,12 +104,14 @@ public struct EDTSToggle: View {
         self.titleFontStyle = titleFontStyle
         self.titleFontName = titleFontName
         self.titleFontSize = titleFontSize
+        self.titleFontWeight = titleFontWeight
         self.desc = desc
         self.descAttributed = descAttributed
         self.descColor = descColor
         self.descFontStyle = descFontStyle
         self.descFontName = descFontName
         self.descFontSize = descFontSize
+        self.descFontWeight = descFontWeight
         self.trackTintColor = trackTintColor
         self.trackActiveTintColor = trackActiveTintColor
         self.trackWidth = trackWidth
@@ -157,12 +163,18 @@ public struct EDTSToggle: View {
             return titleFontStyle
         }
 
-        if titleFontName.isEmpty && titleFontSize <= 0 {
+        guard !titleFontName.isEmpty || titleFontSize > 0 || !titleFontWeight.isEmpty else {
             return EDTSFont.Klik.B2.Medium.font
         }
 
         let size = titleFontSize > 0 ? CGFloat(titleFontSize) : UIFont.systemFontSize
-        return titleFontName.isEmpty ? .system(size: size) : .custom(titleFontName, size: size)
+        var font: Font = titleFontName.isEmpty ? .system(size: size) : .custom(titleFontName, size: size)
+
+        if !titleFontWeight.isEmpty {
+            font = font.weight(setupFontWeight(from: titleFontWeight))
+        }
+
+        return font
     }
 
     private var setupDescFont: Font {
@@ -170,12 +182,18 @@ public struct EDTSToggle: View {
             return descFontStyle
         }
 
-        if descFontName.isEmpty && descFontSize <= 0 {
+        guard !descFontName.isEmpty || descFontSize > 0 || !descFontWeight.isEmpty else {
             return EDTSFont.Klik.B3.Regular.font
         }
 
         let size = descFontSize > 0 ? CGFloat(descFontSize) : UIFont.systemFontSize
-        return descFontName.isEmpty ? .system(size: size) : .custom(descFontName, size: size)
+        var font: Font = descFontName.isEmpty ? .system(size: size) : .custom(descFontName, size: size)
+
+        if !descFontWeight.isEmpty {
+            font = font.weight(setupFontWeight(from: descFontWeight))
+        }
+
+        return font
     }
 
     // MARK: - Body
@@ -309,6 +327,34 @@ public struct EDTSToggle: View {
                 iconActiveTintColor: EDTSColor.blue50,
                 iconPadding: 2
             )
+            .padding()
+        }
+    }
+    return PreviewWrapper()
+}
+
+#Preview("Custom font weight") {
+    struct PreviewWrapper: View {
+        @State private var isOn = true
+        var body: some View {
+            VStack(alignment: .leading, spacing: 16) {
+                EDTSToggle(
+                    isActive: $isOn,
+                    title: "Bold title",
+                    titleFontName: "Helvetica",
+                    titleFontSize: 16,
+                    titleFontWeight: "bold",
+                    desc: "Light description",
+                    descFontName: "Helvetica",
+                    descFontSize: 13,
+                    descFontWeight: "light"
+                )
+                EDTSToggle(
+                    isActive: $isOn,
+                    title: "Semibold, system size",
+                    titleFontWeight: "semibold"
+                )
+            }
             .padding()
         }
     }
