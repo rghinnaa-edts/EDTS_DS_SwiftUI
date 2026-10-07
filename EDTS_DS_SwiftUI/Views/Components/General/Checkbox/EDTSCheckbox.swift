@@ -134,21 +134,25 @@ public struct EDTSCheckbox: View {
     private var customTitleFont: Font? {
         if let titleFontStyle { return titleFontStyle }
         guard hasCustomTitleFont else { return nil }
+        let size = titleFontSize == .zero ? defaultTitleFontSize : titleFontSize
         let weight = setupFontWeight(from: titleFontWeight ?? "")
         if !titleFontName.isEmpty {
-            return .custom(titleFontName, size: titleFontSize == .zero ? defaultTitleFontSize : titleFontSize)
+            let font = Font.custom(titleFontName, size: size)
+            return (titleFontWeight?.isEmpty ?? true) ? font : font.weight(weight)
         }
-        return .system(size: titleFontSize == .zero ? defaultTitleFontSize : titleFontSize, weight: weight)
+        return .system(size: size, weight: weight)
     }
 
     private var customDescFont: Font? {
         if let descFontStyle { return descFontStyle }
         guard hasCustomDescFont else { return nil }
+        let size = descFontSize == .zero ? defaultDescFontSize : descFontSize
         let weight = setupFontWeight(from: descFontWeight ?? "")
         if !descFontName.isEmpty {
-            return .custom(descFontName, size: descFontSize == .zero ? defaultDescFontSize : descFontSize)
+            let font = Font.custom(descFontName, size: size)
+            return (descFontWeight?.isEmpty ?? true) ? font : font.weight(weight)
         }
-        return .system(size: descFontSize == .zero ? defaultDescFontSize : descFontSize, weight: weight)
+        return .system(size: size, weight: weight)
     }
     
     private var hasTitle: Bool {
