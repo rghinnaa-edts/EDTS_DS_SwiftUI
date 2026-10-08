@@ -100,7 +100,7 @@ EDTSAlertbox(text: "This message can't be dismissed.", isBtnCloseHide: true)
 EDTSAlertbox(state: .error, text: "Ribbon style alert", isRibbonStyle: true)
 ```
 
-Ribbon style renders as a compact, full-color banner. It always hides the action button regardless of `isBtnHide`, and has no close button.
+Ribbon style renders as a compact, full-color banner. It always hides the action button (even if `button` is passed) and has no close button.
 
 ### With Attributed Text
 
@@ -143,6 +143,57 @@ EDTSAlertbox(text: "Dismiss me.") {
 }
 ```
 
+### Default Action Button
+
+On the Klik theme, the alert shows a default button. Set its label with `buttonText` and its action with `onButtonTap`:
+
+```swift
+EDTSAlertbox(
+    state: .error,
+    text: "Upload failed.",
+    buttonText: "Retry",
+    onButtonTap: { retryUpload() }
+)
+```
+
+`buttonText` falls back to `"Button"` when not set. On the Poinku theme the button is hidden by default.
+
+### Custom Action Button
+
+Pass your own `EDTSButton` to replace the default one. It keeps its own action, so `buttonText` and `onButtonTap` are ignored:
+
+```swift
+EDTSAlertbox(
+    state: .error,
+    text: "Upload failed.",
+    button: EDTSButton(
+        btnType: .primary,
+        btnSize: .large,
+        text: "Retry",
+        maxWidth: .infinity
+    ) {
+        retryUpload()
+    }
+)
+```
+
+On Poinku, passing `button` also makes the button visible.
+
+### Hiding the Action Button
+
+```swift
+EDTSAlertbox(state: .success, text: "Saved.", isBtnHide: true)
+```
+
+`isBtnHide: true` hides the button on any theme, even when `button` is passed.
+
+### With onClose
+
+```swift
+EDTSAlertbox(text: "Dismiss me.", onClose: {
+    print("Alert was closed")
+})
+```
 ---
 
 ## Properties
@@ -157,17 +208,18 @@ EDTSAlertbox(text: "Dismiss me.") {
 | `text` | `String?` | `nil` | Plain-text message. Ignored when `textAttributed` is set |
 | `textAttributed` | `AttributedString?` | `nil` | Attributed variant of the message; when set, rendered instead of `text` |
 | `icon` | `Image?` | `nil` | Custom icon to display in place of the state's default icon |
-| `btnText` | `String?` | `nil` | Label for the action button. Defaults to `"Button"` when the button is shown but no text is given |
+| `buttonText` | `String?` | `nil` | Label for the default action button. Defaults to `"Button"`. Ignored when `button` is set |
+| `button` | `EDTSButton?` | `nil` | Custom action button that replaces the default one. Carries its own action, so `buttonText` and `onButtonTap` don't apply |
 
 ### Text Styling
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `textColor` | `Color?` | `nil` | Overrides the theme/state-derived message text color |
-| `fontStyle` | `Font?` | `nil` | Explicit `Font` for the message. Takes precedence over `fontName`/`fontSize` |
-| `fontName` | `String` | `""` | Custom font name, used with `fontSize` when `fontStyle` isn't set |
-| `fontSize` | `CGFloat` | `.zero` | Custom font size. When `> 0` (with no `fontStyle`), builds a `.custom` or `.system` font from `fontName`/`fontWeight` |
-| `fontWeight` | `String?` | `nil` | Weight used alongside `fontSize` when no `fontName` is given (defaults to `"regular"`) |
+| `fontStyle` | `Font?` | `nil` | Complete `Font` for the message. Takes precedence over `fontName`, `fontSize`, and `fontWeight`, which are all ignored when it is set |
+| `fontName` | `String` | `""` | Custom font name. When set, builds a `.custom` font |
+| `fontSize` | `CGFloat` | `.zero` | Custom font size. Falls back to `12` when another custom font value is set without a size |
+| `fontWeight` | `String?` | `nil` | Weight for the system font (defaults to `"regular"`). |
 
 ### Icon
 
