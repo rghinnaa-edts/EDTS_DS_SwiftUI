@@ -11,47 +11,111 @@ import SwiftUI
 
 public struct EDTSToggle: View {
 
-    private var title: String?
-    private var titleAttributed: AttributedString?
-    private var titleColor: Color
-    private var titleFontStyle: Font?
-    private var titleFontName: String
-    private var titleFontSize: Double
-    private var titleFontWeight: String
-    private var desc: String?
-    private var descAttributed: AttributedString?
-    private var descColor: Color
-    private var descFontStyle: Font?
-    private var descFontName: String
-    private var descFontSize: Double
-    private var descFontWeight: String
-    private var trackTintColor: Color
-    private var trackActiveTintColor: Color
-    private var trackWidth: Double
-    private var indicatorTintColor: Color
-    private var indicatorActiveTintColor: Color
-    private var indicatorPadding: Double
-    private var indicatorSize: Double
-    private var icon: Image?
-    private var iconActive: Image?
-    private var iconTintColor: Color
-    private var iconActiveTintColor: Color
-    private var iconPadding: CGFloat
-    private var spacing: Double
-    private var textSpacing: Double
-    private var shadowColor: Color
-    private var shadowOpacity: Double
-    private var shadowOffset: CGSize
-    private var shadowRadius: Double
-    private var indicatorShadowColor: Color
-    private var indicatorShadowOpacity: Double
-    private var indicatorShadowOffset: CGSize
-    private var indicatorShadowRadius: Double
-    private var cornerRadius: Double?
-    private var toggleAnimation: Animation
+    public var title: String?
+    public var titleAttributed: AttributedString?
+    public var titleColor: Color
+    public var titleFontStyle: Font?
+    public var titleFontName: String
+    public var titleFontSize: Double
+    public var titleFontWeight: String
+    public var desc: String?
+    public var descAttributed: AttributedString?
+    public var descColor: Color
+    public var descFontStyle: Font?
+    public var descFontName: String
+    public var descFontSize: Double
+    public var descFontWeight: String
+    public var trackTintColor: Color
+    public var trackActiveTintColor: Color
+    public var trackWidth: Double
+    public var indicatorTintColor: Color
+    public var indicatorActiveTintColor: Color
+    public var indicatorPadding: Double
+    public var indicatorSize: Double
+    public var icon: Image?
+    public var iconActive: Image?
+    public var iconTintColor: Color
+    public var iconActiveTintColor: Color
+    public var iconPadding: CGFloat
+    public var spacing: Double
+    public var textSpacing: Double
+    public var shadowColor: Color
+    public var shadowOpacity: Double
+    public var shadowOffset: CGSize
+    public var shadowRadius: Double
+    public var indicatorShadowColor: Color
+    public var indicatorShadowOpacity: Double
+    public var indicatorShadowOffset: CGSize
+    public var indicatorShadowRadius: Double
+    public var cornerRadius: Double?
+    public var toggleAnimation: Animation
 
-    @Binding private var isActive: Bool
-    private var onToggle: ((Bool) -> Void)?
+    @Binding public var isActive: Bool
+    public var onToggle: ((Bool) -> Void)?
+    
+    private var hasLabel: Bool {
+        hasTitle || hasDesc
+    }
+
+    private var hasTitle: Bool {
+        titleAttributed != nil || (title?.isEmpty == false)
+    }
+
+    private var hasDesc: Bool {
+        descAttributed != nil || (desc?.isEmpty == false)
+    }
+
+    private var resolvedCornerRadius: CGFloat {
+        cornerRadius ?? ((indicatorSize + (indicatorPadding * 2)) / 2)
+    }
+
+    private var containerHeight: CGFloat {
+        indicatorSize + (indicatorPadding * 2)
+    }
+
+    private var currentImage: Image? {
+        isActive ? (iconActive ?? icon) : icon
+    }
+
+    // MARK: - Fonts
+
+    private var setupTitleFont: Font {
+        if let titleFontStyle {
+            return titleFontStyle
+        }
+
+        guard !titleFontName.isEmpty || titleFontSize > 0 || !titleFontWeight.isEmpty else {
+            return EDTSFont.Klik.B2.Medium.font
+        }
+
+        let size = titleFontSize > 0 ? CGFloat(titleFontSize) : UIFont.systemFontSize
+        var font: Font = titleFontName.isEmpty ? .system(size: size) : .custom(titleFontName, size: size)
+
+        if !titleFontWeight.isEmpty {
+            font = font.weight(setupFontWeight(from: titleFontWeight))
+        }
+
+        return font
+    }
+
+    private var setupDescFont: Font {
+        if let descFontStyle {
+            return descFontStyle
+        }
+
+        guard !descFontName.isEmpty || descFontSize > 0 || !descFontWeight.isEmpty else {
+            return EDTSFont.Klik.B3.Regular.font
+        }
+
+        let size = descFontSize > 0 ? CGFloat(descFontSize) : UIFont.systemFontSize
+        var font: Font = descFontName.isEmpty ? .system(size: size) : .custom(descFontName, size: size)
+
+        if !descFontWeight.isEmpty {
+            font = font.weight(setupFontWeight(from: descFontWeight))
+        }
+
+        return font
+    }
 
     // MARK: - Init
 
@@ -137,70 +201,6 @@ public struct EDTSToggle: View {
         self.indicatorShadowRadius = indicatorShadowRadius
         self.toggleAnimation = toggleAnimation
         self.onToggle = onToggle
-    }
-
-    private var hasLabel: Bool {
-        hasTitle || hasDesc
-    }
-
-    private var hasTitle: Bool {
-        titleAttributed != nil || (title?.isEmpty == false)
-    }
-
-    private var hasDesc: Bool {
-        descAttributed != nil || (desc?.isEmpty == false)
-    }
-
-    private var resolvedCornerRadius: CGFloat {
-        cornerRadius ?? ((indicatorSize + (indicatorPadding * 2)) / 2)
-    }
-
-    private var containerHeight: CGFloat {
-        indicatorSize + (indicatorPadding * 2)
-    }
-
-    private var currentImage: Image? {
-        isActive ? (iconActive ?? icon) : icon
-    }
-
-    // MARK: - Fonts
-
-    private var setupTitleFont: Font {
-        if let titleFontStyle {
-            return titleFontStyle
-        }
-
-        guard !titleFontName.isEmpty || titleFontSize > 0 || !titleFontWeight.isEmpty else {
-            return EDTSFont.Klik.B2.Medium.font
-        }
-
-        let size = titleFontSize > 0 ? CGFloat(titleFontSize) : UIFont.systemFontSize
-        var font: Font = titleFontName.isEmpty ? .system(size: size) : .custom(titleFontName, size: size)
-
-        if !titleFontWeight.isEmpty {
-            font = font.weight(setupFontWeight(from: titleFontWeight))
-        }
-
-        return font
-    }
-
-    private var setupDescFont: Font {
-        if let descFontStyle {
-            return descFontStyle
-        }
-
-        guard !descFontName.isEmpty || descFontSize > 0 || !descFontWeight.isEmpty else {
-            return EDTSFont.Klik.B3.Regular.font
-        }
-
-        let size = descFontSize > 0 ? CGFloat(descFontSize) : UIFont.systemFontSize
-        var font: Font = descFontName.isEmpty ? .system(size: size) : .custom(descFontName, size: size)
-
-        if !descFontWeight.isEmpty {
-            font = font.weight(setupFontWeight(from: descFontWeight))
-        }
-
-        return font
     }
 
     // MARK: - Body

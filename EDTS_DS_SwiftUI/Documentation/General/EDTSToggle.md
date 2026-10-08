@@ -61,6 +61,49 @@ EDTSToggle(
 )
 ```
 
+### With Custom Fonts
+
+Pass an explicit `Font` to take full control. It wins over everything else:
+
+```swift
+EDTSToggle(
+    isActive: $isOn,
+    title: "Dark Mode",
+    titleFontStyle: .system(size: 16, weight: .bold),
+    desc: "Switch to a darker color theme"
+)
+```
+
+```swift
+EDTSToggle(
+    isActive: $isOn,
+    title: "Dark Mode",
+    titleFontName: "Helvetica",
+    titleFontSize: 16,
+    titleFontWeight: "bold",
+    desc: "Switch to a darker color theme",
+    descFontSize: 13,
+    descFontWeight: "light"
+)
+```
+
+### With Attributed Text
+
+```swift
+var attributedTitle = AttributedString("Attributed title")
+if let range = attributedTitle.range(of: "title") {
+    attributedTitle[range].font = .system(size: 16, weight: .bold)
+}
+
+EDTSToggle(
+    isActive: $isOn,
+    titleAttributed: attributedTitle,
+    descAttributed: AttributedString("Attributed body inherits font + color")
+)
+```
+
+The configured font and color (`titleColor`, `titleFontStyle`, and so on, or their defaults) are applied to the attributed text as **defaults**. Any run that sets its own font or color attribute still overrides them, as the bold "title" run does above.
+
 ### With Active State Colors
 
 ```swift
@@ -161,37 +204,40 @@ EDTSToggle(isActive: $isOn) { newValue in
 
 ## Public Interface
 
-`EDTSToggle` is configured entirely through its initializer.
+`EDTSToggle` is configured through its initializer. Every setting is also exposed as a public property of the same name.
 
 ### Content
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `title` | `String?` | `nil` | Optional title label shown next to the track |
-| `titleAttributed` | `AttributedString?` | `nil` | Attributed variant of the title; when set, rendered instead of `title` (and ignores all title font parameters below) |
-| `desc` | `String?` | `nil` | Optional description label shown below the title |
-| `descAttributed` | `AttributedString?` | `nil` | Attributed variant of the description; when set, rendered instead of `desc` (and ignores all desc font parameters below) |
+| `title` | `String?` | `nil` | Optional title label shown next to the track. Ignored if `titleAttributed` is set |
+| `titleAttributed` | `AttributedString?` | `nil` | Attributed variant of the title; when set, rendered instead of `title`. The title font and `titleColor` apply to it as defaults, and any run with its own font or color attribute overrides them |
+| `desc` | `String?` | `nil` | Optional description label shown below the title. Ignored if `descAttributed` is set |
+| `descAttributed` | `AttributedString?` | `nil` | Attributed variant of the description; when set, rendered instead of `desc`. The description font and `descColor` apply to it as defaults, and any run with its own font or color attribute overrides them |
 | `icon` | `Image?` | `nil` | Image displayed inside the indicator while the toggle is `off` |
-| `iconActive` | `Image?` | `nil` | Image displayed inside the indicator while the toggle is `on` |
+| `iconActive` | `Image?` | `nil` | Image displayed inside the indicator while the toggle is `on`. Falls back to `icon` when `nil` |
 
 ### Text Styling
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `titleColor` | `Color` | `EDTSColor.grey70` | Color applied to `title` |
-| `titleFontStyle` | `Font?` | `nil` | Explicit font for the title. **Takes priority** over `titleFontName`/`titleFontSize` when set |
-| `titleFontName` | `String` | `""` | Named font used for the title when `titleFontStyle` is `nil`. Ignored if empty |
+| `titleColor` | `Color` | `EDTSColor.grey70` | Color applied to `title` / `titleAttributed` |
+| `titleFontStyle` | `Font?` | `nil` | Explicit font for the title. **Takes priority** over `titleFontName` / `titleFontSize` / `titleFontWeight` when set |
+| `titleFontName` | `String` | `""` | Named font used for the title when `titleFontStyle` is `nil`. Empty means the system font |
 | `titleFontSize` | `Double` | `0` | Point size used for the title when `titleFontStyle` is `nil`. A value `<= 0` is treated as "unset" |
-| `descColor` | `Color` | `EDTSColor.grey60` | Color applied to `desc` |
-| `descFontStyle` | `Font?` | `nil` | Explicit font for the description. **Takes priority** over `descFontName`/`descFontSize` when set |
-| `descFontName` | `String` | `""` | Named font used for the description when `descFontStyle` is `nil`. Ignored if empty |
+| `titleFontWeight` | `String` | `""` | Weight name for the title when `titleFontStyle` is `nil`. Empty means "unset". See [Font weights](#font-weights) |
+| `descColor` | `Color` | `EDTSColor.grey60` | Color applied to `desc` / `descAttributed` |
+| `descFontStyle` | `Font?` | `nil` | Explicit font for the description. **Takes priority** over `descFontName` / `descFontSize` / `descFontWeight` when set |
+| `descFontName` | `String` | `""` | Named font used for the description when `descFontStyle` is `nil`. Empty means the system font |
 | `descFontSize` | `Double` | `0` | Point size used for the description when `descFontStyle` is `nil`. A value `<= 0` is treated as "unset" |
+| `descFontWeight` | `String` | `""` | Weight name for the description when `descFontStyle` is `nil`. Empty means "unset". See [Font weights](#font-weights) |
 
 ### State
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `isActive` | `Binding<Bool>` | — (required) | Current on/off state of the toggle. Tapping the track toggles this binding and animates the transition |
+| `onToggle` | `((Bool) -> Void)?` | `nil` | Called after a tap flips the state, with the new value. It fires only for taps on the track, not when you change the bound value yourself |
 
 ### Colors
 
