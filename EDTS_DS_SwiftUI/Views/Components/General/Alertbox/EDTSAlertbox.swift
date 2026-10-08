@@ -41,7 +41,8 @@ public struct EDTSAlertbox: View {
     public var btnCloseTintColor: Color?
     public var btnCloseSize: CGFloat
 
-    public var btnText: String?
+    public var buttonText: String?
+    public var button: EDTSButton?
 
     public var bgColor: Color?
     public var borderWidth: CGFloat
@@ -80,6 +81,28 @@ public struct EDTSAlertbox: View {
     private static var isPoinkuTheme: Bool {
         EDTSColor.theme == .poinku
     }
+    
+    private var hasCustomFont: Bool {
+        !fontName.isEmpty || fontSize > 0 || !(fontWeight ?? "").isEmpty
+    }
+
+    private var setupFont: Font {
+        if let fontStyle { return fontStyle }
+
+        guard hasCustomFont else {
+            return EDTSAlertbox.isPoinkuTheme
+                ? EDTSFont.Poinku.B3.Light.font
+                : EDTSFont.Klik.P2.Regular.font
+        }
+
+        let size = fontSize > 0 ? fontSize : 12
+
+        if !fontName.isEmpty {
+            return .custom(fontName, size: size)
+        }
+
+        return .system(size: size, weight: setupFontWeight(from: fontWeight ?? "regular"))
+    }
 
     // MARK: - Init
 
@@ -97,7 +120,8 @@ public struct EDTSAlertbox: View {
         iconSize: CGFloat = 16.0,
         btnCloseTintColor: Color? = nil,
         btnCloseSize: CGFloat = 16.0,
-        btnText: String? = nil,
+        buttonText: String? = nil,
+        button: EDTSButton? = nil,
         bgColor: Color? = nil,
         borderWidth: CGFloat = 1.0,
         borderColor: Color? = nil,
@@ -129,7 +153,8 @@ public struct EDTSAlertbox: View {
         self.iconSize = iconSize
         self.btnCloseTintColor = btnCloseTintColor
         self.btnCloseSize = btnCloseSize
-        self.btnText = btnText
+        self.buttonText = buttonText
+        self.button = button
         self.bgColor = bgColor
         self.borderWidth = borderWidth
         self.borderColor = borderColor
@@ -143,7 +168,7 @@ public struct EDTSAlertbox: View {
         self.shadowOffset = shadowOffset
         self.shadowColor = shadowColor
         self.isBtnCloseHide = isBtnCloseHide
-        self.isBtnHide = isRibbonStyle ? true : (isBtnHide ?? EDTSAlertbox.isPoinkuTheme)
+        self.isBtnHide = isRibbonStyle ? true : (isBtnHide ?? (EDTSAlertbox.isPoinkuTheme && button == nil))
         self.isRibbonStyle = isRibbonStyle
         self.onClose = onClose
         self.onButtonTap = onButtonTap
@@ -265,19 +290,6 @@ public struct EDTSAlertbox: View {
         return values
     }
 
-    private var setupFont: Font {
-        if let fontStyle { return fontStyle }
-        if fontSize > 0 {
-            let weight = setupFontWeight(from: fontWeight ?? "regular")
-            return fontName.isEmpty
-                ? .system(size: fontSize, weight: weight)
-                : .custom(fontName, size: fontSize)
-        }
-        return EDTSAlertbox.isPoinkuTheme
-            ? EDTSFont.Poinku.B3.Light.font
-            : EDTSFont.Klik.P2.Regular.font
-    }
-
     @ViewBuilder
     private var defaultBody: some View {
         let values = setup
@@ -295,13 +307,15 @@ public struct EDTSAlertbox: View {
             }
 
             if !isBtnHide {
-                EDTSButton(
-                    btnType: .primary,
-                    btnSize: .large,
-                    text: btnText ?? "Button",
-                    maxWidth: .infinity
-                ) {
-                    onButtonTap?()
+                if let button {
+                    button
+                } else {
+                    EDTSButton(
+                        btnType: .primary,
+                        btnSize: .large,
+                        text: buttonText ?? "Button",
+                        maxWidth: .infinity
+                    ) { onButtonTap?() }
                 }
             }
         }
@@ -341,8 +355,8 @@ public struct EDTSAlertbox: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.top, values.padTop)
-        .padding(.leading, values.padBottom)
-        .padding(.bottom, values.padLeading)
+        .padding(.leading, values.padLeading)
+        .padding(.bottom, values.padBottom)
         .padding(.trailing, values.padTrailing)
         .background(bgColor ?? ribbonBg)
     }
@@ -375,6 +389,7 @@ public struct EDTSAlertbox: View {
 
     private var closeButton: some View {
         Image("ic_close")
+            .renderingMode(.template)
             .resizable()
             .scaledToFit()
             .frame(width: btnCloseSize, height: btnCloseSize)
@@ -427,7 +442,7 @@ public struct EDTSAlertbox: View {
                     EDTSAlertbox(text: lineText)
                     EDTSAlertbox(state: .info, text: lineText)
                     EDTSAlertbox(state: .success, text: lineText, isBtnHide: true)
-                    EDTSAlertbox(state: .error, text: lineText, btnText: "Retry")
+                    EDTSAlertbox(state: .error, text: lineText, buttonText: "Retry")
                     EDTSAlertbox(state: .warning, text: lineText)
                     EDTSAlertbox(state: .error, text: "Ribbon style alert", isRibbonStyle: true)
                 }
