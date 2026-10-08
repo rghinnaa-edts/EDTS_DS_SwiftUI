@@ -140,8 +140,15 @@ public struct EDTSToggle: View {
     }
 
     private var hasLabel: Bool {
-        (title?.isEmpty == false) || (desc?.isEmpty == false) ||
-        titleAttributed != nil || descAttributed != nil
+        hasTitle || hasDesc
+    }
+
+    private var hasTitle: Bool {
+        titleAttributed != nil || (title?.isEmpty == false)
+    }
+
+    private var hasDesc: Bool {
+        descAttributed != nil || (desc?.isEmpty == false)
     }
 
     private var resolvedCornerRadius: CGFloat {
@@ -259,20 +266,28 @@ public struct EDTSToggle: View {
 
     private var labelStack: some View {
         VStack(alignment: .leading, spacing: textSpacing) {
-            if let titleAttributed {
-                Text(titleAttributed)
-            } else if let title, !title.isEmpty {
-                Text(title)
-                    .font(setupTitleFont)
-                    .foregroundColor(titleColor)
+            if hasTitle {
+                Group {
+                    if let titleAttributed {
+                        Text(titleAttributed)
+                    } else {
+                        Text(title ?? "")
+                    }
+                }
+                .font(setupTitleFont)
+                .foregroundColor(titleColor)
             }
 
-            if let descAttributed {
-                Text(descAttributed)
-            } else if let desc, !desc.isEmpty {
-                Text(desc)
-                    .font(setupDescFont)
-                    .foregroundColor(descColor)
+            if hasDesc {
+                Group {
+                    if let descAttributed {
+                        Text(descAttributed)
+                    } else {
+                        Text(desc ?? "")
+                    }
+                }
+                .font(setupDescFont)
+                .foregroundColor(descColor)
             }
         }
     }
@@ -326,6 +341,30 @@ public struct EDTSToggle: View {
                 iconTintColor: EDTSColor.grey50,
                 iconActiveTintColor: EDTSColor.blue50,
                 iconPadding: 2
+            )
+            .padding()
+        }
+    }
+    return PreviewWrapper()
+}
+
+#Preview("Attributed text") {
+    struct PreviewWrapper: View {
+        @State private var isOn = true
+
+        private var attributedTitle: AttributedString {
+            var s = AttributedString("Attributed title")
+            if let range = s.range(of: "title") {
+                s[range].font = .system(size: 16, weight: .bold)
+            }
+            return s
+        }
+
+        var body: some View {
+            EDTSToggle(
+                isActive: $isOn,
+                titleAttributed: attributedTitle,
+                descAttributed: AttributedString("Attributed body inherits font + color")
             )
             .padding()
         }
