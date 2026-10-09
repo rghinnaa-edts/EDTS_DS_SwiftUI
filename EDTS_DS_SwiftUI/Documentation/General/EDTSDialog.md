@@ -4,12 +4,11 @@ The `EDTSDialog` component is a modal dialog that appears in front of app conten
 
 ## Features
 
-- Title, description, and supporting text, each with plain or `AttributedString` content
+- Title, description, and supporting text, each with plain or `NSAttributedString` content
 - Independent color, font, size, weight, and alignment control per text block
-- Optional image with two layouts: standard (text-first) and image (centered, buttons above text)
-- Primary and secondary buttons in a vertical or horizontal arrangement
-- Optional close button with an enlarged hit area
-- Configurable background, corner radius, and drop shadow
+- Scrollable description and supporting text: the dialog hugs short text and scrolls long text instead of truncating it
+- Optional image with two layouts: standard (left-aligned text) and image (centered)
+- Primary and secondary buttons (your own `EDTSButton`s) in a vertical or horizontal arrangement
 - Built-in presentation via the `.edtsDialog(isPresented:dialog:)` modifier, with dimmed backdrop and scale/fade animation
 - Optional dismiss on tap outside
 
@@ -56,15 +55,29 @@ struct ContentView: View {
                 EDTSDialog(
                     title: "Basic dialog title",
                     desc: "A dialog is a type of modal window that appears in front of app content.",
-                    onPrimaryTap: { showDialog = false },
-                    onSecondaryTap: { showDialog = false }
+                    btnPrimary: EDTSButton(
+                        btnType: .primary,
+                        btnState: .default,
+                        text: "Confirm",
+                        maxWidth: .infinity,
+                        action: { showDialog = false }
+                    ),
+                    btnSecondary: EDTSButton(
+                        btnType: .secondary,
+                        btnState: .default,
+                        text: "Cancel",
+                        maxWidth: .infinity,
+                        action: { showDialog = false }
+                    )
                 )
             }
     }
 }
 ```
 
-> **Important:** `onPrimaryTap` and `onSecondaryTap` do **not** dismiss the dialog automatically. Set your `isPresented` binding to `false` inside them. Only the close button and tap-outside dismissal are handled for you.
+> **Important:** The buttons are your own `EDTSButton`s, so each one carries its own action. They do **not** dismiss the dialog automatically. Set your `isPresented` binding to `false` inside the action. Only the close button and tap-outside dismissal are handled for you.
+
+> **Note:** Buttons are not created by default. If you don't pass `btnPrimary` / `btnSecondary`, nothing is rendered for them, even when `isHasBtnPrimary` / `isHasBtnSecondary` are `true`. Set `maxWidth: .infinity` on each button so it fills the dialog width (or splits it equally in horizontal orientation).
 
 ### Horizontal Buttons
 
@@ -73,11 +86,20 @@ EDTSDialog(
     title: "Delete this item?",
     desc: "This action can't be undone.",
     btnOrientation: .horizontal,
-    btnPrimaryText: "Delete",
-    btnPrimaryState: .danger,
-    btnSecondaryText: "Cancel",
-    onPrimaryTap: { showDialog = false },
-    onSecondaryTap: { showDialog = false }
+    btnPrimary: EDTSButton(
+        btnType: .primary,
+        btnState: .danger,
+        text: "Delete",
+        maxWidth: .infinity,
+        action: { showDialog = false }
+    ),
+    btnSecondary: EDTSButton(
+        btnType: .secondary,
+        btnState: .default,
+        text: "Cancel",
+        maxWidth: .infinity,
+        action: { showDialog = false }
+    )
 )
 ```
 
@@ -93,16 +115,55 @@ EDTSDialog(
 )
 ```
 
+### Long Text
+
+```swift
+EDTSDialog(
+    title: "Terms and conditions",
+    desc: longText,
+    btnPrimary: EDTSButton(
+        btnType: .primary,
+        btnState: .default,
+        text: "Accept",
+        maxWidth: .infinity,
+        action: { showDialog = false }
+    )
+)
+```
+
+### Attributed Text
+
+```swift
+let message = NSMutableAttributedString(string: "Read our ")
+message.append(NSAttributedString(
+    string: "Terms of Service",
+    attributes: [
+        .foregroundColor: UIColor.systemBlue,
+        .underlineStyle: NSUnderlineStyle.single.rawValue
+    ]
+))
+
+EDTSDialog(
+    title: "Updated terms",
+    descAttributed: message
+)
+```
+
 ### Image Dialog
 
 ```swift
 EDTSDialog(
     title: "Dialog with image",
-    desc: "Centered layout with the image on top and buttons above the text.",
+    desc: "Centered layout with the image on top.",
     support: "Supporting text sits below the description.",
-    isDialogImage: true,
-    onPrimaryTap: { showDialog = false },
-    onSecondaryTap: { showDialog = false }
+    btnPrimary: EDTSButton(
+        btnType: .primary,
+        btnState: .default,
+        text: "Confirm",
+        maxWidth: .infinity,
+        action: { showDialog = false }
+    ),
+    isDialogImage: true
 )
 ```
 
@@ -124,15 +185,23 @@ EDTSDialog(
 // No close button
 EDTSDialog(title: "No close", isHasBtnClose: false)
 
-// Primary only
-EDTSDialog(title: "Confirm", isHasBtnSecondary: false)
-
-// Text only, no action buttons
+// Primary only: pass just the primary button
 EDTSDialog(
-    title: "Heads up",
-    isHasBtnPrimary: false,
-    isHasBtnSecondary: false
+    title: "Confirm",
+    btnPrimary: EDTSButton(
+        btnType: .primary,
+        btnState: .default,
+        text: "OK",
+        maxWidth: .infinity,
+        action: { showDialog = false }
+    )
 )
+
+// Text only, no action buttons: pass neither
+EDTSDialog(title: "Heads up", desc: "Tap outside to close.", isDismissOnTapOutside: true)
+
+// Force-hide a button you pass in
+EDTSDialog(title: "Hidden", btnPrimary: primaryButton, isHasBtnPrimary: false)
 ```
 
 ### Custom Background and Shadow
@@ -149,10 +218,6 @@ EDTSDialog(
 )
 ```
 
-### Using Without the Modifier
-
-`EDTSDialog` is a regular `View`, so it can be embedded directly (for example in a custom overlay or a preview). In that case there is no backdrop and no automatic dismissal: the close button only triggers `onClose`, so you are responsible for hiding the view yourself.
-
 ---
 
 ## Layout Modes
@@ -163,11 +228,10 @@ The `isDialogImage` flag selects between two layouts and changes the defaults of
 |---|---|---|
 | Image shown | Only if `image` is set | Always (placeholder if `image` is `nil`) |
 | Close button (`isHasBtnClose`) | Shown | Hidden |
-| Button position (`isBtnPositionAtTopLabel`) | Below text | Above text (below image) |
 | Text alignment | `.leading` | `.center` |
 | Title font token | `EDTSFont.Klik.H1` | `EDTSFont.Klik.D4` |
 
-Description and supporting text always default to `EDTSFont.Klik.P1.Regular` and `EDTSFont.Klik.P2.Regular` respectively.
+Description and supporting text always default to `EDTSFont.Klik.P1.Regular` and `EDTSFont.Klik.P2.Regular` respectively. Buttons are always placed below the text.
 
 ---
 
@@ -180,7 +244,7 @@ Description and supporting text always default to `EDTSFont.Klik.P1.Regular` and
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `title` | `String?` | `nil` | Title text. Ignored when `titleAttributed` is set |
-| `titleAttributed` | `AttributedString?` | `nil` | When set, rendered instead of `title` |
+| `titleAttributed` | `NSAttributedString?` | `nil` | When set, rendered instead of `title` |
 | `titleColor` | `Color?` | `EDTSColor.grey70` | Title text color |
 | `titleFontStyle` | `Font?` | `nil` | Explicit font. When set, takes priority over `titleFontName`/`titleFontSize`/`titleFontWeight` |
 | `titleFontName` | `String` | `""` | Custom font family name. Ignored if `titleFontStyle` is set |
@@ -195,7 +259,7 @@ If `titleFontStyle`, `titleFontName`, `titleFontSize`, and `titleFontWeight` are
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `desc` | `String?` | `nil` | Description text. Ignored when `descAttributed` is set |
-| `descAttributed` | `AttributedString?` | `nil` | When set, rendered instead of `desc` |
+| `descAttributed` | `NSAttributedString?` | `nil` | When set, rendered instead of `desc` |
 | `descColor` | `Color?` | `EDTSColor.grey50` | Description text color |
 | `descFontStyle` | `Font?` | `nil` | Explicit font. Takes priority over the name/size/weight parameters |
 | `descFontName` | `String` | `""` | Custom font family name. Ignored if `descFontStyle` is set |
@@ -208,7 +272,7 @@ If `titleFontStyle`, `titleFontName`, `titleFontSize`, and `titleFontWeight` are
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `support` | `String?` | `nil` | Supporting text shown below the description. Ignored when `supportAttributed` is set |
-| `supportAttributed` | `AttributedString?` | `nil` | When set, rendered instead of `support` |
+| `supportAttributed` | `NSAttributedString?` | `nil` | When set, rendered instead of `support` |
 | `supportColor` | `Color?` | `EDTSColor.grey40` | Supporting text color |
 | `supportFontStyle` | `Font?` | `nil` | Explicit font. Takes priority over the name/size/weight parameters |
 | `supportFontName` | `String` | `""` | Custom font family name. Ignored if `supportFontStyle` is set |
@@ -222,6 +286,7 @@ If `titleFontStyle`, `titleFontName`, `titleFontSize`, and `titleFontWeight` are
 |---|---|---|---|
 | `image` | `Image?` | `nil` | Image shown at the top of the dialog. Falls back to the `ic_placeholder` asset when `isDialogImage` is `true` and this is `nil` |
 | `imageSize` | `Double?` | `256` | Width and height of the image (rendered as a square, scaled to fit). Values `<= 0` or `nil` use the default |
+| `imageTintColor` | `Color?` | `nil` | When set, the image is rendered as a template and tinted with this color. When `nil`, the original image colors are kept |
 
 ### Close Button
 
@@ -238,24 +303,19 @@ The close button is inset `16` pt from the top and trailing edges, and pressing 
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `isHasBtnPrimary` | `Bool` | `true` | Show or hide the primary button |
-| `isHasBtnSecondary` | `Bool` | `true` | Show or hide the secondary button |
+| `btnPrimary` | `EDTSButton?` | `nil` | The primary button. Nothing is rendered when `nil`. It carries its own action, which does not dismiss the dialog |
+| `btnSecondary` | `EDTSButton?` | `nil` | The secondary button. Same rules as `btnPrimary` |
+| `isHasBtnPrimary` | `Bool` | `true` | Set to `false` to hide the primary button even when `btnPrimary` is passed |
+| `isHasBtnSecondary` | `Bool` | `true` | Set to `false` to hide the secondary button even when `btnSecondary` is passed |
 | `btnOrientation` | `Orientation` | `.vertical` | `.vertical` stacks buttons (primary on top). `.horizontal` places them side by side (secondary leading, primary trailing) |
-| `btnPrimaryText` | `String?` | `"Button"` | Primary button label |
-| `btnPrimaryState` | `BtnState` | `.default` | Primary button state (for example `.danger`) |
-| `btnSecondaryText` | `String?` | `"Button"` | Secondary button label |
-| `btnSecondaryState` | `BtnState` | `.default` | Secondary button state |
-| `isBtnPositionAtTopLabel` | `Bool?` | `nil` | Place the buttons above the text block. When `nil`, `true` if `isDialogImage` is `true`, otherwise `false` |
-| `onPrimaryTap` | `(() -> Void)?` | `nil` | Called when the primary button is tapped. Does not dismiss the dialog |
-| `onSecondaryTap` | `(() -> Void)?` | `nil` | Called when the secondary button is tapped. Does not dismiss the dialog |
 
-Both buttons are rendered as `EDTSButton` with `.large` size.
+Buttons are always placed below the text. Set `maxWidth: .infinity` on each `EDTSButton` so they fill the available width.
 
 ### Layout Mode
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `isDialogImage` | `Bool` | `false` | Switches to the image layout. |
+| `isDialogImage` | `Bool` | `false` | Switches to the image layout |
 
 ### Background & Shadow
 

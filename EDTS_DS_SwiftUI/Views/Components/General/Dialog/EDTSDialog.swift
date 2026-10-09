@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 // MARK: - View
 
@@ -14,7 +15,7 @@ public struct EDTSDialog: View {
     // MARK: - Properties
 
     public var title: String?
-    public var titleAttributed: AttributedString?
+    public var titleAttributed: NSAttributedString?
     public var titleColor: Color?
     public var titleFontStyle: Font?
     public var titleFontName: String
@@ -23,7 +24,7 @@ public struct EDTSDialog: View {
     public var titleAlignment: TextAlignment?
 
     public var desc: String?
-    public var descAttributed: AttributedString?
+    public var descAttributed: NSAttributedString?
     public var descColor: Color?
     public var descFontStyle: Font?
     public var descFontName: String
@@ -32,7 +33,7 @@ public struct EDTSDialog: View {
     public var descAlignment: TextAlignment?
 
     public var support: String?
-    public var supportAttributed: AttributedString?
+    public var supportAttributed: NSAttributedString?
     public var supportColor: Color?
     public var supportFontStyle: Font?
     public var supportFontName: String
@@ -42,15 +43,14 @@ public struct EDTSDialog: View {
 
     public var image: Image?
     public var imageSize: Double?
+    public var imageTintColor: Color?
 
     public var btnCloseSize: Double
     public var btnCloseTintColor: Color?
 
     public var btnOrientation: Orientation
-    public var btnPrimaryText: String?
-    public var btnPrimaryState: BtnState
-    public var btnSecondaryText: String?
-    public var btnSecondaryState: BtnState
+    public var btnPrimary: EDTSButton?
+    public var btnSecondary: EDTSButton?
 
     public var bgColor: Color?
     public var cornerRadius: Double
@@ -62,7 +62,6 @@ public struct EDTSDialog: View {
     public var isHasBtnClose: Bool?
     public var isHasBtnPrimary: Bool
     public var isHasBtnSecondary: Bool
-    public var isBtnPositionAtTopLabel: Bool?
     public var isDialogImage: Bool
     public var isDismissOnTapOutside: Bool
 
@@ -71,12 +70,12 @@ public struct EDTSDialog: View {
     public var onSecondaryTap: (() -> Void)?
 
     // MARK: - Setup Values
-    
+
     private var contentPadding: Double = 16
     private var closeInset: Double = 16
     private var closeHitAreaMultiplier: Double = 2
     private var defaultImageSize: Double = 256
-    private var imageToContentSpacing: Double = 16
+    private var imageToContentSpacing: Double = 8
     private var buttonsToTextSpacing: Double = 16
     private var buttonsAboveTextSpacing: Double = 24
     private var textToButtonsSpacing: Double = 36
@@ -85,17 +84,13 @@ public struct EDTSDialog: View {
     private var descToSupportSpacing: Double = 4
     private var buttonSpacing: Double = 8
     private var closeRippleOpacity: Double = 0.4
-    
+
     @State private var isCloseRippling = false
-    
+
     var internalDismiss: (() -> Void)?
 
     private var setupHasClose: Bool {
         isHasBtnClose ?? !isDialogImage
-    }
-
-    private var setupBtnAtTop: Bool {
-        isBtnPositionAtTopLabel ?? isDialogImage
     }
 
     private var setupHasImage: Bool {
@@ -125,14 +120,6 @@ public struct EDTSDialog: View {
 
     private var hasSupport: Bool {
         support != nil || supportAttributed != nil
-    }
-
-    private var setupShowPrimary: Bool {
-        isHasBtnPrimary
-    }
-
-    private var setupShowSecondary: Bool {
-        isHasBtnSecondary
     }
 
     private var setupIsHorizontal: Bool {
@@ -177,12 +164,12 @@ public struct EDTSDialog: View {
         }
         return font
     }
-    
+
     // MARK: - Init
 
     public init(
         title: String? = nil,
-        titleAttributed: AttributedString? = nil,
+        titleAttributed: NSAttributedString? = nil,
         titleColor: Color? = nil,
         titleFontStyle: Font? = nil,
         titleFontName: String = "",
@@ -190,7 +177,7 @@ public struct EDTSDialog: View {
         titleFontWeight: String? = nil,
         titleAlignment: TextAlignment? = nil,
         desc: String? = nil,
-        descAttributed: AttributedString? = nil,
+        descAttributed: NSAttributedString? = nil,
         descColor: Color? = nil,
         descFontStyle: Font? = nil,
         descFontName: String = "",
@@ -198,7 +185,7 @@ public struct EDTSDialog: View {
         descFontWeight: String? = nil,
         descAlignment: TextAlignment? = nil,
         support: String? = nil,
-        supportAttributed: AttributedString? = nil,
+        supportAttributed: NSAttributedString? = nil,
         supportColor: Color? = nil,
         supportFontStyle: Font? = nil,
         supportFontName: String = "",
@@ -207,13 +194,12 @@ public struct EDTSDialog: View {
         supportAlignment: TextAlignment? = nil,
         image: Image? = nil,
         imageSize: Double? = nil,
+        imageTintColor: Color? = nil,
         btnCloseSize: Double = 16,
         btnCloseTintColor: Color? = nil,
         btnOrientation: Orientation = .vertical,
-        btnPrimaryText: String? = nil,
-        btnPrimaryState: BtnState = .default,
-        btnSecondaryText: String? = nil,
-        btnSecondaryState: BtnState = .default,
+        btnPrimary: EDTSButton? = nil,
+        btnSecondary: EDTSButton? = nil,
         bgColor: Color? = nil,
         cornerRadius: Double = 12,
         shadowColor: Color? = nil,
@@ -223,12 +209,9 @@ public struct EDTSDialog: View {
         isHasBtnClose: Bool? = nil,
         isHasBtnPrimary: Bool = true,
         isHasBtnSecondary: Bool = true,
-        isBtnPositionAtTopLabel: Bool? = nil,
         isDialogImage: Bool = false,
         isDismissOnTapOutside: Bool = false,
-        onClose: (() -> Void)? = nil,
-        onPrimaryTap: (() -> Void)? = nil,
-        onSecondaryTap: (() -> Void)? = nil
+        onClose: (() -> Void)? = nil
     ) {
         self.title = titleAttributed == nil ? title : nil
         self.titleAttributed = titleAttributed
@@ -256,13 +239,12 @@ public struct EDTSDialog: View {
         self.supportAlignment = supportAlignment
         self.image = image
         self.imageSize = imageSize
+        self.imageTintColor = imageTintColor
         self.btnCloseSize = btnCloseSize
         self.btnCloseTintColor = btnCloseTintColor
         self.btnOrientation = btnOrientation
-        self.btnPrimaryText = btnPrimaryText
-        self.btnPrimaryState = btnPrimaryState
-        self.btnSecondaryText = btnSecondaryText
-        self.btnSecondaryState = btnSecondaryState
+        self.btnPrimary = btnPrimary
+        self.btnSecondary = btnSecondary
         self.bgColor = bgColor
         self.cornerRadius = cornerRadius
         self.shadowColor = shadowColor
@@ -272,12 +254,9 @@ public struct EDTSDialog: View {
         self.isHasBtnClose = isHasBtnClose
         self.isHasBtnPrimary = isHasBtnPrimary
         self.isHasBtnSecondary = isHasBtnSecondary
-        self.isBtnPositionAtTopLabel = isBtnPositionAtTopLabel
         self.isDialogImage = isDialogImage
         self.isDismissOnTapOutside = isDismissOnTapOutside
         self.onClose = onClose
-        self.onPrimaryTap = onPrimaryTap
-        self.onSecondaryTap = onSecondaryTap
     }
 
     // MARK: - Body
@@ -288,17 +267,17 @@ public struct EDTSDialog: View {
 
             if setupHasClose {
                 closeButton
-                    .padding(.top, closeOuterPadding)
-                    .padding(.trailing, closeOuterPadding)
+                    .padding(.top, CGFloat(closeOuterPadding))
+                    .padding(.trailing, CGFloat(closeOuterPadding))
             }
         }
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: cornerRadius)
+            RoundedRectangle(cornerRadius: CGFloat(cornerRadius))
                 .fill(bgColor ?? EDTSColor.white)
                 .shadow(
                     color: (shadowColor ?? .black).opacity(shadowOpacity),
-                    radius: shadowRadius,
+                    radius: CGFloat(shadowRadius),
                     x: shadowOffset.width,
                     y: shadowOffset.height
                 )
@@ -307,46 +286,14 @@ public struct EDTSDialog: View {
 
     private var contentView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Color.clear.frame(height: contentPadding)
+            Color.clear.frame(height: CGFloat(contentPadding))
 
             if setupHasImage {
                 imageView
             }
+            
+            Color.clear.frame(height: setupHasImage ? CGFloat(imageToContentSpacing) : .zero)
 
-            if setupBtnAtTop {
-                Color.clear.frame(height: buttonsToTextSpacing)
-                buttonsView
-                Color.clear.frame(height: buttonsAboveTextSpacing)
-                textBlock
-            } else {
-                Color.clear.frame(height: setupHasImage ? imageToContentSpacing : .zero)
-                textBlock
-                Color.clear.frame(
-                    height: hasSupport
-                        ? textWithSupportToButtonsSpacing
-                        : textToButtonsSpacing
-                )
-                buttonsView
-            }
-
-            Color.clear.frame(height: contentPadding)
-        }
-        .padding(.horizontal, contentPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Subviews
-
-    private var imageView: some View {
-        (image ?? Image("ic_placeholder"))
-            .resizable()
-            .scaledToFit()
-            .frame(width: setupImageSize, height: setupImageSize)
-            .frame(maxWidth: .infinity)
-    }
-
-    private var textBlock: some View {
-        VStack(alignment: .leading, spacing: 0) {
             if hasTitle {
                 label(
                     text: title,
@@ -355,9 +302,62 @@ public struct EDTSDialog: View {
                     color: titleColor ?? EDTSColor.grey70,
                     alignment: setupTitleAlignment
                 )
-                .padding(.trailing, setupHasClose ? btnCloseSize : .zero)
+                .padding(.trailing, setupHasClose ? CGFloat(btnCloseSize) : .zero)
             }
+            
+            scrollableTextBlock
+            Color.clear.frame(
+                height: hasSupport
+                    ? CGFloat(textWithSupportToButtonsSpacing)
+                    : CGFloat(textToButtonsSpacing)
+            )
+            buttonsView
 
+            if isHasBtnPrimary || isHasBtnSecondary {
+                Color.clear.frame(height: CGFloat(contentPadding))
+            }
+        }
+        .padding(.horizontal, CGFloat(contentPadding))
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Subviews
+
+    @ViewBuilder
+    private var imageView: some View {
+        let base = image ?? Image("ic_placeholder")
+
+        Group {
+            if let imageTintColor {
+                base
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(imageTintColor)
+            } else {
+                base
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+            }
+        }
+        .frame(width: CGFloat(setupImageSize), height: CGFloat(setupImageSize))
+        .frame(maxWidth: .infinity)
+    }
+
+    private var scrollableTextBlock: some View {
+        textBlock
+            .hidden()
+            .overlay(
+                ScrollView(.vertical, showsIndicators: true) {
+                    textBlock
+                }
+                .modifier(EDTSScrollBounceModifier())
+            )
+    }
+
+    private var textBlock: some View {
+        VStack(alignment: .leading, spacing: 0) {
             if hasDesc {
                 label(
                     text: desc,
@@ -366,7 +366,7 @@ public struct EDTSDialog: View {
                     color: descColor ?? EDTSColor.grey50,
                     alignment: setupDescAlignment
                 )
-                .padding(.top, hasTitle ? titleToDescSpacing : .zero)
+                .padding(.top, hasTitle ? CGFloat(titleToDescSpacing) : .zero)
             }
 
             if hasSupport {
@@ -377,7 +377,7 @@ public struct EDTSDialog: View {
                     color: supportColor ?? EDTSColor.grey40,
                     alignment: setupSupportAlignment
                 )
-                .padding(.top, (hasTitle || hasDesc) ? descToSupportSpacing : .zero)
+                .padding(.top, (hasTitle || hasDesc) ? CGFloat(descToSupportSpacing) : .zero)
             }
         }
     }
@@ -385,14 +385,14 @@ public struct EDTSDialog: View {
     @ViewBuilder
     private func label(
         text: String?,
-        attributed: AttributedString?,
+        attributed: NSAttributedString?,
         font: Font,
         color: Color,
         alignment: TextAlignment
     ) -> some View {
         Group {
             if let attributed {
-                Text(attributed)
+                makeText(from: attributed)
             } else {
                 Text(text ?? "")
             }
@@ -401,6 +401,32 @@ public struct EDTSDialog: View {
         .foregroundColor(color)
         .multilineTextAlignment(alignment)
         .frame(maxWidth: .infinity, alignment: frameAlignment(for: alignment))
+    }
+
+    private func makeText(from attributed: NSAttributedString) -> Text {
+        var result = Text("")
+        let fullRange = NSRange(location: 0, length: attributed.length)
+
+        attributed.enumerateAttributes(in: fullRange, options: []) { attributes, range, _ in
+            var piece = Text(attributed.attributedSubstring(from: range).string)
+
+            if let uiFont = attributes[.font] as? UIFont {
+                piece = piece.font(Font(uiFont as CTFont))
+            }
+            if let uiColor = attributes[.foregroundColor] as? UIColor {
+                piece = piece.foregroundColor(Color(uiColor))
+            }
+            if let underline = attributes[.underlineStyle] as? Int, underline != 0 {
+                piece = piece.underline()
+            }
+            if let strikethrough = attributes[.strikethroughStyle] as? Int, strikethrough != 0 {
+                piece = piece.strikethrough()
+            }
+
+            result = result + piece
+        }
+
+        return result
     }
 
     private func frameAlignment(for alignment: TextAlignment) -> Alignment {
@@ -413,42 +439,18 @@ public struct EDTSDialog: View {
 
     @ViewBuilder
     private var buttonsView: some View {
-        if setupShowPrimary || setupShowSecondary {
+        if isHasBtnPrimary || isHasBtnSecondary {
             if setupIsHorizontal {
-                HStack(spacing: buttonSpacing) {
-                    if setupShowSecondary { secondaryButton }
-                    if setupShowPrimary { primaryButton }
+                HStack(spacing: CGFloat(buttonSpacing)) {
+                    if isHasBtnSecondary { btnSecondary }
+                    if isHasBtnPrimary { btnPrimary }
                 }
             } else {
-                VStack(spacing: buttonSpacing) {
-                    if setupShowPrimary { primaryButton }
-                    if setupShowSecondary { secondaryButton }
+                VStack(spacing: CGFloat(buttonSpacing)) {
+                    if isHasBtnPrimary { btnPrimary }
+                    if isHasBtnSecondary { btnSecondary }
                 }
             }
-        }
-    }
-
-    private var primaryButton: some View {
-        EDTSButton(
-            btnType: .primary,
-            btnSize: .large,
-            btnState: btnPrimaryState,
-            text: btnPrimaryText ?? "Button",
-            maxWidth: .infinity
-        ) {
-            onPrimaryTap?()
-        }
-    }
-
-    private var secondaryButton: some View {
-        EDTSButton(
-            btnType: .secondary,
-            btnSize: .large,
-            btnState: btnSecondaryState,
-            text: btnSecondaryText ?? "Button",
-            maxWidth: .infinity
-        ) {
-            onSecondaryTap?()
         }
     }
 
@@ -458,19 +460,32 @@ public struct EDTSDialog: View {
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
-                .frame(width: btnCloseSize, height: btnCloseSize)
+                .frame(width: CGFloat(btnCloseSize), height: CGFloat(btnCloseSize))
                 .foregroundColor(btnCloseTintColor ?? EDTSColor.grey50)
                 .circularRippleEffect(size: closeHitSize, color: EDTSColor.grey30.opacity(closeRippleOpacity), trigger: $isCloseRippling)
-                .frame(width: closeHitSize, height: closeHitSize)
+                .frame(width: CGFloat(closeHitSize), height: CGFloat(closeHitSize))
                 .contentShape(Rectangle())
         }
         .buttonStyle(EDTSCloseButtonStyle(isPressed: $isCloseRippling))
-        .accessibilityLabel("Close")
+        .accessibility(label: Text("Close"))
     }
 
     private func handleClose() {
         onClose?()
         internalDismiss?()
+    }
+}
+
+// MARK: - Scroll Bounce Modifier
+
+private struct EDTSScrollBounceModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 16.4, *) {
+            content.scrollBounceBehavior(.basedOnSize)
+        } else {
+            content
+        }
     }
 }
 
@@ -500,7 +515,7 @@ private struct EDTSDialogModifier: ViewModifier {
                     let presented = makeDialog()
 
                     Color.black.opacity(dimOpacity)
-                        .ignoresSafeArea()
+                        .edgesIgnoringSafeArea(.all)
                         .onTapGesture {
                             guard presented.isDismissOnTapOutside else { return }
                             presented.onClose?()
@@ -510,9 +525,9 @@ private struct EDTSDialogModifier: ViewModifier {
                         .transition(.opacity)
 
                     presented
-                        .padding(.horizontal, dialogHorizontalMargin)
+                        .padding(.horizontal, CGFloat(dialogHorizontalMargin))
                         .zIndex(1)
-                        .transition(.scale(scale: presentScale).combined(with: .opacity))
+                        .transition(.scale(scale: CGFloat(presentScale)).combined(with: .opacity))
                 }
             }
             .animation(
@@ -531,7 +546,9 @@ private struct EDTSCloseButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .modifier(EDTSOnChangeModifier(value: configuration.isPressed) { newValue in
-                isPressed = newValue
+                if isPressed != newValue {
+                    isPressed = newValue
+                }
             })
     }
 }
@@ -546,8 +563,12 @@ private struct EDTSOnChangeModifier<Value: Equatable>: ViewModifier {
             content.onChange(of: value) { _, newValue in
                 action(newValue)
             }
-        } else {
+        } else if #available(iOS 14.0, *) {
             content.onChange(of: value) { newValue in
+                action(newValue)
+            }
+        } else {
+            content.onReceive(Just(value)) { newValue in
                 action(newValue)
             }
         }
@@ -568,12 +589,19 @@ public extension View {
 #Preview("Preview") {
     struct PreviewWrapper: View {
         @State private var showBasic = false
+        @State private var showLongText = false
         @State private var showHorizontal = false
         @State private var showImage = false
+
+        private let longText = Array(
+            repeating: "A dialog is a type of modal window that appears in front of app content to provide critical information, or prompt for a decision to be made.",
+            count: 15
+        ).joined(separator: " ")
 
         var body: some View {
             VStack(spacing: 16) {
                 Button("Basic dialog") { showBasic = true }
+                Button("Long text (scrollable)") { showLongText = true }
                 Button("Horizontal buttons") { showHorizontal = true }
                 Button("Image dialog") { showImage = true }
             }
@@ -582,8 +610,40 @@ public extension View {
                 EDTSDialog(
                     title: "Basic dialog title",
                     desc: "A dialog is a type of modal window that appears in front of app content to provide critical information, or prompt for a decision to be made.",
-                    onPrimaryTap: { showBasic = false },
-                    onSecondaryTap: { showBasic = false }
+                    btnPrimary: EDTSButton(
+                        btnType: .primary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showBasic = false }
+                    ),
+                    btnSecondary: EDTSButton(
+                        btnType: .secondary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showBasic = false }
+                    )
+                )
+            }
+            .edtsDialog(isPresented: $showLongText) {
+                EDTSDialog(
+                    title: "Long text dialog",
+                    desc: longText,
+                    btnPrimary: EDTSButton(
+                        btnType: .primary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showLongText = false }
+                    ),
+                    btnSecondary: EDTSButton(
+                        btnType: .secondary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showLongText = false }
+                    )
                 )
             }
             .edtsDialog(isPresented: $showHorizontal) {
@@ -591,11 +651,20 @@ public extension View {
                     title: "Delete this item?",
                     desc: "This action can't be undone.",
                     btnOrientation: .horizontal,
-                    btnPrimaryText: "Delete",
-                    btnPrimaryState: .danger,
-                    btnSecondaryText: "Cancel",
-                    onPrimaryTap: { showHorizontal = false },
-                    onSecondaryTap: { showHorizontal = false }
+                    btnPrimary: EDTSButton(
+                        btnType: .primary,
+                        btnState: .danger,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showHorizontal = false }
+                    ),
+                    btnSecondary: EDTSButton(
+                        btnType: .secondary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showHorizontal = false }
+                    )
                 )
             }
             .edtsDialog(isPresented: $showImage) {
@@ -603,9 +672,21 @@ public extension View {
                     title: "Dialog with image",
                     desc: "Centered layout with the image on top and buttons above the text.",
                     support: "Supporting text sits below the description.",
-                    isDialogImage: true,
-                    onPrimaryTap: { showImage = false },
-                    onSecondaryTap: { showImage = false }
+                    btnPrimary: EDTSButton(
+                        btnType: .primary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showImage = false }
+                    ),
+                    btnSecondary: EDTSButton(
+                        btnType: .secondary,
+                        btnState: .default,
+                        text: "Button",
+                        maxWidth: .infinity,
+                        action: { showImage = false }
+                    ),
+                    isDialogImage: true
                 )
             }
         }
