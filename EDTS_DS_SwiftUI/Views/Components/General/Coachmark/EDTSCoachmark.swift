@@ -25,14 +25,24 @@ public struct EDTSCoachmarkStepConfig {
     public let icon: Image?
     public let title: String?
     public let titleAttributed: AttributedString?
+    public let titleFontStyle: Font?
+    public let titleFontName: String?
+    public let titleFontSize: Double?
+    public let titleFontWeight: String?
     public let description: String?
-    public let descriptionAttributed: AttributedString?
+    public let descAttributed: AttributedString?
+    public let descFontStyle: Font?
+    public let descFontName: String?
+    public let descFontSize: Double?
+    public let descFontWeight: String?
     public let targetID: String
     public let endTargetID: String?
-    public let btnOutlinedText: String?
-    public let btnFilledText: String?
-    public let isBtnOutlinedHide: Bool?
-    public let isBtnFilledHide: Bool?
+    public let btnSecondaryText: String?
+    public let btnPrimaryText: String?
+    public let btnSecondary: EDTSButton?
+    public let btnPrimary: EDTSButton?
+    public let isBtnPrimaryHide: Bool?
+    public let isBtnSecondaryHide: Bool?
     public let contentMargin: CGFloat?
     public let offsetMargin: CGFloat?
     public let spotlightRadius: CGFloat?
@@ -46,14 +56,24 @@ public struct EDTSCoachmarkStepConfig {
         icon: Image? = nil,
         title: String? = nil,
         titleAttributed: AttributedString? = nil,
+        titleFontStyle: Font? = nil,
+        titleFontName: String? = nil,
+        titleFontSize: Double? = nil,
+        titleFontWeight: String? = nil,
         description: String? = nil,
-        descriptionAttributed: AttributedString? = nil,
+        descAttributed: AttributedString? = nil,
+        descFontStyle: Font? = nil,
+        descFontName: String? = nil,
+        descFontSize: Double? = nil,
+        descFontWeight: String? = nil,
         targetID: String,
         endTargetID: String? = nil,
-        btnOutlinedText: String? = nil,
-        btnFilledText: String? = nil,
-        isBtnOutlinedHide: Bool? = nil,
-        isBtnFilledHide: Bool? = nil,
+        btnSecondaryText: String? = nil,
+        btnPrimaryText: String? = nil,
+        btnSecondary: EDTSButton? = nil,
+        btnPrimary: EDTSButton? = nil,
+        isBtnPrimaryHide: Bool? = nil,
+        isBtnSecondaryHide: Bool? = nil,
         contentMargin: CGFloat? = nil,
         offsetMargin: CGFloat? = nil,
         spotlightRadius: CGFloat? = nil,
@@ -66,14 +86,24 @@ public struct EDTSCoachmarkStepConfig {
         self.icon = icon
         self.title = title
         self.titleAttributed = titleAttributed
+        self.titleFontStyle = titleFontStyle
+        self.titleFontName = titleFontName
+        self.titleFontSize = titleFontSize
+        self.titleFontWeight = titleFontWeight
         self.description = description
-        self.descriptionAttributed = descriptionAttributed
+        self.descAttributed = descAttributed
+        self.descFontStyle = descFontStyle
+        self.descFontName = descFontName
+        self.descFontSize = descFontSize
+        self.descFontWeight = descFontWeight
         self.targetID = targetID
         self.endTargetID = endTargetID
-        self.btnOutlinedText = btnOutlinedText
-        self.btnFilledText = btnFilledText
-        self.isBtnOutlinedHide = isBtnOutlinedHide
-        self.isBtnFilledHide = isBtnFilledHide
+        self.btnSecondaryText = btnSecondaryText
+        self.btnPrimaryText = btnPrimaryText
+        self.btnSecondary = btnSecondary
+        self.btnPrimary = btnPrimary
+        self.isBtnSecondaryHide = isBtnSecondaryHide
+        self.isBtnPrimaryHide = isBtnPrimaryHide
         self.contentMargin = contentMargin
         self.offsetMargin = offsetMargin
         self.spotlightRadius = spotlightRadius
@@ -104,9 +134,9 @@ private struct EDTSCoachmarkCardHeightKey: PreferenceKey {
 // MARK: - View
 
 private struct EDTSCoachmarkView: View {
-    
+
     // MARK: Variables
-    
+
     @Binding var isPresented: Bool
     @Binding var currentStep: Int
 
@@ -118,32 +148,66 @@ private struct EDTSCoachmarkView: View {
     let isIconHide: Bool?
     let isDividerHide: Bool?
     let bgColor: Color?
-    let btnOutlinedTint: Color?
-    let btnFilledTint: Color?
     let onDismiss: (() -> Void)?
     let anchors: [String: Anchor<CGRect>]
     let proxy: GeometryProxy
 
+    private let firstStep = 1
     private let dimColor = Color.black.opacity(0.7)
-    private let contentViewWidth: CGFloat = 320
-    private let triangleHeight: CGFloat = 8
-    private let triangleWidth: CGFloat = 12
-    
+    private let cardMinWidth: CGFloat = 320
+    private let defaultContentMargin: CGFloat = 24
+    private let cardCornerRadius: CGFloat = 8
+    private let cardPadding: CGFloat = 16
+    private let cardContentSpacing: CGFloat = 16
+    private let cardTextSpacing: CGFloat = 8
+    private let cardFooterSpacing: CGFloat = 8
+    private let cardFooterTopPaddingWithoutDivider: CGFloat = 8
+    private let cardFooterTopPaddingWithDivider: CGFloat = 16
+    private let cardDividerHeight: CGFloat = 1
+    private let descriptionLineLimit = 3
+    private let cardHeightChangeThreshold: CGFloat = 0.5
+    private let cardShadowOpacity: Double = 0.1
+    private let cardShadowRadius: CGFloat = 4
+    private let cardShadowOffsetY: CGFloat = 2
+    private let iconShadowOpacity: Double = 0.2
+    private let iconShadowRadius: CGFloat = 2
+    private let iconShadowOffsetY: CGFloat = 1
+    private let iconContainerSize: CGFloat = 40
+    private let iconGlyphSize: CGFloat = 24
+
+    private let buttonFontSize: CGFloat = 12
+
+    private let spotlightDefaultRadius: CGFloat = 4
+    private let spotlightDefaultListPadding: CGFloat = 8
+    private let spotlightRangePadding: CGFloat = 16
+    private let spotlightCollapsedSize: CGFloat = 2
+
+    private let arrowHeight: CGFloat = 8
+    private let arrowWidth: CGFloat = 12
+    private let arrowCornerInset: CGFloat = 8
+    private let arrowSpotlightGap: CGFloat = 8
+    private let arrowPlacementExtraClearance: CGFloat = 12
+    private let arrowPlacementBottomClearance: CGFloat = 8
+
+    private let cardFadeDuration: Double = 0.2
+    private let hideDuration: Double = 0.4
+    private let revealAnimation = Animation.timingCurve(0.215, 0.610, 0.355, 1.000, duration: 0.5)
+    private let hideAnimation = Animation.timingCurve(0.550, 0.055, 0.675, 0.190, duration: 0.5)
+    private let cardFadeInAnimation = Animation.easeInOut(duration: 0.2).delay(0.5)
+    private let cardFadeOutAnimation = Animation.easeInOut(duration: 0.2)
+    private let stepTransitionAnimation = Animation.easeInOut(duration: 0.3)
+
     @State private var isRevealed = false
     @State private var cardOpacity: Double = 0
     @State private var cardHeight: CGFloat = 150
     @State private var hasAppeared = false
 
-    // Step
-    
     private var totalSteps: Int { steps.count }
 
     private var step: EDTSCoachmarkStepConfig? {
-        guard currentStep > 0, currentStep <= steps.count else { return nil }
-        return steps[currentStep - 1]
+        guard currentStep >= firstStep, currentStep <= steps.count else { return nil }
+        return steps[currentStep - firstStep]
     }
-    
-    // Frame
 
     private func frame(for id: String?) -> CGRect {
         guard let id, let anchor = anchors[id] else { return .zero }
@@ -153,8 +217,6 @@ private struct EDTSCoachmarkView: View {
     private var targetFrame: CGRect { frame(for: step?.targetID) }
     private var endTargetFrame: CGRect { frame(for: step?.endTargetID) }
 
-    // Setup Value
-    
     private var setupIconHide: Bool {
         if type == .single { return true }
         if let isIconHide { return isIconHide }
@@ -167,13 +229,19 @@ private struct EDTSCoachmarkView: View {
         return EDTSColor.theme == .poinku
     }
 
-    private var setupContentMargin: CGFloat { step?.contentMargin ?? 24 }
-    
-    private var setupSpotlightRadius: CGFloat { step?.spotlightRadius ?? 4 }
+    private var setupContentMargin: CGFloat {
+        step?.contentMargin ?? defaultContentMargin
+    }
+
+    private var setupSpotlightRadius: CGFloat {
+        step?.spotlightRadius ?? spotlightDefaultRadius
+    }
 
     private var setupStepConjunction: String {
         stepConjunction ?? (EDTSColor.theme == .poinku ? "/" : "dari")
     }
+
+    // MARK: - Fonts
 
     private var setupTitleFont: EDTSFont.FontStyle {
         EDTSColor.theme == .poinku ? EDTSFont.Poinku.H3.Medium : EDTSFont.Klik.H1
@@ -199,18 +267,60 @@ private struct EDTSCoachmarkView: View {
         EDTSColor.theme == .poinku ? EDTSColor.grey50 : EDTSColor.grey60
     }
 
-    private var setupOutlinedTextColor: Color {
-        btnOutlinedTint ?? (EDTSColor.theme == .poinku ? EDTSColor.blue30 : EDTSColor.grey60)
-    }
-
-    private var setupOutlinedBorderColor: Color {
-        btnOutlinedTint ?? (EDTSColor.theme == .poinku ? .clear : EDTSColor.grey30)
-    }
-
-    /// Background of the merged card+tail callout shape. Defaults to
-    /// `EDTSColor.white` when the caller doesn't pass `bgColor`.
     private var setupBgColor: Color {
         bgColor ?? EDTSColor.white
+    }
+
+    /// Custom title font from the step config. `nil` means no override, so the theme default is used.
+    private func customTitleFont(_ step: EDTSCoachmarkStepConfig) -> Font? {
+        resolveCustomFont(
+            style: step.titleFontStyle,
+            name: step.titleFontName,
+            size: step.titleFontSize,
+            weight: step.titleFontWeight
+        )
+    }
+
+    /// Custom description font from the step config. `nil` means no override, so the theme default is used.
+    private func customDescriptionFont(_ step: EDTSCoachmarkStepConfig) -> Font? {
+        resolveCustomFont(
+            style: step.descFontStyle,
+            name: step.descFontName,
+            size: step.descFontSize,
+            weight: step.descFontWeight
+        )
+    }
+
+    private func resolveCustomFont(style: Font?, name: String?, size: Double?, weight: String?) -> Font? {
+        if let style {
+            return style
+        }
+
+        let fontName = name ?? ""
+        let fontSize = size ?? .zero
+        let fontWeight = weight ?? ""
+
+        guard !fontName.isEmpty || fontSize > 0 || !fontWeight.isEmpty else {
+            return nil
+        }
+
+        let resolvedSize = fontSize > 0 ? CGFloat(fontSize) : UIFont.systemFontSize
+        var font: Font = fontName.isEmpty ? .system(size: resolvedSize) : .custom(fontName, size: resolvedSize)
+
+        if !fontWeight.isEmpty {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+
+        return font
+    }
+
+    @ViewBuilder
+    private func applyFont<Content: View>(_ content: Content, custom: Font?, fallback: EDTSFont.FontStyle) -> some View {
+        if let custom {
+            content.font(custom)
+        } else {
+            content.edtsFont(fallback)
+        }
     }
 
     // MARK: - Spotlight Geometry
@@ -226,12 +336,12 @@ private struct EDTSCoachmarkView: View {
     private var spotlightTargetRect: CGRect {
         guard let step else { return .zero }
         if step.endTargetID != nil {
-            return unifiedRect(padding: 16)
+            return unifiedRect(padding: spotlightRangePadding)
         }
         if step.isTargetAList {
-            let left = step.spotlightPaddingLeft ?? step.spotlightPadding ?? 8
-            let right = step.spotlightPaddingRight ?? step.spotlightPadding ?? 8
-            let vertical = step.spotlightPadding ?? 8
+            let left = step.spotlightPaddingLeft ?? step.spotlightPadding ?? spotlightDefaultListPadding
+            let right = step.spotlightPaddingRight ?? step.spotlightPadding ?? spotlightDefaultListPadding
+            let vertical = step.spotlightPadding ?? spotlightDefaultListPadding
             return CGRect(
                 x: targetFrame.minX + left,
                 y: targetFrame.minY - vertical,
@@ -245,7 +355,12 @@ private struct EDTSCoachmarkView: View {
     private var displayedSpotlightRect: CGRect {
         guard isRevealed else {
             let target = spotlightTargetRect
-            return CGRect(x: target.midX - 1, y: target.midY - 1, width: 2, height: 2)
+            return CGRect(
+                x: target.midX - spotlightCollapsedSize / 2,
+                y: target.midY - spotlightCollapsedSize / 2,
+                width: spotlightCollapsedSize,
+                height: spotlightCollapsedSize
+            )
         }
         return spotlightTargetRect
     }
@@ -253,12 +368,17 @@ private struct EDTSCoachmarkView: View {
     // MARK: - Tooltip Geometry
 
     private var cardWidth: CGFloat {
-        max(contentViewWidth, proxy.size.width - setupContentMargin * 2)
+        max(cardMinWidth, proxy.size.width - setupContentMargin * 2)
     }
-    
+
     private var arrowPosition: EDTSCoachmarkArrowPosition {
         let spot = spotlightTargetRect
-        let spaceBelow = proxy.size.height - spot.maxY - 12 - cardHeight - triangleHeight - 8
+        let spaceBelow = proxy.size.height
+            - spot.maxY
+            - arrowPlacementExtraClearance
+            - cardHeight
+            - arrowHeight
+            - arrowPlacementBottomClearance
         return spaceBelow < 0 ? .bottom : .top
     }
 
@@ -266,21 +386,23 @@ private struct EDTSCoachmarkView: View {
         step?.offsetMargin ?? setupContentMargin
     }
 
-    private var unitHeight: CGFloat { cardHeight + triangleHeight }
+    private var unitHeight: CGFloat { cardHeight + arrowHeight }
 
     private var unitOriginY: CGFloat {
         let spot = spotlightTargetRect
         return arrowPosition == .top
-            ? spot.maxY + 8
-            : spot.minY - 8 - unitHeight
+            ? spot.maxY + arrowSpotlightGap
+            : spot.minY - arrowSpotlightGap - unitHeight
     }
 
     private var arrowCenterXLocal: CGFloat {
         let spot = spotlightTargetRect
-        let targetCenterXGlobal = step?.endTargetID != nil ? unifiedRect(padding: 16).midX : spot.midX
+        let targetCenterXGlobal = step?.endTargetID != nil
+            ? unifiedRect(padding: spotlightRangePadding).midX
+            : spot.midX
         let targetCenterXLocal = targetCenterXGlobal - unitOriginX
 
-        let cornerClearance = triangleWidth / 2 + 8
+        let cornerClearance = arrowWidth / 2 + arrowCornerInset
         let minX = cornerClearance
         let maxX = cardWidth - cornerClearance
         return min(max(targetCenterXLocal, minX), maxX)
@@ -306,18 +428,23 @@ private struct EDTSCoachmarkView: View {
                         }
                     )
                     .frame(width: cardWidth, alignment: .topLeading)
-                    .padding(.top, arrowAtTop ? triangleHeight : 0)
-                    .padding(.bottom, arrowAtTop ? 0 : triangleHeight)
+                    .padding(.top, arrowAtTop ? arrowHeight : 0)
+                    .padding(.bottom, arrowAtTop ? 0 : arrowHeight)
                     .background(
-                        EDTSCoachmarkCalloutShape(
-                            cornerRadius: 8,
+                        EDTSCoachmarkShape(
+                            cornerRadius: cardCornerRadius,
                             arrowX: arrowCenterXLocal,
                             arrowAtTop: arrowAtTop,
-                            arrowWidth: triangleWidth,
-                            arrowHeight: triangleHeight
+                            arrowWidth: arrowWidth,
+                            arrowHeight: arrowHeight
                         )
                         .fill(setupBgColor)
-                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        .shadow(
+                            color: .black.opacity(cardShadowOpacity),
+                            radius: cardShadowRadius,
+                            x: 0,
+                            y: cardShadowOffsetY
+                        )
                     )
                     .position(x: unitOriginX + cardWidth / 2, y: unitOriginY + unitHeight / 2)
                     .opacity(cardOpacity)
@@ -325,7 +452,7 @@ private struct EDTSCoachmarkView: View {
         }
         .frame(width: proxy.size.width, height: proxy.size.height)
         .onPreferenceChange(EDTSCoachmarkCardHeightKey.self) { newHeight in
-            guard newHeight > 0, abs(newHeight - cardHeight) > 0.5 else { return }
+            guard newHeight > 0, abs(newHeight - cardHeight) > cardHeightChangeThreshold else { return }
             cardHeight = newHeight
         }
         .onAppear { presentIfNeeded() }
@@ -336,7 +463,7 @@ private struct EDTSCoachmarkView: View {
     @ViewBuilder
     private func cardView(_ step: EDTSCoachmarkStepConfig) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: cardContentSpacing) {
                 if !setupIconHide {
                     ZStack {
                         Circle().fill(iconBgColor ?? EDTSColor.grey20)
@@ -344,30 +471,35 @@ private struct EDTSCoachmarkView: View {
                             .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 24, height: 24)
+                            .frame(width: iconGlyphSize, height: iconGlyphSize)
                             .foregroundColor(iconTint ?? EDTSColor.blue50)
                     }
-                    .frame(width: 40, height: 40)
-                    .shadow(color: EDTSColor.grey30.opacity(0.2), radius: 2, x: 0, y: 1)
+                    .frame(width: iconContainerSize, height: iconContainerSize)
+                    .shadow(
+                        color: EDTSColor.grey30.opacity(iconShadowOpacity),
+                        radius: iconShadowRadius,
+                        x: 0,
+                        y: iconShadowOffsetY
+                    )
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: cardTextSpacing) {
                     titleView(step)
                     descriptionView(step)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
+            .padding(.horizontal, cardPadding)
+            .padding(.top, cardPadding)
 
             if !setupDividerHide {
                 Rectangle()
                     .fill(EDTSColor.grey30)
-                    .frame(height: 1)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                    .frame(height: cardDividerHeight)
+                    .padding(.horizontal, cardPadding)
+                    .padding(.top, cardPadding)
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: cardFooterSpacing) {
                 if type != .single {
                     Text("\(currentStep) \(setupStepConjunction) \(totalSteps)")
                         .edtsFont(setupStepFont)
@@ -377,70 +509,109 @@ private struct EDTSCoachmarkView: View {
                 }
 
                 if !hideSkipButton(step) {
-                    EDTSButton(
-                        btnType: .tertiary,
-                        btnSize: .small,
-                        text: step.btnOutlinedText ?? "Tutup",
-                        textColor: setupOutlinedTextColor,
-                        fontSize: 12,
-                        fontWeight: "semibold",
-                        borderColor: setupOutlinedBorderColor
-                    ) {
-                        dismiss()
-                    }
+                    outlinedButton(step)
                 }
 
-                if !(step.isBtnFilledHide ?? false) {
-                    EDTSButton(
-                        btnType: .primary,
-                        btnSize: .small,
-                        text: step.btnFilledText ?? (currentStep == totalSteps ? "Mengerti" : "Berikutnya"),
-                        fontSize: 12,
-                        fontWeight: "semibold",
-                        bgColor: btnFilledTint,
-                        maxWidth: type == .single ? .infinity : nil
-                    ) {
-                        advance()
-                    }
+                if !(step.isBtnPrimaryHide ?? false) {
+                    filledButton(step)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, setupDividerHide ? 8 : 16)
-            .padding(.bottom, 16)
+            .padding(.horizontal, cardPadding)
+            .padding(
+                .top,
+                setupDividerHide
+                    ? cardFooterTopPaddingWithoutDivider
+                    : cardFooterTopPaddingWithDivider
+            )
+            .padding(.bottom, cardPadding)
         }
     }
 
     private func hideSkipButton(_ step: EDTSCoachmarkStepConfig) -> Bool {
         if type == .single { return true }
-        if let explicit = step.isBtnOutlinedHide { return explicit }
+        if let explicit = step.isBtnSecondaryHide { return explicit }
         return currentStep == totalSteps
     }
 
+    // MARK: - Buttons
+
+    @ViewBuilder
+    private func outlinedButton(_ step: EDTSCoachmarkStepConfig) -> some View {
+        if let custom = step.btnSecondary {
+            composedButton(custom) { dismiss() }
+        } else {
+            EDTSButton(
+                btnType: .tertiary,
+                btnSize: .small,
+                text: step.btnSecondaryText ?? "Tutup",
+                textColor: EDTSColor.theme == .poinku ? EDTSColor.blue30 : EDTSColor.blue50,
+                fontSize: buttonFontSize,
+                fontWeight: "semibold",
+                borderColor: EDTSColor.theme == .poinku ? EDTSColor.blue30 : EDTSColor.blue50
+            ) {
+                dismiss()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func filledButton(_ step: EDTSCoachmarkStepConfig) -> some View {
+        if let custom = step.btnPrimary {
+            composedButton(custom) { advance() }
+        } else {
+            EDTSButton(
+                btnType: .primary,
+                btnSize: .small,
+                text: step.btnPrimaryText ?? (currentStep == totalSteps ? "Mengerti" : "Berikutnya"),
+                fontSize: buttonFontSize,
+                fontWeight: "semibold",
+                bgColor: EDTSColor.theme == .poinku ? EDTSColor.blue30 : EDTSColor.blue50,
+                maxWidth: type == .single ? .infinity : nil
+            ) {
+                advance()
+            }
+        }
+    }
+
+    private func composedButton(_ button: EDTSButton, then coachmarkAction: @escaping () -> Void) -> EDTSButton {
+        var composed = button
+        let callerAction = button.action
+        composed.action = {
+            callerAction()
+            coachmarkAction()
+        }
+        return composed
+    }
+
+    // MARK: - Labels
+
     @ViewBuilder
     private func titleView(_ step: EDTSCoachmarkStepConfig) -> some View {
-        Group {
+        let text = Group {
             if let titleAttributed = step.titleAttributed {
                 Text(titleAttributed)
             } else {
                 Text(step.title ?? "")
             }
         }
-        .edtsFont(setupTitleFont)
-        .foregroundColor(setupTitleColor)
+
+        applyFont(text, custom: customTitleFont(step), fallback: setupTitleFont)
+            .foregroundColor(setupTitleColor)
     }
 
     @ViewBuilder
     private func descriptionView(_ step: EDTSCoachmarkStepConfig) -> some View {
-        Group {
-            if let descriptionAttributed = step.descriptionAttributed {
-                Text(descriptionAttributed)
+        let text = Group {
+            if let descAttributed = step.descAttributed {
+                Text(descAttributed)
             } else {
                 Text(step.description ?? "")
             }
         }
-        .edtsFont(setupDescriptionFont)
-        .foregroundColor(setupDescriptionColor)
-        .lineLimit(3)
+
+        applyFont(text, custom: customDescriptionFont(step), fallback: setupDescriptionFont)
+            .foregroundColor(setupDescriptionColor)
+            .lineLimit(descriptionLineLimit)
     }
 
     // MARK: - Actions
@@ -449,10 +620,10 @@ private struct EDTSCoachmarkView: View {
         guard !hasAppeared else { return }
         hasAppeared = true
 
-        withAnimation(.timingCurve(0.215, 0.610, 0.355, 1.000, duration: 0.5)) {
+        withAnimation(revealAnimation) {
             isRevealed = true
         }
-        withAnimation(.easeInOut(duration: 0.2).delay(0.5)) {
+        withAnimation(cardFadeInAnimation) {
             cardOpacity = 1
         }
     }
@@ -461,21 +632,21 @@ private struct EDTSCoachmarkView: View {
         if currentStep >= totalSteps {
             dismiss()
         } else {
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(stepTransitionAnimation) {
                 currentStep += 1
             }
         }
     }
-    
+
     private func dismiss() {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(cardFadeOutAnimation) {
             cardOpacity = 0
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.timingCurve(0.550, 0.055, 0.675, 0.190, duration: 0.4)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + cardFadeDuration) {
+            withAnimation(hideAnimation) {
                 isRevealed = false
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + hideDuration) {
                 isPresented = false
                 onDismiss?()
             }
@@ -497,8 +668,8 @@ private struct EDTSCoachmarkOverlay: ViewModifier {
     let isIconHide: Bool?
     let isDividerHide: Bool?
     let bgColor: Color?
-    let btnOutlinedTint: Color?
-    let btnFilledTint: Color?
+    let btnSecondaryTint: Color?
+    let btnPrimaryTint: Color?
     let onDismiss: (() -> Void)?
 
     func body(content: Content) -> some View {
@@ -517,8 +688,6 @@ private struct EDTSCoachmarkOverlay: ViewModifier {
                             isIconHide: isIconHide,
                             isDividerHide: isDividerHide,
                             bgColor: bgColor,
-                            btnOutlinedTint: btnOutlinedTint,
-                            btnFilledTint: btnFilledTint,
                             onDismiss: onDismiss,
                             anchors: anchors,
                             proxy: proxy
@@ -565,12 +734,14 @@ private struct EDTSCoachmarkSpotlightShape: Shape {
 
 // MARK: - Triangle Arrow Shape
 
-private struct EDTSCoachmarkCalloutShape: Shape {
+private struct EDTSCoachmarkShape: Shape {
     var cornerRadius: CGFloat
     var arrowX: CGFloat
     var arrowAtTop: Bool
     var arrowWidth: CGFloat
     var arrowHeight: CGFloat
+    
+    private let arrowTipRadius: CGFloat = 1
 
     var animatableData: CGFloat {
         get { arrowX }
@@ -584,7 +755,7 @@ private struct EDTSCoachmarkCalloutShape: Shape {
 
         var path = Path(roundedRect: bodyRect, cornerRadius: cornerRadius)
 
-        let topRadius: CGFloat = 1
+        let tipRadius = arrowTipRadius
         let halfWidth = arrowWidth / 2
         var tail = Path()
 
@@ -593,8 +764,8 @@ private struct EDTSCoachmarkCalloutShape: Shape {
             let tipY = rect.minY
             tail.move(to: CGPoint(x: arrowX - halfWidth, y: baseY))
             tail.addLine(to: CGPoint(x: arrowX + halfWidth, y: baseY))
-            let rightControl = CGPoint(x: arrowX + topRadius, y: tipY + topRadius / 2)
-            let leftControl = CGPoint(x: arrowX - topRadius, y: tipY + topRadius / 2)
+            let rightControl = CGPoint(x: arrowX + tipRadius, y: tipY + tipRadius / 2)
+            let leftControl = CGPoint(x: arrowX - tipRadius, y: tipY + tipRadius / 2)
             tail.addLine(to: rightControl)
             tail.addQuadCurve(to: leftControl, control: CGPoint(x: arrowX, y: tipY))
         } else {
@@ -602,8 +773,8 @@ private struct EDTSCoachmarkCalloutShape: Shape {
             let tipY = rect.maxY
             tail.move(to: CGPoint(x: arrowX - halfWidth, y: baseY))
             tail.addLine(to: CGPoint(x: arrowX + halfWidth, y: baseY))
-            let rightControl = CGPoint(x: arrowX + topRadius, y: tipY - topRadius / 2)
-            let leftControl = CGPoint(x: arrowX - topRadius, y: tipY - topRadius / 2)
+            let rightControl = CGPoint(x: arrowX + tipRadius, y: tipY - tipRadius / 2)
+            let leftControl = CGPoint(x: arrowX - tipRadius, y: tipY - tipRadius / 2)
             tail.addLine(to: rightControl)
             tail.addQuadCurve(to: leftControl, control: CGPoint(x: arrowX, y: tipY))
         }
@@ -618,7 +789,7 @@ public extension View {
     func coachmarkTarget(_ id: String) -> some View {
         anchorPreference(key: EDTSCoachmarkAnchorKey.self, value: .bounds) { [id: $0] }
     }
-    
+
     func edtsCoachmark(
         isPresented: Binding<Bool>,
         currentStep: Binding<Int> = .constant(1),
@@ -630,8 +801,8 @@ public extension View {
         isIconHide: Bool? = nil,
         isDividerHide: Bool? = nil,
         bgColor: Color? = nil,
-        btnOutlinedTint: Color? = nil,
-        btnFilledTint: Color? = nil,
+        btnSecondaryTint: Color? = nil,
+        btnPrimaryTint: Color? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         modifier(
@@ -646,8 +817,8 @@ public extension View {
                 isIconHide: isIconHide,
                 isDividerHide: isDividerHide,
                 bgColor: bgColor,
-                btnOutlinedTint: btnOutlinedTint,
-                btnFilledTint: btnFilledTint,
+                btnSecondaryTint: btnSecondaryTint,
+                btnPrimaryTint: btnPrimaryTint,
                 onDismiss: onDismiss
             )
         )
@@ -657,7 +828,7 @@ public extension View {
 // MARK: - Preview
 
 #Preview("Preview") {
-    struct PreviewWrapper: View {
+    struct PreviewMultitpleWrapper: View {
         @State private var showCoachmark = false
         @State private var coachmarkStep = 1
 
@@ -699,7 +870,7 @@ public extension View {
             )
         }
     }
-    return PreviewWrapper()
+    return PreviewMultitpleWrapper()
 }
 
 // MARK: - Preview (Single Type)
@@ -731,7 +902,7 @@ public extension View {
                         title: "Add items here",
                         description: "Tap this button to add the current item to your cart.",
                         targetID: "addToCart",
-                        btnFilledText: "Got it"
+                        btnPrimaryText: "Got it"
                     )
                 ],
                 type: .single
@@ -739,4 +910,87 @@ public extension View {
         }
     }
     return PreviewSingleWrapper()
+}
+
+// MARK: - Preview (Custom Buttons)
+
+#Preview("Custom Buttons") {
+    struct PreviewCustomButtonsWrapper: View {
+        @State private var showCoachmark = false
+        @State private var coachmarkStep = 1
+
+        var body: some View {
+            VStack(spacing: 24) {
+                Spacer()
+
+                Button("Add to cart") {}
+                    .coachmarkTarget("addToCart")
+
+                Button("Show Coachmark") { showCoachmark = true }
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .edtsCoachmark(
+                isPresented: $showCoachmark,
+                currentStep: $coachmarkStep,
+                steps: [
+                    EDTSCoachmarkStepConfig(
+                        title: "Custom buttons",
+                        description: "This step passes its own buttons, so their styles are used.",
+                        targetID: "addToCart",
+                        btnSecondary: EDTSButton(btnType: .secondary, btnSize: .small, text: "Skip") {},
+                        btnPrimary: EDTSButton(btnType: .primary, btnSize: .small, text: "Continue", bgColor: EDTSColor.orange40) {}
+                    ),
+                    EDTSCoachmarkStepConfig(
+                        title: "Default buttons",
+                        description: "This step passes no buttons, so the built-in ones are used.",
+                        targetID: "addToCart"
+                    )
+                ],
+                onDismiss: { coachmarkStep = 1 }
+            )
+        }
+    }
+    return PreviewCustomButtonsWrapper()
+}
+
+// MARK: - Preview (Custom Fonts)
+
+#Preview("Custom Fonts") {
+    struct PreviewCustomFontsWrapper: View {
+        @State private var showCoachmark = false
+
+        var body: some View {
+            VStack(spacing: 24) {
+                Spacer()
+
+                Button("Add to cart") {}
+                    .coachmarkTarget("addToCart")
+
+                Button("Show Coachmark") { showCoachmark = true }
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .edtsCoachmark(
+                isPresented: $showCoachmark,
+                steps: [
+                    EDTSCoachmarkStepConfig(
+                        title: "Bold title",
+                        titleFontName: "Helvetica",
+                        titleFontSize: 18,
+                        titleFontWeight: "bold",
+                        description: "Light description",
+                        descFontName: "Helvetica",
+                        descFontSize: 13,
+                        descFontWeight: "light",
+                        targetID: "addToCart"
+                    )
+                ],
+                type: .single
+            )
+        }
+    }
+    return PreviewCustomFontsWrapper()
 }
