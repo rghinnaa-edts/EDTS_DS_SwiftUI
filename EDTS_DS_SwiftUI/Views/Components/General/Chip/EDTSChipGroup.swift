@@ -34,11 +34,20 @@ public struct EDTSChipGroup: View {
     public var verticalSpacing: CGFloat
     
     // MARK: - Private Variable
+    // MARK: - Private Variable
+    private let minimumColumns: Int = 1
+    private let visibleOpacity: Double = 1
+    private let hiddenOpacity: Double = 0
+    
     private var itemCount: Int {
         dataAttributed.isEmpty ? data.count : dataAttributed.count
     }
     
-    @State private var containerWidth: CGFloat = 0
+    private var isContainerMeasured: Bool {
+        containerWidth > .zero
+    }
+    
+    @State private var containerWidth: CGFloat = .zero
     private var chipConfigurator: ((inout EDTSChip) -> Void)?
     
     // MARK: - Initializers
@@ -130,9 +139,8 @@ public struct EDTSChipGroup: View {
     }
     
     private func gridView(columns: Int) -> some View {
-        let columns = max(1, columns)
-        let isMeasured = containerWidth > 0
-        let cellWidth = max(0, (containerWidth - horizontalSpacing * CGFloat(columns - 1)) / CGFloat(columns))
+        let columns = max(minimumColumns, columns)
+        let cellWidth = max(.zero, (containerWidth - horizontalSpacing * CGFloat(columns - 1)) / CGFloat(columns))
         let rows: [[Int]] = stride(from: 0, to: itemCount, by: columns).map {
             Array($0..<min($0 + columns, itemCount))
         }
@@ -142,13 +150,13 @@ public struct EDTSChipGroup: View {
                 HStack(spacing: horizontalSpacing) {
                     ForEach(rows[rowIndex], id: \.self) { index in
                         chipView(at: index)
-                            .frame(width: isMeasured ? cellWidth : nil, alignment: .leading)
+                            .frame(width: isContainerMeasured ? cellWidth : nil, alignment: .leading)
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .opacity(isMeasured ? 1 : 0)
+        .opacity(isContainerMeasured ? visibleOpacity : hiddenOpacity)
         .background(containerWidthReader)
     }
     
@@ -177,7 +185,7 @@ public struct EDTSChipGroup: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .opacity(containerWidth > 0 ? 1 : 0)
+        .opacity(isContainerMeasured ? visibleOpacity : hiddenOpacity)
         .background(containerWidthReader)
     }
 }
