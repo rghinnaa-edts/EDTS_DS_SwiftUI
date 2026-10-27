@@ -498,7 +498,7 @@ private struct EDTSDialogModifier: ViewModifier {
     var dimOpacity: Double = 0.5
     var presentDuration: Double = 0.25
     var dismissDuration: Double = 0.2
-    var dismissDelay: Double = 0.25
+    var dismissDelay: Double = 0.1
     var presentScale: Double = 0.8
     var dialogHorizontalMargin: Double = 24
 
