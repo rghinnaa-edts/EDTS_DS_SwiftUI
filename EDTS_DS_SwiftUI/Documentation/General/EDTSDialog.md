@@ -19,7 +19,7 @@ The `EDTSDialog` component is a modal dialog that appears in front of app conten
 | Type | Preview |
 |---|---|
 | `default` | ![Default Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,w_300/v1782372942/WhatsApp_GIF_2026-06-25_at_14.27.13_mveimy.gif) |
-| `dialog image` | ![Dialog Image Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,w_300/v1782372942/WhatsApp_GIF_2026-06-25_at_14.28.34_bi31lb.gif) |
+| `dialog image` | ![Dialog Image Preview](https://res.cloudinary.com/dr6cm6n5f/image/upload/c_scale,w_300/v1793092446/WhatsApp_GIF_2026-10-27_at_16.13.17_udy5f5.gif) |
 
 ---
 
