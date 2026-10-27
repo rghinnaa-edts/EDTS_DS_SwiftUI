@@ -139,7 +139,7 @@ EDTSCoachmarkStepConfig(
 )
 ```
 
-You can also pass a ready-made SwiftUI `Font` with `titleFontStyle` / `descFontStyle`, which takes priority over the name, size, and weight. See [Fonts](#fonts) for the full resolution rules.
+You can also pass a ready-made SwiftUI `Font` with `titleFontStyle` / `descFontStyle`, which takes priority over the name, size, and weight.
 
 ### With Custom Buttons
 
@@ -189,7 +189,7 @@ Leave `stepConjunction` unset to use the theme default (`"dari"` for klikIDM, `"
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `icon` | `Image?` | `nil` | Falls back to `Image("ic_placeholder")` from your asset catalog. Only rendered when the icon isn't hidden — see [Theming](#theming-defaults) |
+| `icon` | `Image?` | `nil` | Falls back to `Image("ic_placeholder")` from your asset catalog. Only rendered when the icon isn't hidden. |
 | `title` | `String?` | `nil` | Title text. Ignored if `titleAttributed` is set |
 | `titleAttributed` | `AttributedString?` | `nil` | When set, rendered instead of `title` |
 | `description` | `String?` | `nil` | Description text, clamped to 3 lines. Ignored if `descAttributed` is set |
@@ -207,10 +207,10 @@ Title and description each have their own set of four parameters. Color is not a
 | `titleFontName` | `String?` | `nil` | Custom font name. `nil` or empty uses the system font |
 | `titleFontSize` | `Double?` | `nil` | Point size. `nil` or `0` uses `UIFont.systemFontSize` |
 | `titleFontWeight` | `String?` | `nil` | Weight name, e.g. `"bold"`, `"semibold"`, `"light"` |
-| `descFontStyle` | `Font?` | `nil` | Same as `titleFontStyle`, for the description |
-| `descFontName` | `String?` | `nil` | Same as `titleFontName`, for the description |
-| `descFontSize` | `Double?` | `nil` | Same as `titleFontSize`, for the description |
-| `descFontWeight` | `String?` | `nil` | Same as `titleFontWeight`, for the description |
+| `descFontStyle` | `Font?` | `nil` | A ready-made SwiftUI `Font`. Takes priority over the name, size, and weight below |
+| `descFontName` | `String?` | `nil` | Custom font name. `nil` or empty uses the system font |
+| `descFontSize` | `Double?` | `nil` | Point size. `nil` or `0` uses `UIFont.systemFontSize` |
+| `descFontWeight` | `String?` | `nil` | Weight name, e.g. `"bold"`, `"semibold"`, `"light"` |
 
 #### Buttons
 

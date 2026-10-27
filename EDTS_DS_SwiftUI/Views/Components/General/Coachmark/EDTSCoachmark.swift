@@ -271,7 +271,6 @@ private struct EDTSCoachmarkView: View {
         bgColor ?? EDTSColor.white
     }
 
-    /// Custom title font from the step config. `nil` means no override, so the theme default is used.
     private func customTitleFont(_ step: EDTSCoachmarkStepConfig) -> Font? {
         resolveCustomFont(
             style: step.titleFontStyle,
@@ -281,7 +280,6 @@ private struct EDTSCoachmarkView: View {
         )
     }
 
-    /// Custom description font from the step config. `nil` means no override, so the theme default is used.
     private func customDescriptionFont(_ step: EDTSCoachmarkStepConfig) -> Font? {
         resolveCustomFont(
             style: step.descFontStyle,
@@ -462,8 +460,10 @@ private struct EDTSCoachmarkView: View {
 
     @ViewBuilder
     private func cardView(_ step: EDTSCoachmarkStepConfig) -> some View {
+        let centerContent = shouldCenterContent(step)
+
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top, spacing: cardContentSpacing) {
+            HStack(alignment: centerContent ? .center : .top, spacing: cardContentSpacing) {
                 if !setupIconHide {
                     ZStack {
                         Circle().fill(iconBgColor ?? EDTSColor.grey20)
@@ -482,10 +482,14 @@ private struct EDTSCoachmarkView: View {
                         y: iconShadowOffsetY
                     )
                 }
-
+                
                 VStack(alignment: .leading, spacing: cardTextSpacing) {
-                    titleView(step)
-                    descriptionView(step)
+                    if !centerContent || hasTitle(step) {
+                        titleView(step)
+                    }
+                    if !centerContent || hasDescription(step) {
+                        descriptionView(step)
+                    }
                 }
             }
             .padding(.horizontal, cardPadding)
@@ -612,6 +616,20 @@ private struct EDTSCoachmarkView: View {
         applyFont(text, custom: customDescriptionFont(step), fallback: setupDescriptionFont)
             .foregroundColor(setupDescriptionColor)
             .lineLimit(descriptionLineLimit)
+    }
+    
+    private func hasTitle(_ step: EDTSCoachmarkStepConfig) -> Bool {
+        if let attributed = step.titleAttributed { return !attributed.characters.isEmpty }
+        return !(step.title ?? "").isEmpty
+    }
+
+    private func hasDescription(_ step: EDTSCoachmarkStepConfig) -> Bool {
+        if let attributed = step.descAttributed { return !attributed.characters.isEmpty }
+        return !(step.description ?? "").isEmpty
+    }
+
+    private func shouldCenterContent(_ step: EDTSCoachmarkStepConfig) -> Bool {
+        EDTSColor.theme == .klikIDM && hasTitle(step) != hasDescription(step)
     }
 
     // MARK: - Actions
@@ -828,7 +846,7 @@ public extension View {
 // MARK: - Preview
 
 #Preview("Preview") {
-    struct PreviewMultitpleWrapper: View {
+    struct PreviewMultipleWrapper: View {
         @State private var showCoachmark = false
         @State private var coachmarkStep = 1
 
@@ -870,7 +888,7 @@ public extension View {
             )
         }
     }
-    return PreviewMultitpleWrapper()
+    return PreviewMultipleWrapper()
 }
 
 // MARK: - Preview (Single Type)
