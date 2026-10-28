@@ -44,32 +44,12 @@ This relies on the design token types already available in the pod (`EDTSColor`,
 
 ---
 
-## Setup
-
-Attach the toast host **once** at the root of your view hierarchy. Without it, `EDTSToastManager.toast.show(...)` has nowhere to render.
-
-```swift
-@main
-struct MyApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .edtsToastHost()
-        }
-    }
-}
-```
-
-> `edtsToastHost()` expands the modified view to fill all available space (`maxWidth: .infinity, maxHeight: .infinity`), so attach it to your root view rather than to a small child view.
-
----
-
 ## Basic Usage
 
 ### 1. Minimal Toast
 
 ```swift
-EDTSToastManager.toast.show(
+EDTSToastManager.show(
     EDTSToast(text: "Saved successfully")
 )
 ```
@@ -77,7 +57,7 @@ EDTSToastManager.toast.show(
 ### 2. State and Icon
 
 ```swift
-EDTSToastManager.toast.show(
+EDTSToastManager.show(
     EDTSToast(
         toastState: .danger,
         text: "Something went wrong",
@@ -89,7 +69,7 @@ EDTSToastManager.toast.show(
 ### 3. With Action Button
 
 ```swift
-EDTSToastManager.toast.show(
+EDTSToastManager.show(
     EDTSToast(
         toastState: .danger,
         text: "Failed to upload file",
@@ -120,7 +100,7 @@ EDTSToastManager.toast.show(
 ### 4. With Dismiss Button Icon
 
 ```swift
-EDTSToastManager.toast.show(
+EDTSToastManager.show(
     EDTSToast(
         text: "Item added to cart",
         icon: Image(systemName: "checkmark.circle.fill"),
@@ -137,7 +117,7 @@ EDTSToastManager.toast.show(
             paddingLeading: 0,
             paddingTrailing: 0
         ) {
-            EDTSToastManager.toast.dismiss()
+            EDTSToastManager.dismiss()
         }
     ),
     duration: .indefinite
@@ -149,16 +129,16 @@ EDTSToastManager.toast.show(
 ### 5. Duration
 
 ```swift
-EDTSToastManager.toast.show(EDTSToast(text: "Quick"), duration: .short)          // 1.5s
-EDTSToastManager.toast.show(EDTSToast(text: "Default"), duration: .long)         // 2.75s
-EDTSToastManager.toast.show(EDTSToast(text: "Custom"), duration: .custom(5))     // 5s
-EDTSToastManager.toast.show(EDTSToast(text: "Stays"), duration: .indefinite)     // until dismissed
+EDTSToastManager.show(EDTSToast(text: "Quick"), duration: .short)          // 1.5s
+EDTSToastManager.show(EDTSToast(text: "Default"), duration: .long)         // 2.75s
+EDTSToastManager.show(EDTSToast(text: "Custom"), duration: .custom(5))     // 5s
+EDTSToastManager.show(EDTSToast(text: "Stays"), duration: .indefinite)     // until dismissed
 ```
 
 ### 6. Position, Animation, and Swipe Direction
 
 ```swift
-EDTSToastManager.toast.show(
+EDTSToastManager.show(
     EDTSToast(text: "Top toast"),
     horizontalPadding: 24,
     offsetY: .top(60),
@@ -178,7 +158,7 @@ var attributed: AttributedString {
     return str
 }
 
-EDTSToastManager.toast.show(
+EDTSToastManager.show(
     EDTSToast(text: nil, textAttributed: attributed)
 )
 ```
@@ -188,8 +168,8 @@ When `textAttributed` is non-`nil`, it takes precedence and `text` is ignored (i
 ### 8. Manual Dismiss
 
 ```swift
-EDTSToastManager.toast.dismiss()                  // animated
-EDTSToastManager.toast.dismiss(animated: false)   // immediate
+EDTSToastManager.dismiss()                  // animated
+EDTSToastManager.dismiss(animated: false)   // immediate
 ```
 
 ### 9. Toast as a Standalone View
@@ -229,8 +209,14 @@ public enum EDTSToastSwipeDirection: String {
 }
 
 public enum EDTSToastOffsetDirection {
-    case top(CGFloat)
-    case bottom(CGFloat)
+    case top(Double)
+    case bottom(Double)
+}
+
+public enum EDTSToastDismissEdge {
+    case trailing
+    case top
+    case bottom
 }
 ```
 
@@ -241,6 +227,7 @@ public enum EDTSToastOffsetDirection {
 | `EDTSToastDuration` | `.indefinite` | No auto-dismiss; must be dismissed by swipe, `dismiss()`, or by showing another toast |
 | `EDTSToastDuration` | `.custom(TimeInterval)` | Auto-dismiss after the given number of seconds |
 | `EDTSToastOffsetDirection` | `.top(value)` / `.bottom(value)` | Anchors the toast to the top or bottom edge, `value` pt away from that edge |
+| `EDTSToastDismissEdge` | `.trailing` / `.top` / `.bottom` | The edge the toast is swiped toward when dismissed. Resolved automatically from `swipeDirection` and `offsetY` (`.horizontal` → `.trailing`; `.vertical` → `.top` or `.bottom` to match the anchored edge); you normally don't pass it yourself |
 
 ---
 
@@ -267,18 +254,18 @@ public enum EDTSToastOffsetDirection {
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font`; when set, it's used as-is and `fontName`, `fontSize`, and `fontWeight` are ignored entirely |
-| `fontName` | `String` | `""` | Custom font family name. When set, it builds a `.custom` font and `fontWeight` is not applied |
-| `fontSize` | `CGFloat` | `-1.0` (unset) | Custom font size; resolves to `12` if left unset whenever the custom-font path is active |
+| `fontName` | `String?` | `nil` | Custom font family name. When set, it builds a `.custom` font and `fontWeight` is not applied |
+| `fontSize` | `Double?` | `nil` | Custom font size; resolves to `12` if left `nil` whenever the custom-font path is active |
 | `fontWeight` | `String?` | `nil` | Font weight keyword (ultralight, thin, light, regular, medium, semibold, bold, heavy, black), applied via `setupFontWeight(from:)` to the system font |
 
-> With no custom font set, the label uses `EDTSFont.Poinku.B3.Light` (poinku) or `EDTSFont.Klik.B3.Regular` (klikIDM). Setting any of `fontName`, `fontSize`, or `fontWeight` switches away from the theme default and builds a custom font. Note that when `fontName` is set, `fontWeight` has no effect.
+> With no custom font set, the label uses `EDTSFont.Poinku.B3.Light` (poinku) or `EDTSFont.Klik.B3.Regular` (klikIDM). Setting any of `fontName`, `fontSize`, or `fontWeight` switches away from the theme default and builds a custom font.
 
 #### Background
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `bgColor` | `Color?` | theme/state default (see table below) | Solid background color |
-| `cornerRadius` | `CGFloat` | `8` | Corner radius of the background, border, and clip shape |
+| `cornerRadius` | `Double?` | `nil` → `8` | Corner radius of the background, border, and clip shape |
 
 #### Icon
 
@@ -286,8 +273,8 @@ public enum EDTSToastOffsetDirection {
 | -------------- | ---- | ------- | ----------- |
 | `icon` | `Image?` | `nil` | Icon shown before the label, rendered as a template image |
 | `iconTintColor` | `Color?` | `EDTSColor.white` | Tint applied to `icon` |
-| `iconSize` | `CGFloat` | `16` | Width/height of the icon |
-| `spacing` | `CGFloat` | `8` | Spacing between the icon, label, and trailing actions in the `HStack` |
+| `iconSize` | `Double?` | `nil` → `16` | Width/height of the icon |
+| `spacing` | `Double?` | `nil` → `8` | Spacing between the icon, label, and trailing actions in the `HStack` |
 
 #### Action Slots
 
@@ -300,15 +287,15 @@ public enum EDTSToastOffsetDirection {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `borderWidth` | `CGFloat` | `0` | Stroke width of the toast outline |
+| `borderWidth` | `Double?` | `nil` → `0` | Stroke width of the toast outline |
 | `borderColor` | `Color?` | `.clear` | Stroke color of the toast outline |
 
 #### Shadow
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `shadowOpacity` | `Float` | `1.0` | Multiplier applied on top of `shadowColor`'s own opacity. Pass `0` to remove the shadow |
-| `shadowRadius` | `CGFloat` | `4` | Shadow blur radius |
+| `shadowOpacity` | `Double?` | `nil` → `1.0` | Multiplier applied on top of `shadowColor`'s own opacity. Pass `0` to remove the shadow |
+| `shadowRadius` | `Double?` | `nil` → `4` | Shadow blur radius |
 | `shadowOffset` | `CGSize?` | `nil` → `(0, 2)` | Shadow x/y offset. `nil` falls back to `(0, 2)`; pass `.zero` explicitly for no offset |
 | `shadowColor` | `Color?` | `EDTSColor.grey50` at `18%` opacity | Shadow color |
 
@@ -316,16 +303,19 @@ public enum EDTSToastOffsetDirection {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `paddingTop` | `CGFloat` | `16` | Top content padding |
-| `paddingBottom` | `CGFloat` | `16` | Bottom content padding |
-| `paddingLeading` | `CGFloat` | `16` | Leading content padding |
-| `paddingTrailing` | `CGFloat` | `16` | Trailing content padding |
+| `paddingTop` | `Double?` | `nil` → `16` | Top content padding |
+| `paddingBottom` | `Double?` | `nil` → `16` | Bottom content padding |
+| `paddingLeading` | `Double?` | `nil` → `16` | Leading content padding |
+| `paddingTrailing` | `Double?` | `nil` → `16` | Trailing content padding |
 
 ---
 
 ### `EDTSToastManager`
 
-`EDTSToastManager` is a singleton accessed via `EDTSToastManager.toast`. Only one toast is shown at a time.
+`EDTSToastManager` is a singleton whose functionality is exposed through static methods — `EDTSToastManager.show(...)` and `EDTSToastManager.dismiss(...)` — rather than an instance property. Only one toast is shown at a time.
+
+- `EDTSToastManager` is marked `@MainActor`, so `show(...)` and `dismiss(...)` must be called from the main actor (e.g. from a SwiftUI action or `MainActor.run`).
+- The toast is rendered in its own passthrough `UIWindow` (window level `.alert + 1`) created on the foreground-active `UIWindowScene` (or the first connected scene). Because of this it appears above sheets and full-screen covers, and touches outside the toast pass through to the content beneath. If no window scene is available, nothing is shown.
 
 #### `show(_:duration:horizontalPadding:offsetY:animation:swipeDirection:)`
 
@@ -333,12 +323,12 @@ public enum EDTSToastOffsetDirection {
 | --------- | ---- | ------- | ----------- |
 | `toast` | `EDTSToast` | — (required) | The toast to display |
 | `duration` | `EDTSToastDuration` | `.long` | How long the toast stays before auto-dismissing |
-| `horizontalPadding` | `CGFloat` | `16.0` | Horizontal margin between the toast and the screen edges |
+| `horizontalPadding` | `Double` | `16.0` | Horizontal margin between the toast and the screen edges |
 | `offsetY` | `EDTSToastOffsetDirection` | `.bottom(60.0)` | Which edge the toast anchors to, and its distance from that edge |
 | `animation` | `EDTSToastAnimation` | `.fade` | Show/hide animation style |
 | `swipeDirection` | `EDTSToastSwipeDirection` | `.horizontal` | Direction in which the user can swipe the toast away |
 
-Calling `show` while another toast is visible dismisses the current one immediately (without animation) and replaces it.
+Calling `show` while another toast is visible cancels the pending auto-dismiss timer and replaces the current toast immediately, without a dismiss animation. The new toast is then shown with its own `animation` (it becomes visible after a short `0.05s` delay).
 
 #### `dismiss(animated:)`
 
@@ -346,13 +336,7 @@ Calling `show` while another toast is visible dismisses the current one immediat
 | --------- | ---- | ------- | ----------- |
 | `animated` | `Bool` | `true` | Whether the toast animates out. Also cancels any pending auto-dismiss timer |
 
-#### Host Modifier
-
-| API | Description |
-| --- | ----------- |
-| `View.edtsToastHost()` | Overlays the current toast on top of the modified view (`zIndex 999`). The modified view is expanded to fill all available space, so apply it once at the root of your hierarchy |
-
----
+When `animated` is `true`, the toast is removed after the hide animation finishes (`0.075s` for `.fade`, `0.25s` for `.slide`). When `false`, it is removed immediately. Calling `dismiss` while no toast is visible does nothing.
 
 ## Theme & State Color Defaults
 
@@ -370,7 +354,7 @@ Calling `show` while another toast is visible dismisses the current one immediat
 | `animation` | Curve | Transition |
 | ----------- | ----- | ---------- |
 | `.fade` | Opacity: `.linear`, `0.15s` in / `0.075s` out. Scale: cubic-bezier `(0, 0, 0.2, 1)`, `0.15s`, on show only | Fades in while scaling up from `0.8`; fades out without scaling |
-| `.slide` | `.easeInOut(duration: 0.25)` | Moves in/out from the anchored edge (`.top` slides from top, `.bottom` slides from bottom) |
+| `.slide` | `.easeInOut(duration: 0.25)` | Slides in/out by a full screen height from the anchored edge (`.top` slides from above, `.bottom` slides from below); opacity and scale are not animated |
 
 ### Swipe-to-Dismiss
 
@@ -378,7 +362,7 @@ Calling `show` while another toast is visible dismisses the current one immediat
 | ------ | ----- |
 | `.horizontal` | Toast can only be dragged toward the trailing edge; leftward and vertical movement is ignored |
 | `.vertical` | Toast can only be dragged toward its anchored edge (down for `.bottom`, up for `.top`); the opposite direction and horizontal movement are ignored |
-| Distance threshold | `40%` of screen width (horizontal) / `50pt` (vertical) |
+| Distance threshold | `40%` of the screen width (horizontal) / `50pt` (vertical). Before the screen size has been measured, a fallback of `400 × 800` is used |
 | Momentum threshold | Predicted extra travel of more than `80pt` counts as a fast swipe |
 | Dismiss condition | Either the distance threshold **or** the momentum threshold is met |
 | Dismiss animation | `.easeInOut(duration: 0.25)`, sliding the toast fully off-screen, then removed without further animation |
@@ -389,7 +373,7 @@ Calling `show` while another toast is visible dismisses the current one immediat
 | Aspect | Value |
 | ------ | ----- |
 | Scheduling | A `DispatchWorkItem` is scheduled on the main queue for `duration.timeInterval` seconds |
-| Cancellation | Cancelled by any call to `dismiss(...)`, including the implicit one at the start of `show(...)` |
+| Cancellation | Cancelled by any call to `dismiss(...)`, and also by `show(...)` itself, which cancels the previous timer before presenting the new toast (it does not call `dismiss(...)` internally) |
 | `.indefinite` | No timer is scheduled |
 
 ---

@@ -94,7 +94,7 @@ EDTSSignifier(text: nil, textAttributed: attributed)
 | -------------- | ---- | ------- | ----------- |
 | `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override; takes precedence over `fontName`/`fontSize`/`fontWeight` and the theme default |
 | `fontName` | `String` | `""` | Custom font family name; only takes effect when `fontStyle` is `nil` and either `fontName` or `fontSize` is set |
-| `fontSize` | `CGFloat` | `0` | Custom font size; resolves to `16` if left at `0` (only takes effect under the same condition as `fontName` above) |
+| `fontSize` | `Double` | `0` | Custom font size; resolves to `16` if left at `0` (only takes effect under the same condition as `fontName` above) |
 | `fontWeight` | `String?` | `nil` | Custom font weight keyword, applied via `setupFontWeight(from:)` — **has no effect on its own**: it's only applied when `fontStyle` is `nil` and either `fontName` or `fontSize` is also set, since otherwise the custom font is never built |
 
 > When none of `fontStyle`, `fontName`, `fontSize`, `fontWeight` are customized, the label uses the theme default: `EDTSFont.Poinku.B5.Medium` (poinku) or `EDTSFont.Klik.B4.Semibold` (klikIDM).
@@ -107,34 +107,34 @@ EDTSSignifier(text: nil, textAttributed: attributed)
 | `bgColorStart` | `Color?` | `nil` | Gradient start color; setting either start or end switches the background to a gradient |
 | `bgColorEnd` | `Color?` | `nil` | Gradient end color; setting either start or end switches the background to a gradient |
 | `bgColorOrientation` | `Orientation?` | `.horizontal` | Gradient direction: `.horizontal` (leading→trailing) or `.vertical` (top→bottom) |
-| `cornerRadius` | `CGFloat?` | `nil` | Corner radius of the signifier |
+| `cornerRadius` | `Double?` | `nil` | Corner radius of the signifier |
 
 ### Border
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `borderWidth` | `CGFloat` | `0` | Stroke width of the signifier |
+| `borderWidth` | `Double` | `0` | Stroke width of the signifier |
 | `borderColor` | `Color?` | `EDTSColor.white` (poinku) / `.clear` (klikIDM) | Stroke color, via the `resolvedBorderColor` computed property — used identically by both the badge and indicator views |
 
 ### Shadow
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `shadowOpacity` | `Float` | `0` | Opacity of the shadow |
+| `shadowOpacity` | `Double` | `0` | Opacity of the shadow |
 | `shadowOffset` | `CGSize` | `.zero` | Shadow x/y offset |
-| `shadowRadius` | `CGFloat` | `0` | Shadow blur radius |
+| `shadowRadius` | `Double` | `0` | Shadow blur radius |
 | `shadowColor` | `Color?` | `nil` (resolves to `.clear`) | Shadow color |
 
 ### Padding & Position
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `paddingTop` | `CGFloat?` | `nil` → `0` (poinku) / `1` (klikIDM) | Top inset inside the badge, around the label |
-| `paddingBottom` | `CGFloat?` | `nil` → `0` (poinku) / `1` (klikIDM) | Bottom inset inside the badge, around the label |
-| `paddingLeading` | `CGFloat` | `2` | Leading inset inside the badge |
-| `paddingTrailing` | `CGFloat` | `2` | Trailing inset inside the badge |
-| `offsetX` | `CGFloat` | `2.5` | Horizontal offset, used by the `edtsSignifier` overlay modifier |
-| `offsetY` | `CGFloat` | `4.5` | Vertical offset, used by the `edtsSignifier` overlay modifier |
+| `paddingTop` | `Double?` | `nil` → `0` (poinku) / `1` (klikIDM) | Top inset inside the badge, around the label |
+| `paddingBottom` | `Double?` | `nil` → `0` (poinku) / `1` (klikIDM) | Bottom inset inside the badge, around the label |
+| `paddingLeading` | `Double` | `2` | Leading inset inside the badge |
+| `paddingTrailing` | `Double` | `2` | Trailing inset inside the badge |
+| `offsetX` | `Double` | `2.5` | Horizontal offset, used by the `edtsSignifier` overlay modifier |
+| `offsetY` | `Double` | `4.5` | Vertical offset, used by the `edtsSignifier` overlay modifier |
 
 ### Mode Flags
 
