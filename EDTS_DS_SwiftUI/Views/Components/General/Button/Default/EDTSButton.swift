@@ -89,6 +89,80 @@ public struct EDTSButton: View {
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
     
+    // MARK: - Private Variable
+    private let defaultFontSize: Double = 16
+    private let pressedScale: Double = 0.95
+    private let pressAnimationDuration: Double = 0.1
+    private let rippleOpacity: Double = 0.12
+    
+    private let smallIconSize: Double = 16
+    private let smallIconSpacing: Double = 8
+    private let smallPoinkuPaddingHorizontal: Double = 8
+    private let smallPoinkuPaddingVertical: Double = 4
+    private let smallPoinkuCornerRadius: Double = 4
+    private let smallKlikPaddingHorizontal: Double = 12
+    private let smallKlikPaddingVertical: Double = 6
+    private let smallKlikCornerRadius: Double = 6
+    
+    private let mediumIconSize: Double = 16
+    private let mediumIconSpacing: Double = 8
+    private let mediumPaddingVertical: Double = 8
+    private let mediumPaddingHorizontal: Double = 12
+    private let mediumPoinkuCornerRadius: Double = 4
+    private let mediumKlikCornerRadius: Double = 6
+    
+    private let largeIconSize: Double = 24
+    private let largeIconSpacing: Double = 8
+    private let largePaddingVertical: Double = 8
+    private let largePaddingHorizontal: Double = 12
+    private let largePoinkuCornerRadius: Double = 8
+    private let largeKlikCornerRadius: Double = 6
+    
+    private var resolvedButtonSize: BtnSize {
+        btnSize
+    }
+    
+    private var resolvedButtonType: BtnType {
+        btnType
+    }
+    
+    private var resolvedButtonState: BtnState {
+        btnState
+    }
+    
+    private struct ResolvedValues {
+        var tempIconTintColorLeading: Color?
+        var tempIconTintColorTrailing: Color?
+        var tempTextColor: Color?
+        var tempBgColor: Color?
+        var tempRippleColor: Color?
+        var tempBorderColor: Color?
+        var tempBorderWidth: Double = .zero
+        var tempIconSize: Double = .zero
+        var tempCornerRadius: Double = .zero
+        var tempIconSpacing: Double = .zero
+        var tempPaddingTop: Double = .zero
+        var tempPaddingBottom: Double = .zero
+        var tempPaddingLeading: Double = .zero
+        var tempPaddingTrailing: Double = .zero
+        var tempShadowColor: Color?
+    }
+    
+    private var customFont: Font? {
+        if let fontStyle { return fontStyle }
+        guard !fontName.isEmpty || fontSize != .zero else { return nil }
+        let resolvedSize = fontSize == .zero ? defaultFontSize : fontSize
+        var font: Font = fontName.isEmpty
+            ? .system(size: resolvedSize)
+            : .custom(fontName, size: resolvedSize)
+        if let fontWeight {
+            font = font.weight(setupFontWeight(from: fontWeight))
+        }
+        return font
+    }
+    
+    private let dragCancelThreshold: Double = 44
+    
     // MARK: - Initializers
     public init(
         btnType: BtnType = .primary,
@@ -185,80 +259,6 @@ public struct EDTSButton: View {
         self.paddingTrailing = paddingTrailing
         self.action = action
     }
-    
-    // MARK: - Private Variable
-    private let defaultFontSize: Double = 16
-    private let pressedScale: Double = 0.95
-    private let pressAnimationDuration: Double = 0.1
-    private let rippleOpacity: Double = 0.12
-    
-    private let smallIconSize: Double = 16
-    private let smallIconSpacing: Double = 8
-    private let smallPoinkuPaddingHorizontal: Double = 8
-    private let smallPoinkuPaddingVertical: Double = 4
-    private let smallPoinkuCornerRadius: Double = 4
-    private let smallKlikPaddingHorizontal: Double = 12
-    private let smallKlikPaddingVertical: Double = 6
-    private let smallKlikCornerRadius: Double = 6
-    
-    private let mediumIconSize: Double = 16
-    private let mediumIconSpacing: Double = 8
-    private let mediumPaddingVertical: Double = 8
-    private let mediumPaddingHorizontal: Double = 12
-    private let mediumPoinkuCornerRadius: Double = 4
-    private let mediumKlikCornerRadius: Double = 6
-    
-    private let largeIconSize: Double = 24
-    private let largeIconSpacing: Double = 8
-    private let largePaddingVertical: Double = 8
-    private let largePaddingHorizontal: Double = 12
-    private let largePoinkuCornerRadius: Double = 8
-    private let largeKlikCornerRadius: Double = 6
-    
-    private var resolvedButtonSize: BtnSize {
-        btnSize
-    }
-    
-    private var resolvedButtonType: BtnType {
-        btnType
-    }
-    
-    private var resolvedButtonState: BtnState {
-        btnState
-    }
-    
-    private struct ResolvedValues {
-        var tempIconTintColorLeading: Color?
-        var tempIconTintColorTrailing: Color?
-        var tempTextColor: Color?
-        var tempBgColor: Color?
-        var tempRippleColor: Color?
-        var tempBorderColor: Color?
-        var tempBorderWidth: Double = .zero
-        var tempIconSize: Double = .zero
-        var tempCornerRadius: Double = .zero
-        var tempIconSpacing: Double = .zero
-        var tempPaddingTop: Double = .zero
-        var tempPaddingBottom: Double = .zero
-        var tempPaddingLeading: Double = .zero
-        var tempPaddingTrailing: Double = .zero
-        var tempShadowColor: Color?
-    }
-    
-    private var customFont: Font? {
-        if let fontStyle { return fontStyle }
-        guard !fontName.isEmpty || fontSize != .zero else { return nil }
-        let resolvedSize = fontSize == .zero ? defaultFontSize : fontSize
-        var font: Font = fontName.isEmpty
-            ? .system(size: resolvedSize)
-            : .custom(fontName, size: resolvedSize)
-        if let fontWeight {
-            font = font.weight(setupFontWeight(from: fontWeight))
-        }
-        return font
-    }
-    
-    private let dragCancelThreshold: Double = 44
     
     // MARK: - Body
     public var body: some View {
