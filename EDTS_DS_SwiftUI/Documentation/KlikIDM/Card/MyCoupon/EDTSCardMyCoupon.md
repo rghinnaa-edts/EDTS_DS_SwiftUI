@@ -8,9 +8,10 @@
 
 | Feature / Variation | Preview |
 | ------------------- | ------- |
-| **Default Card** |![Card with leading icon, title, description, badge, and trailing chevron](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1768880622/default_card_e2tql3.gif)|
-| **Liquid Glass Effect iOS 26** |![Card with iOS 26+ glass container effect or custom glass background](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1768880622/liquid_glass_effect_nlcqlt.gif)|
-| **Liquid Glass Effect below iOS 26** |![Card with below iOS 26 glass container effect or custom glass background](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1770104549/liquid_glass_effect_below26_xtbx1h.gif)|
+| **Default Card** |![Card with leading icon, title, description, badge, and trailing chevron](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1793325589/Default_zbqmma.gif)|
+| **Liquid Glass Effect iOS 26** |![Card with iOS 26+ glass container effect or custom glass background](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1793325590/iOS26_vah51d.gif)|
+| **Liquid Glass Effect below iOS 26** |![Card with below iOS 26 glass container effect or custom glass background](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1793325590/iOS15_u3ckbl.gif)|
+| **Custom** |![Card with below iOS 26 glass container effect or custom glass background](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1793325589/Custom_jiajoj.gif)|
 
 ---
 
