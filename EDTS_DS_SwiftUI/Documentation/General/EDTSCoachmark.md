@@ -36,7 +36,24 @@ import EDTS_DS_SwiftUI
 
 ## Usage
 
-### Basic (multi-step)
+Every coachmark needs two things:
+
+1. Tag each view you want to highlight with `.coachmarkTarget(_:)`.
+2. Attach `.edtsCoachmark(...)` **once**, near the root of the screen. It has to sit above every tagged view to see their positions.
+
+The `type` parameter chooses the layout:
+
+| | `.multiple` (default) | `.single` |
+|---|---|---|
+| Steps | Two or more | Exactly one |
+| `currentStep` binding | Required, to track the active step | Not needed |
+| Icon, divider, step counter | Shown (per theme) | Hidden |
+| Buttons | Skip + Next (the last step shows only the finish button) | One action button, full width |
+| Closes when | The last step's button or skip is tapped | The action button is tapped |
+
+### Multiple Steps
+
+Pass two or more steps and a `currentStep` binding (1-indexed). The next button advances `currentStep`; the last step's button and the skip button dismiss the coachmark.
 
 ```swift
 struct ContentView: View {
@@ -68,6 +85,7 @@ struct ContentView: View {
                     targetID: "addToCart"
                 )
             ],
+            type: .multiple,
             onDismiss: { coachmarkStep = 1 }
         )
         .onAppear { showCoachmark = true }
@@ -75,28 +93,41 @@ struct ContentView: View {
 }
 ```
 
-Tag every highlightable view with `.coachmarkTarget(_:)`, then attach `.edtsCoachmark(...)` once near the root of the screen — it needs to sit above every tagged view to see their positions.
+- `type: .multiple` is the default, so you can leave it out.
+- Reset `currentStep` to `1` in `onDismiss` so the tour starts from the beginning the next time you show it.
+- On the last step the primary button reads "Mengerti" and the skip button is hidden, unless you set `btnPrimaryText` or `isBtnSecondaryHide` yourself.
 
 ### Single Step
 
-```swift
-EDTSCoachmarkStepConfig(
-    title: "Title Goes Here",
-    description: "The quick brown fox jumps over the lazy dog",
-    targetID: "someTarget",
-    btnPrimaryText: "Got it"
-)
-```
+Pass one step and set `type: .single`. There is no step counter, so `currentStep` is not needed.
 
 ```swift
-.edtsCoachmark(
-    isPresented: $showCoachmark,
-    steps: [singleStepConfig],
-    type: .single
-)
+struct ContentView: View {
+    @State private var showCoachmark = false
+
+    var body: some View {
+        Button("Add to cart") { }
+            .coachmarkTarget("addToCart")
+            .edtsCoachmark(
+                isPresented: $showCoachmark,
+                steps: [
+                    EDTSCoachmarkStepConfig(
+                        title: "Add to cart",
+                        description: "Add a product to your cart from here.",
+                        targetID: "addToCart",
+                        btnPrimaryText: "Got it"
+                    )
+                ],
+                type: .single
+            )
+            .onAppear { showCoachmark = true }
+    }
+}
 ```
 
-`.single` drops the icon, divider, step counter, and skip button. The action button stretches to the tooltip's full width, and tapping it dismisses the coachmark.
+- `btnPrimaryText` is optional. Without it the button reads "Mengerti".
+- `btnSecondaryText`, `btnSecondary` and `isBtnSecondaryHide` have no effect, because `.single` has no skip button.
+- Tapping the action button dismisses the coachmark. Use `onDismiss` if you need to react to it.
 
 ### Highlighting a Range
 
@@ -263,7 +294,7 @@ func edtsCoachmark(
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `isPresented` | `Binding<Bool>` | — (required) | Shows/hides the whole overlay |
-| `currentStep` | `Binding<Int>` | `.constant(1)` | 1-indexed. Advancing it is animated automatically |
+| `currentStep` | `Binding<Int>` | `.constant(1)` | 1-indexed. Advancing it is animated automatically. Pass a real binding for `.multiple`; `.single` can leave it out |
 | `steps` | `[EDTSCoachmarkStepConfig]` | — (required) | The step list. If empty, the overlay never renders |
 | `onDismiss` | `(() -> Void)?` | `nil` | Called once, after the close animation finishes — on finishing the last step, or tapping skip. Good place to reset `currentStep` back to `1` |
 
