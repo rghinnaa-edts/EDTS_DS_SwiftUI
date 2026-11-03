@@ -141,7 +141,7 @@ public enum BtnSize: String {
 | -------------- | ---- | ------- | ----------- |
 | `fontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font`; when set, it's used as-is and `fontName`, `fontSize`, and `fontWeight` are ignored entirely |
 | `fontName` | `String` | `System font` | Custom font name (falls back to system font if not found) |
-| `fontSize` | `CGFloat` | `Size-dependent` | Font size for title text |
+| `fontSize` | `Double` | `Size-dependent` | Font size for title text |
 | `fontWeight` | `String?` | `Size-dependent` | Font weight (ultralight, thin, light, regular, medium, semibold, bold, heavy, black) |
 
 ### Background
@@ -183,14 +183,14 @@ public enum BtnSize: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `iconSpacing` | `CGFloat` | `8` (all sizes) | Spacing between icon(s) and label in the `HStack` |
-| `iconSize` | `CGFloat` | `16` (small/medium), `24` (large) | Width/height applied to both leading and trailing icons |
+| `iconSpacing` | `Double` | `8` (all sizes) | Spacing between icon(s) and label in the `HStack` |
+| `iconSize` | `Double` | `16` (small/medium), `24` (large) | Width/height applied to both leading and trailing icons |
 
 ### Border
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `borderWidth` | `CGFloat` | `0` (primary), `1` (secondary/tertiary) | Stroke width of the button outline |
+| `borderWidth` | `Double` | `0` (primary), `1` (secondary/tertiary) | Stroke width of the button outline |
 | `borderColor` | `Color?` | theme/type default | Border color in `.default` state |
 | `borderDangerColor` | `Color?` | theme/type default | Border color in `.danger` state |
 | `borderDisabledColor` | `Color?` | theme/type default | Border color in `.disabled` state |
@@ -200,7 +200,7 @@ public enum BtnSize: String {
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `shadowOpacity` | `Double` | `0` | Shadow Opacity |
-| `shadowRadius` | `CGFloat` | `0` | Shadow blur radius |
+| `shadowRadius` | `Double` | `0` | Shadow blur radius |
 | `shadowOffset` | `CGSize` | `.zero` | Shadow x/y offset |
 | `shadowColor` | `Color?` | `nil` | Shadow color in `.default` state |
 | `shadowDangerColor` | `Color?` | `nil`, falls back to `shadowColor` | Shadow color in `.danger` state |
@@ -210,13 +210,14 @@ public enum BtnSize: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `cornerRadius` | `CGFloat` | size/theme default (see table below) | Button Corner radius |
-| `paddingTop` | `CGFloat` | size default | Top content padding |
-| `paddingBottom` | `CGFloat` | size default | Bottom content padding |
-| `paddingLeading` | `CGFloat` | size default | Leading content padding |
-| `paddingTrailing` | `CGFloat` | size default | Trailing content padding |
+| `cornerRadius` | `Double?` | `nil` → size/theme default (see table below) | Button corner radius |
+| `maxWidth` | `Double?` | `nil` (no constraint) | Maximum width of the button, applied via `.frame(maxWidth:)`; when `nil`, the button sizes to its content |
+| `paddingTop` | `Double?` | `nil` → size default | Top content padding |
+| `paddingBottom` | `Double?` | `nil` → size default | Bottom content padding |
+| `paddingLeading` | `Double?` | `nil` → size default | Leading content padding |
+| `paddingTrailing` | `Double?` | `nil` → size default | Trailing content padding |
 
-> All of the above use `-1.0` (or `.zero` for spacing/size values) as an internal "unset" sentinel, so any explicitly-passed value overrides the computed default.
+> `cornerRadius` and the four padding properties are resolved via nil-coalescing (`??`) against their size/theme defaults, rather than a numeric sentinel. `iconSize` and `iconSpacing` (Icon Layout section) still use `.zero` as their internal "unset" sentinel.
 
 ---
 

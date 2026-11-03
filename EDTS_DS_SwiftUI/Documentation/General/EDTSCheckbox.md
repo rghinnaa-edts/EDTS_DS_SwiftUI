@@ -193,17 +193,16 @@ public enum EDTSCheckboxType: String {
 | -------------- | ---- | ------- | ----------- |
 | `titleFontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override for the title; takes precedence over `titleFontName`/`titleFontSize`/`titleFontWeight` and the theme default |
 | `titleFontName` | `String` | `""` | Custom title font family name |
-| `titleFontSize` | `CGFloat` | `0` | Custom title font size |
+| `titleFontSize` | `Double` | `0` | Custom title font size |
 | `titleFontWeight` | `String?` | `nil` | Custom title font weight keyword, applied via `setupFontWeight(from:)` |
 | `descFontStyle` | `Font?` | `nil` | Explicit SwiftUI `Font` override for the description; takes precedence over `descFontName`/`descFontSize`/`descFontWeight` and the theme default |
 | `descFontName` | `String` | `""` | Custom description font family name |
-| `descFontSize` | `CGFloat` | `0` | Custom description font size |
-| `descFontWeight` | `String?` | `nil` | Custom description font weight keyword, applied via `setupFontWeight(from:)` |
+| `descFontSize` | `Double` | `0` | Custom description font size |
+| `descFontWeight` | `String?` | `nil` | Custom description font weight keyword, applied via `setupFontWeight(from:)` — same `descFontName`-ignores-weight and weight-alone-activates-custom-font caveats as `titleFontWeight` above |
 
 When no custom title font is supplied, the title uses `EDTSFont.Poinku.B2.Medium` for `poinku` or `EDTSFont.Klik.B2.Medium` for `klikIDM`.
 
 When no custom description font is supplied, the description uses `EDTSFont.Poinku.B3.Light` for `poinku` or `EDTSFont.Klik.B3.Regular` for `klikIDM`.
-
 ### Icon
 
 | Property Name | Type | Default | Description |
@@ -211,8 +210,8 @@ When no custom description font is supplied, the description uses `EDTSFont.Poin
 | `icon` | `Image?` | `nil` | Custom icon rendered inside the checkbox |
 | `iconTintColorActive` | `Color?` | theme default | Icon tint when `isActive == true` |
 | `iconTintColorInactive` | `Color?` | theme default | Icon tint when `isActive == false` |
-| `iconSize` | `CGFloat` | `16` | Width/height of the icon glyph |
-| `iconPadding` | `CGFloat` | `2` | Padding between the icon glyph and the edge of the checkbox box (used to derive `boxSize` when `boxSize` is left unset) |
+| `iconSize` | `Double` | `16` | Width/height of the icon glyph |
+| `iconPadding` | `Double` | `2` | Padding between the icon glyph and the edge of the checkbox box (used to derive `boxSize` when `boxSize` is left unset) |
 
 The default icon resolution is:
 - `.checked` → `Image("ic_check")`
@@ -226,25 +225,25 @@ The icon is rendered as a template image and resized to `iconSize × iconSize` (
 | -------------- | ---- | ------- | ----------- |
 | `boxBgColorActive` | `Color?` | theme default | Checkbox box background when `isActive == true` |
 | `boxBgColorInactive` | `Color?` | theme default | Checkbox box background when `isActive == false` |
-| `boxCornerRadius` | `CGFloat` | `0` → resolves to `4` | Corner radius of the checkbox box |
-| `boxSize` | `CGFloat` | `0` → resolves to `iconSize + (iconPadding * 2)` (default `20`) | Width/height of the checkbox box |
+| `boxCornerRadius` | `Double?` | `nil` → resolves to `4` | Corner radius of the checkbox box |
+| `boxSize` | `Double?` | `nil` → resolves to `iconSize + (iconPadding * 2)` (default `20`) | Width/height of the checkbox box |
 
 ### Layout
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `spacing` | `CGFloat` | `8` | Spacing between the checkbox box and the title/description content |
-| `textSpacing` | `CGFloat` | `4` | Vertical spacing between title and description |
-| `paddingTop` | `CGFloat` | `0` | Top content padding |
-| `paddingBottom` | `CGFloat` | `0` | Bottom content padding |
-| `paddingLeading` | `CGFloat` | `2` | Leading content padding |
-| `paddingTrailing` | `CGFloat` | `0` | Trailing content padding |
+| `spacing` | `Double?` | `nil` → resolves to `8` | Spacing between the checkbox box and the title/description content |
+| `textSpacing` | `Double?` | `nil` → resolves to `4` | Vertical spacing between title and description |
+| `paddingTop` | `Double` | `0` | Top content padding |
+| `paddingBottom` | `Double` | `0` | Bottom content padding |
+| `paddingLeading` | `Double?` | `nil` → resolves to `2` | Leading content padding |
+| `paddingTrailing` | `Double` | `0` | Trailing content padding |
 
 ### Border
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `borderWidth` | `CGFloat` | `1` | Checkbox border width |
+| `borderWidth` | `Double?` | `nil` → resolves to `1` | Checkbox border width |
 | `borderColorActive` | `Color?` | theme default | Border color when `isActive == true` |
 | `borderColorInactive` | `Color?` | theme default | Border color when `isActive == false` |
 
@@ -278,8 +277,8 @@ The icon is rendered as a template image and resized to `iconSize × iconSize` (
 
 | Aspect | Value |
 | ------ | ----- |
-| Ripple | `.circularRippleEffect(size: 36pt, color: EDTSColor.black.opacity(0.12))` on the checkbox box |
-| Active-state animation | `.easeInOut(duration: 0.25)` when `isActive` changes |
+| Ripple | `.circularRippleEffect(size: resolvedIconContainerSize * 1.8, color: EDTSColor.black.opacity(0.12))` on the checkbox box, manually driven by a `$isRipplePressed` binding toggled from the press gesture (not the modifier's own built-in tap handling). With default sizing (`iconSize: 16`, `iconPadding: 2` → `resolvedIconContainerSize: 20`) this evaluates to `36pt`, but it scales if `boxSize`/`iconSize`/`iconPadding` are customized |
+| Active-state animation | `.easeInOut(duration: 0.25)` when `isActive` changes — applied only to the icon box (background, border); title and description color changes are not animated |
 
 ---
 

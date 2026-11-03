@@ -106,7 +106,7 @@ The badge is drawn as a `.topTrailing` overlay, offset by `badge.offsetX` and `-
 | `iconTintColor` | `Color?` | theme/type default | Tint in `.default` state |
 | `iconDangerTintColor` | `Color?` | theme/type default | Tint in `.danger` state |
 | `iconDisabledTintColor` | `Color?` | theme/type default | Tint in `.disabled` state |
-| `iconSize` | `CGFloat` | `16` (small/medium), `24` (large) | Width/height of the icon glyph |
+| `iconSize` | `Double` | `16` (small/medium), `24` (large) | Width/height of the icon glyph |
 
 ### Background
 
@@ -129,7 +129,7 @@ The badge is drawn as a `.topTrailing` overlay, offset by `badge.offsetX` and `-
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `borderWidth` | `CGFloat` | `0` (primary), `1` (secondary/tertiary) | Stroke width of the button outline |
+| `borderWidth` | `Double` | `0` (primary), `1` (secondary/tertiary) | Stroke width of the button outline |
 | `borderColor` | `Color?` | theme/type default | Border color in `.default` state |
 | `borderDangerColor` | `Color?` | theme/type default | Border color in `.danger` state |
 | `borderDisabledColor` | `Color?` | theme/type default | Border color in `.disabled` state |
@@ -139,7 +139,7 @@ The badge is drawn as a `.topTrailing` overlay, offset by `badge.offsetX` and `-
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
 | `shadowOpacity` | `Double` | `0` | Shadow opacity |
-| `shadowRadius` | `CGFloat` | `0` | Shadow blur radius |
+| `shadowRadius` | `Double` | `0` | Shadow blur radius |
 | `shadowOffset` | `CGSize` | `.zero` | Shadow x/y offset |
 | `shadowColor` | `Color?` | `nil` | Shadow color in `.default` state |
 | `shadowDangerColor` | `Color?` | `nil`, falls back to `shadowColor` | Shadow color in `.danger` state |
@@ -149,11 +149,11 @@ The badge is drawn as a `.topTrailing` overlay, offset by `badge.offsetX` and `-
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `cornerRadius` | `CGFloat` | size/theme default (see table below) | Button corner radius |
-| `paddingTop` | `CGFloat` | size default | Top content padding |
-| `paddingBottom` | `CGFloat` | size default | Bottom content padding |
-| `paddingLeading` | `CGFloat` | size default | Leading content padding |
-| `paddingTrailing` | `CGFloat` | size default | Trailing content padding |
+| `cornerRadius` | `Double?` | `nil` → size/theme default (see table below) | Button corner radius |
+| `paddingTop` | `Double?` | `nil` → size default | Top content padding |
+| `paddingBottom` | `Double?` | `nil` → size default | Bottom content padding |
+| `paddingLeading` | `Double?` | `nil` → size default | Leading content padding |
+| `paddingTrailing` | `Double?` | `nil` → size default | Trailing content padding |
 
 ### Badge
 

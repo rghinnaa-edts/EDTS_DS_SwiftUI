@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct EDTS_DS_SwiftUIApp: App {
+    init() {
+        EDTSColor.theme = .klikIDM
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
