@@ -8,9 +8,9 @@
 
 | Feature / Variation | Preview |
 | ------------------- | ------- |
-| **Vertical** | _Add preview_ |
-| **Horizontal** | _Add preview_ |
-| **Span Grid (2 columns)** | _Add preview_ |
+| **Vertical** | ![Vertical](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1793774321/vertical_tmnx3u.gif) |
+| **Horizontal** | ![Horizontal](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1793774300/horizontal_djqhu8.gif) |
+| **Span Grid (2 columns)** | ![Span Grid (2 columns)](https://res.cloudinary.com/dacnnk5j4/image/upload/w_500,c_scale,q_auto,f_auto/v1793774299/span_z1e1gk.gif) |
 
 ---
 
@@ -160,7 +160,7 @@ public enum CheckboxGroupDisplayMode: Equatable {
 | `data` | `[String]` | `[]` | Plain-text titles, one per checkbox; ignored if `dataAttributed` is non-empty |
 | `dataAttributed` | `[AttributedString]` | `[]` | Rich-text titles, one per checkbox; takes precedence over `data` |
 | `selectedIndices` | `Binding<Set<Int>>` | — | Indices of the currently selected items (required). Updated automatically when a checkbox is tapped |
-| `displayMode` | `CheckboxGroupDisplayMode` | — | Layout of the group: `.vertical`, `.horizontal`, or `.spanGrid(Int)` (required) |
+| `displayMode` | `CheckboxGroupDisplayMode` | .vertical | Layout of the group: `.vertical`, `.horizontal`, or `.spanGrid(Int)` (required) |
 
 ### Layout
 

@@ -55,7 +55,7 @@ public struct EDTSCheckboxGroup: View {
         data: [String] = [],
         dataAttributed: [AttributedString] = [],
         selectedIndices: Binding<Set<Int>>,
-        displayMode: CheckboxGroupDisplayMode,
+        displayMode: CheckboxGroupDisplayMode = .vertical,
         horizontalSpacing: CGFloat = 8,
         verticalSpacing: CGFloat = 8
     ) {
