@@ -240,4 +240,186 @@ public enum ChipState: String {
 
 ---
 
+# EDTSChipGroup
+
+`EDTSChipGroup` is a SwiftUI container that renders a list of [`EDTSChip`](#edtschip) items as a multi-select group. It owns the selection state through a `Binding<Set<Int>>`, toggles each chip's `isActive` on tap, and lays the chips out in one of three display modes: `vertical`, `horizontal`, or `spanGrid` (auto-wrapping or fixed-column).
+
+---
+
+## Preview
+
+| Feature / Variation | Preview |
+| ------------------- | ------- |
+| **Vertical** | ![Vertical Chip Group](https://res.cloudinary.com/dacnnk5j4/image/upload/w_200,c_scale,q_auto,f_auto/v1792658450/vertical_yf8zqp.gif) |
+| **Horizontal** | ![Horizontal Chip Group](https://res.cloudinary.com/dacnnk5j4/image/upload/w_350,c_scale,q_auto,f_auto/v1792658450/horizontal_hbrsqh.gif) |
+| **Span Grid (Auto Wrap)** | ![Span Grid (Auto Wrap) Chip Group](https://res.cloudinary.com/dacnnk5j4/image/upload/w_350,c_scale,q_auto,f_auto/v1792658450/span_grid_oyrcnb.gif) |
+| **Span Grid (Fixed Columns)** | ![Span Grid (Fixed Columns) Chip Group](https://res.cloudinary.com/dacnnk5j4/image/upload/w_350,c_scale,q_auto,f_auto/v1792658450/span_grid_2_uoahqk.png) |
+
+---
+
+## Installation
+
+Add to your `Podfile`:
+
+```ruby
+pod 'EDTS_DS_SwiftUI/Chip Group'
+```
+
+Then import it wherever you use the component:
+
+```swift
+import EDTS_DS_SwiftUI
+```
+
+This relies on `EDTSChip` (and, through it, the design token types `EDTSColor` and `EDTSFont`) already being available in the pod.
+
+---
+
+## Basic Usage
+
+### 1. Auto-Wrapping Grid (Default)
+
+```swift
+struct ExampleView: View {
+    @State private var selected: Set<Int> = []
+
+    var body: some View {
+        EDTSChipGroup(
+            data: ["Fashion", "Electronics", "Groceries", "Home & Living"],
+            selectedIndices: $selected
+        )
+    }
+}
+```
+
+With no `displayMode` supplied, the group uses `.spanGrid()`, which wraps chips onto new rows based on the available width.
+
+### 2. Display Modes
+
+```swift
+// Stacked top-to-bottom, scrolls vertically
+EDTSChipGroup(data: items, selectedIndices: $selected, displayMode: .vertical)
+
+// Single row, scrolls horizontally
+EDTSChipGroup(data: items, selectedIndices: $selected, displayMode: .horizontal)
+
+// Auto-wrapping flow layout
+EDTSChipGroup(data: items, selectedIndices: $selected, displayMode: .spanGrid())
+
+// Fixed number of equal-width columns
+EDTSChipGroup(data: items, selectedIndices: $selected, displayMode: .spanGrid(2))
+```
+
+### 3. Custom Spacing
+
+```swift
+EDTSChipGroup(
+    data: items,
+    selectedIndices: $selected,
+    horizontalSpacing: 12,
+    verticalSpacing: 16
+)
+```
+
+### 4. Attributed Labels
+
+```swift
+var attributedItems: [AttributedString] {
+    ["Fashion", "Electronics", "Groceries"].map { title in
+        var str = AttributedString(title)
+        str.underlineStyle = .single
+        return str
+    }
+}
+
+EDTSChipGroup(
+    dataAttributed: attributedItems,
+    selectedIndices: $selected
+)
+```
+
+When `dataAttributed` is non-empty, it takes precedence and `data` is ignored entirely.
+
+### 5. Customizing Every Chip
+
+Use `configureChip(_:)` to apply any `EDTSChip` property to all chips in the group:
+
+```swift
+EDTSChipGroup(data: items, selectedIndices: $selected)
+    .configureChip { chip in
+        chip.iconLeading = Image(systemName: "star.fill")
+        chip.bgColorActive = EDTSColor.blue40
+        chip.textColorActive = EDTSColor.white
+        chip.cornerRadius = 8
+    }
+```
+
+Two limitations come from `EDTSChip` itself:
+- `text` and `textAttributed` are declared as `let` on `EDTSChip`, so they cannot be changed inside `configureChip`; labels always come from `data` / `dataAttributed`.
+- An icon set through `configureChip` only gets its own tap target and ripple when the matching `onTapLeadingIcon` / `onTapTrailingIcon` closure is also set. Without it, taps on the icon fall through to the chip toggle.
+
+### 6. Reading the Selection
+
+```swift
+@State private var selected: Set<Int> = [0, 2]
+
+EDTSChipGroup(data: items, selectedIndices: $selected)
+
+Text("Selected: \(selected.sorted().map { items[$0] }.joined(separator: ", "))")
+```
+
+`selectedIndices` stores the **index** of each selected chip in `data` / `dataAttributed`, not the label. Selection is multi-select: tapping a chip adds its index if absent, or removes it if present.
+
+---
+
+## Enum
+
+```swift
+public enum ChipGroupDisplayMode: Equatable {
+    case vertical
+    case horizontal
+    case spanGrid(Int? = nil)
+}
+```
+
+| Case | Behavior |
+| ---- | -------- |
+| `.vertical` | Chips stacked in a leading-aligned `VStack` inside a vertical `ScrollView`. Uses `verticalSpacing`; `horizontalSpacing` is not used. |
+| `.horizontal` | Chips in a single `HStack` inside a horizontal `ScrollView`. Uses `horizontalSpacing`; `verticalSpacing` is not used. |
+| `.spanGrid(nil)` / `.spanGrid()` | Auto-wrapping flow layout. Each chip keeps its intrinsic width and wraps to a new row when it no longer fits the container width. Uses both spacings. |
+| `.spanGrid(n)` | Fixed `n` columns. Every cell gets an equal width. `n` is clamped to a minimum of `1`. Uses both spacings. |
+
+---
+
+## Properties Reference
+
+### Data
+
+| Property Name | Type | Default | Description |
+| -------------- | ---- | ------- | ----------- |
+| `data` | `[String]` | `[]` | Plain text labels, one chip per element; ignored if `dataAttributed` is non-empty |
+| `dataAttributed` | `[AttributedString]` | `[]` | Rich text labels, one chip per element; takes precedence over `data` |
+
+### Selection
+
+| Property Name | Type | Default | Description |
+| -------------- | ---- | ------- | ----------- |
+| `selectedIndices` | `Binding<Set<Int>>` | — | Indices of the currently active chips (required). Updated by the group when a chip is tapped |
+
+### Layout
+
+| Property Name | Type | Default | Description |
+| -------------- | ---- | ------- | ----------- |
+| `displayMode` | `ChipGroupDisplayMode` | `.spanGrid()` | Layout mode: `.vertical`, `.horizontal`, or `.spanGrid(Int?)` |
+| `horizontalSpacing` | `CGFloat` | `8` | Spacing between chips in a row (`.horizontal` and `.spanGrid`) |
+| `verticalSpacing` | `CGFloat` | `8` | Spacing between rows (`.vertical` and `.spanGrid`) |
+
+### Customization
+
+| Method | Signature | Description |
+| ------ | --------- | ----------- |
+| `configureChip(_:)` | `(@escaping (inout EDTSChip) -> Void) -> EDTSChipGroup` | Returns a copy of the group that applies the closure to every chip before `isActive` and `onTapChip` are set by the group. The closure receives the chip only, not its index |
+
+---
+
 *For further customization, you can ask UX Engineer or wrap `EDTSChip` in a custom `View` to compose additional behavior as required.*

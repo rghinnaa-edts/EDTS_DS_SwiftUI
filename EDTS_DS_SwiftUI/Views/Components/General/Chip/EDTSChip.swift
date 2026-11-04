@@ -69,8 +69,7 @@ public struct EDTSChip: View {
     public var paddingTrailing: Double?
     
     public var isActive: Bool
-    
-    // MARK: - Delegate
+
     public var onTapChip: (() -> Void)?
     public var onTapLeadingIcon: (() -> Void)?
     public var onTapTrailingIcon: (() -> Void)?
