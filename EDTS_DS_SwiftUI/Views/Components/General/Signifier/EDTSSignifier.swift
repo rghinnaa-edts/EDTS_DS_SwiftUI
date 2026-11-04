@@ -22,7 +22,7 @@ public struct EDTSSignifier: View {
     public var bgColorEnd: Color?
     public var bgColorOrientation: Orientation?
     public var cornerRadius: Double?
-    public var borderWidth: Double
+    public var borderWidth: Double?
     public var borderColor: Color?
     
     public var shadowOpacity: Double
@@ -48,6 +48,8 @@ public struct EDTSSignifier: View {
     private static let klikIndicatorHeight: Double = 8
     private static let klikBadgeHeight: Double = 16
     private static let klikPaddingVertical: Double = 1
+    private static let poinkuBorderWidth: Double = 0
+    private static let klikBorderWidth: Double = 1
     
     private var customFont: Font? {
         if let fontStyle { return fontStyle }
@@ -68,6 +70,7 @@ public struct EDTSSignifier: View {
         var tempFontStyle: Font?
         var tempBgColor: Color?
         var tempBorderColor: Color?
+        var tempBorderWidth: Double = .zero
         var tempPaddingTop: Double = .zero
         var tempPaddingBottom: Double = .zero
     }
@@ -93,7 +96,7 @@ public struct EDTSSignifier: View {
         bgColorEnd: Color? = nil,
         bgColorOrientation: Orientation? = nil,
         cornerRadius: Double? = nil,
-        borderWidth: Double = .zero,
+        borderWidth: Double? = nil,
         borderColor: Color? = nil,
         shadowOpacity: Double = .zero,
         shadowOffset: CGSize = .zero,
@@ -161,7 +164,7 @@ public struct EDTSSignifier: View {
             .frame(minWidth: values.tempHeight, minHeight: values.tempHeight)
             .background(setupBackground(values: values))
             .clipShape(resolvedShape)
-            .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: borderWidth))
+            .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: values.tempBorderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(shadowOpacity),
                 radius: shadowRadius,
@@ -190,7 +193,7 @@ public struct EDTSSignifier: View {
             .frame(width: values.tempHeight, height: values.tempHeight)
             .background(setupBackground(values: values))
             .clipShape(resolvedShape)
-            .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: borderWidth))
+            .overlay(resolvedShape.stroke(values.tempBorderColor ?? .clear, lineWidth: values.tempBorderWidth))
             .shadow(
                 color: (shadowColor ?? .clear).opacity(Double(shadowOpacity)),
                 radius: shadowRadius,
@@ -227,12 +230,14 @@ public struct EDTSSignifier: View {
             values.tempHeight = Self.poinkuHeight
             values.tempFontStyle = EDTSFont.Poinku.B5.Medium.font
             values.tempBorderColor = borderColor ?? EDTSColor.white
+            values.tempBorderWidth = borderWidth ?? Self.poinkuBorderWidth
             values.tempPaddingTop = paddingTop ?? Self.poinkuPaddingVertical
             values.tempPaddingBottom = paddingBottom ?? Self.poinkuPaddingVertical
         } else {
             values.tempHeight = isIndicator ? Self.klikIndicatorHeight : Self.klikBadgeHeight
             values.tempFontStyle = EDTSFont.Klik.B4.Semibold.font
-            values.tempBorderColor = borderColor ?? .clear
+            values.tempBorderColor = borderColor ?? EDTSColor.white
+            values.tempBorderWidth = borderWidth ?? Self.klikBorderWidth
             values.tempPaddingTop = paddingTop ?? Self.klikPaddingVertical
             values.tempPaddingBottom = paddingBottom ?? Self.klikPaddingVertical
         }
@@ -242,7 +247,6 @@ public struct EDTSSignifier: View {
         
         return values
     }
-    
 }
 
 extension View{
