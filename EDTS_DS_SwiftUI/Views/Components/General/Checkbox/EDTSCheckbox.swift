@@ -78,10 +78,7 @@ public struct EDTSCheckbox: View {
     private let defaultPaddingLeading: Double = 2
     private let rippleBleedMultiplier: Double = 1.8
     private let rippleOpacity: Double = 0.12
-    private let rippleGrowDuration: Double = 0.10
-    private let rippleFadeDuration: Double = 0.22
     private let activeStateAnimationDuration: Double = 0.25
-    private let dragCancelThreshold: Double = 44
 
     private var resolvedIcon: Image? {
         if let icon { return icon }
@@ -172,10 +169,6 @@ public struct EDTSCheckbox: View {
     private var hasCustomDescFont: Bool {
         !descFontName.isEmpty || descFontSize != .zero || (descFontWeight?.isEmpty == false)
     }
-    
-    // MARK: - State
-    @State private var isPressed = false
-    @State private var isRipplePressed = false
 
     // MARK: - Initializers
     public init(
@@ -334,7 +327,13 @@ public struct EDTSCheckbox: View {
         .padding(.leading, resolvedPaddingLeading)
         .padding(.trailing, paddingTrailing)
         .contentShape(Rectangle())
-        .simultaneousGesture(setupPressGesture())
+        .circularRippleEffect(
+            size: resolvedIconContainerSize * rippleBleedMultiplier,
+            color: EDTSColor.black.opacity(rippleOpacity),
+            centerX: resolvedPaddingLeading + resolvedIconContainerSize / 2,
+            isEnabled: checkboxState != .disabled,
+            onTap: onTapCheckbox
+        )
     }
 
     @ViewBuilder
@@ -357,7 +356,6 @@ public struct EDTSCheckbox: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: resolvedCornerRadius))
         .contentShape(Rectangle())
-        .circularRippleEffect(size: resolvedIconContainerSize * rippleBleedMultiplier, color: EDTSColor.black.opacity(rippleOpacity), trigger: $isRipplePressed)
         .allowsHitTesting(checkboxState != .disabled)
         .animation(.easeInOut(duration: activeStateAnimationDuration), value: isActive)
     }
@@ -386,28 +384,6 @@ public struct EDTSCheckbox: View {
         }
         .foregroundColor(color)
         .font(font)
-    }
-
-    // MARK: - Gesture
-    private func setupPressGesture() -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { _ in
-                guard checkboxState != .disabled else { return }
-                if !isPressed {
-                    isPressed = true
-                    isRipplePressed = true
-                }
-            }
-            .onEnded { value in
-                guard checkboxState != .disabled else { return }
-                isPressed = false
-                isRipplePressed = false
-
-                let withinBounds = abs(value.translation.width) < dragCancelThreshold && abs(value.translation.height) < dragCancelThreshold
-                if withinBounds {
-                    onTapCheckbox?()
-                }
-            }
     }
 }
 
