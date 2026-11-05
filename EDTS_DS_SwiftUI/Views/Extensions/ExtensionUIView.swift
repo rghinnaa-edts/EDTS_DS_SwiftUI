@@ -185,6 +185,16 @@ extension View {
     ) -> some View {
         modifier(CircularRippleModifier(size: size, color: color, trigger: trigger))
     }
+    
+    @ViewBuilder
+    public func edtsOnChange<V: Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
+        if #available(iOS 17.0, *) {
+            self.onChange(of: value, initial: true) { _, newValue in action(newValue) }
+        } else {
+            self.onChange(of: value) { action($0) }
+                .onAppear { action(value) }
+        }
+    }
 }
 
 // MARK: - Ripple Animation
