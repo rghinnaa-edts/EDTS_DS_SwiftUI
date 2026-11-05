@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-//import UIKit
 
 // MARK: - Public API
 public enum TrayHeightMode {
@@ -17,11 +16,11 @@ public enum TrayHeightMode {
 
 public struct EDTSTrayConfiguration {
     public var dragHandleColor: Color = EDTSColor.grey30
-    public var sheetBackgroundColor: Color = .white
+    public var sheetBgColor: Color = EDTSColor.white
     public var cornerRadius: CGFloat = 16
-    public var overlayColor: Color = Color.black.opacity(0.75)
+    public var overlayColor: Color = EDTSColor.black.opacity(0.75)
 
-    public var shadowColor: Color = .black
+    public var shadowColor: Color = EDTSColor.black
     public var shadowOpacity: Float = 0.2
     public var shadowRadius: CGFloat = 12
     public var shadowOffset: CGSize = CGSize(width: 0, height: -2)
@@ -35,6 +34,7 @@ public struct EDTSTrayConfiguration {
     public init() {}
 }
 
+// MARK: - Extension
 public extension View {
     func edtsTray<Content: View>(
         isPresented: Binding<Bool>,
@@ -55,7 +55,7 @@ public extension View {
     }
 }
 
-// MARK: - Presenter (bridges SwiftUI state <-> modal presentation)
+// MARK: - Presenter
 private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     let heightMode: TrayHeightMode
@@ -134,7 +134,7 @@ private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
 
             let delegate = EDTSTrayTransitioningDelegate(heightMode: parent.heightMode,
                                                          configuration: parent.configuration)
-            host.trayDelegate = delegate          // transitioningDelegate is weak, so retain it here
+            host.trayDelegate = delegate 
             host.modalPresentationStyle = .custom
             host.transitioningDelegate = delegate
             host.onDidDismiss = { [weak self] in self?.handleDidDismiss() }
@@ -154,10 +154,6 @@ private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
             parent?.onDismiss?()
         }
     }
-}
-
-private extension UIViewController {
-    var edtsTopMost: UIViewController { presentedViewController?.edtsTopMost ?? self }
 }
 
 // MARK: - Hosting controller
@@ -182,8 +178,7 @@ private final class EDTSTrayHostingController<Content: View>: UIHostingControlle
     }
 }
 
-// MARK: - Root view (measures content for .wrapContent)
-
+// MARK: - Root view
 private struct TrayHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
@@ -213,7 +208,6 @@ private struct TrayRootView<Content: View>: View {
 }
 
 // MARK: - Transitioning delegate
-
 private final class EDTSTrayTransitioningDelegate: NSObject, UIViewControllerTransitioningDelegate {
     private let heightMode: TrayHeightMode
     private let configuration: EDTSTrayConfiguration
@@ -233,14 +227,13 @@ private final class EDTSTrayTransitioningDelegate: NSObject, UIViewControllerTra
     }
 }
 
-// MARK: - Presentation controller (same behaviour as the UIKit EDTSTray)
-
+// MARK: - Presentation controller
 private final class EDTSTrayPresentationController: UIPresentationController, UIGestureRecognizerDelegate {
 
     var heightMode: TrayHeightMode = .wrapContent
 
-    private var dragHandleColor: UIColor = .systemGray3
-    private var sheetBackgroundColor: UIColor = .white
+    private var dragHandleColor: UIColor = UIColor(EDTSColor.grey30)
+    private var sheetBgColor: UIColor = .white
     private var cornerRadius: CGFloat = 16
     private var overlayColor: UIColor = UIColor.black.withAlphaComponent(0.75)
     private var shadowColor: UIColor = .black
@@ -280,7 +273,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
 
     func apply(_ c: EDTSTrayConfiguration) {
         dragHandleColor = UIColor(c.dragHandleColor)
-        sheetBackgroundColor = UIColor(c.sheetBackgroundColor)
+        sheetBgColor = UIColor(c.sheetBgColor)
         cornerRadius = c.cornerRadius
         overlayColor = UIColor(c.overlayColor)
         shadowColor = UIColor(c.shadowColor)
@@ -351,7 +344,6 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     }
 
     // MARK: Transition
-
     override func presentationTransitionWillBegin() {
         guard let container = containerView, let presented = presentedView else { return }
 
@@ -371,7 +363,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
             container.insertSubview(shadowView, aboveSubview: dimmingView)
         }
 
-        presented.backgroundColor = sheetBackgroundColor
+        presented.backgroundColor = sheetBgColor
         presented.layer.cornerRadius = cornerRadius
         presented.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         presented.layer.masksToBounds = true
@@ -413,7 +405,6 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     }
 
     // MARK: Dismiss gestures
-
     private func dismissOffscreen() {
         guard let presented = presentedView else { return }
 
@@ -481,7 +472,6 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     }
 
     // MARK: UIGestureRecognizerDelegate
-
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         guard let presented = presentedView else { return false }
         return touch.location(in: presented).y <= Self.dragAreaHeight
@@ -489,19 +479,16 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
 }
 
 //  EDTSTrayPreviewExample.swift
-
 import Combine
 
 // MARK: - Variants
-
 private enum TrayDemoVariant: String {
     case standard = "Default"
     case customized = "Full custom"
     case noOverlay = "No overlay"
 }
 
-// MARK: - Demo model (drives canDismiss / onDismissAttempt)
-
+// MARK: - Demo model
 private final class TrayDemoModel: ObservableObject {
     @Published var allowDismiss = false
     @Published var blockedAttempts = 0
@@ -513,7 +500,6 @@ private final class TrayDemoModel: ObservableObject {
 }
 
 // MARK: - Screen
-
 public struct EDTSTrayDemoScreen: View {
     public init() {}
 
@@ -552,7 +538,6 @@ public struct EDTSTrayDemoScreen: View {
 }
 
 // MARK: - Button + tray
-
 private struct TrayDemoButton: View {
     let variant: TrayDemoVariant
     let heightMode: TrayHeightMode
@@ -590,7 +575,7 @@ private struct TrayDemoButton: View {
 
         case .customized:
             config.dragHandleColor = Color.white.opacity(0.6)
-            config.sheetBackgroundColor = Color(red: 0.10, green: 0.12, blue: 0.30)
+            config.sheetBgColor = Color(red: 0.10, green: 0.12, blue: 0.30)
             config.cornerRadius = 32
             config.overlayColor = Color.indigo.opacity(0.45)
             config.isHasDragHandle = true
@@ -613,7 +598,6 @@ private struct TrayDemoButton: View {
 }
 
 // MARK: - Tray content
-
 private struct TrayDemoContent: View {
     let variant: TrayDemoVariant
     let heightMode: TrayHeightMode
@@ -697,7 +681,6 @@ private struct TrayDemoContent: View {
 }
 
 // MARK: - Preview
-
 struct EDTSTrayDemoScreen_Previews: PreviewProvider {
     static var previews: some View {
         EDTSTrayDemoScreen()
