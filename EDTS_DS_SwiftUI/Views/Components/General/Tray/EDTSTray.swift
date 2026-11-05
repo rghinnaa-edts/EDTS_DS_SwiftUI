@@ -189,17 +189,27 @@ private struct TrayRootView<Content: View>: View {
     let isWrapContent: Bool
     let onContentHeight: (CGFloat) -> Void
 
+    @State private var measuredHeight: CGFloat = 0
+
     var body: some View {
         if isWrapContent {
-            content
-                .fixedSize(horizontal: false, vertical: true)
-                .background(
-                    GeometryReader { proxy in
-                        Color.clear.preference(key: TrayHeightKey.self, value: proxy.size.height)
-                    }
-                )
-                .frame(maxWidth: .infinity, alignment: .top)
-                .onPreferenceChange(TrayHeightKey.self) { onContentHeight($0) }
+            ScrollView(.vertical, showsIndicators: false) {
+                content
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(key: TrayHeightKey.self, value: proxy.size.height)
+                        }
+                    )
+            }
+            .frame(maxHeight: measuredHeight > 0 ? measuredHeight : nil)
+            .fixedSize(horizontal: false, vertical: measuredHeight <= 0)
+            .frame(maxWidth: .infinity, alignment: .top)
+            .onPreferenceChange(TrayHeightKey.self) { height in
+                guard height > 0 else { return }
+                measuredHeight = height
+                onContentHeight(height)
+            }
         } else {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

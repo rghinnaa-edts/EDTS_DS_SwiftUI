@@ -17,9 +17,9 @@
 
 | Feature / Variation | Preview |
 | ------------------- | ------- |
-| **Gradient Border** | *(add preview)* |
-| **Neon Pulse** | *(add preview)* |
-| **Card Selected** | *(add preview)* |
+| **Animate Card Selected** | ![Animate Card Selected](https://res.cloudinary.com/dacnnk5j4/image/upload/w_200,c_scale,q_auto,f_auto/v1793094259/card_selected_animation_l8fpad.gif) |
+| **Gradient Border** | ![Gradient Border](https://res.cloudinary.com/dacnnk5j4/image/upload/w_200,c_scale,q_auto,f_auto/v1784874442/gradient_border_n6tevb.gif) |
+| **Neon Pulse** | ![Neon Pulse](https://res.cloudinary.com/dacnnk5j4/image/upload/w_200,c_scale,q_auto,f_auto/v1784874441/neon_pulse_b9fn46.gif) |
 
 ---
 
