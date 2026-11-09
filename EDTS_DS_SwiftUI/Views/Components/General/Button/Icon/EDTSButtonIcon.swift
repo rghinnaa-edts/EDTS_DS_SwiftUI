@@ -53,6 +53,51 @@ public struct EDTSButtonIcon: View {
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
 
+    // MARK: - Private Variable
+    private static let cornerRadiusPoinku: Double = 8
+    private static let cornerRadiusKlik: Double = 4
+    private static let iconSizeSmall: Double = 16
+    private static let iconSizeMedium: Double = 16
+    private static let iconSizeLarge: Double = 24
+    private static let paddingSmall: Double = 4
+    private static let paddingSmallHorizontalKlik: Double = 8
+    private static let paddingMediumPoinku: Double = 6
+    private static let paddingMediumKlik: Double = 8
+    private static let paddingLarge: Double = 8
+    private static let rippleOpacity: Double = 0.12
+    private static let borderWidthDefault: Double = 1
+    private static let pressedScale: Double = 0.95
+    private static let restingScale: Double = 1.0
+    private static let pressAnimationDuration: Double = 0.1
+    private let dragCancelThreshold: Double = 44
+    
+    private var resolvedButtonSize: BtnSize {
+        btnSize
+    }
+
+    private var resolvedButtonType: BtnType {
+        btnType
+    }
+
+    private var resolvedButtonState: BtnState {
+        btnState
+    }
+
+    private struct ResolvedValues {
+        var tempIconTintColor: Color?
+        var tempBgColor: Color?
+        var tempRippleColor: Color?
+        var tempBorderColor: Color?
+        var tempBorderWidth: Double = .zero
+        var tempIconSize: Double = .zero
+        var tempCornerRadius: Double = .zero
+        var tempPaddingTop: Double = .zero
+        var tempPaddingBottom: Double = .zero
+        var tempPaddingLeading: Double = .zero
+        var tempPaddingTrailing: Double = .zero
+        var tempShadowColor: Color?
+    }
+
     // MARK: - Initializers
     public init(
         btnType: BtnType = .primary,
@@ -120,51 +165,6 @@ public struct EDTSButtonIcon: View {
         self.paddingTrailing = paddingTrailing
         self.badge = badge
         self.action = action
-    }
-
-    // MARK: - Private Variable
-    private static let cornerRadiusPoinku: Double = 8
-    private static let cornerRadiusKlik: Double = 4
-    private static let iconSizeSmall: Double = 16
-    private static let iconSizeMedium: Double = 16
-    private static let iconSizeLarge: Double = 24
-    private static let paddingSmall: Double = 4
-    private static let paddingSmallHorizontalKlik: Double = 8
-    private static let paddingMediumPoinku: Double = 6
-    private static let paddingMediumKlik: Double = 8
-    private static let paddingLarge: Double = 8
-    private static let rippleOpacity: Double = 0.12
-    private static let borderWidthDefault: Double = 1
-    private static let pressedScale: Double = 0.95
-    private static let restingScale: Double = 1.0
-    private static let pressAnimationDuration: Double = 0.1
-    private let dragCancelThreshold: Double = 44
-    
-    private var resolvedButtonSize: BtnSize {
-        btnSize
-    }
-
-    private var resolvedButtonType: BtnType {
-        btnType
-    }
-
-    private var resolvedButtonState: BtnState {
-        btnState
-    }
-
-    private struct ResolvedValues {
-        var tempIconTintColor: Color?
-        var tempBgColor: Color?
-        var tempRippleColor: Color?
-        var tempBorderColor: Color?
-        var tempBorderWidth: Double = .zero
-        var tempIconSize: Double = .zero
-        var tempCornerRadius: Double = .zero
-        var tempPaddingTop: Double = .zero
-        var tempPaddingBottom: Double = .zero
-        var tempPaddingLeading: Double = .zero
-        var tempPaddingTrailing: Double = .zero
-        var tempShadowColor: Color?
     }
 
     // MARK: - Body
