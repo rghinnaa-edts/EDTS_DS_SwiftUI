@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 
 // MARK: - View
 
@@ -84,8 +83,6 @@ public struct EDTSDialog: View {
     private var descToSupportSpacing: Double = 4
     private var buttonSpacing: Double = 8
     private var closeRippleOpacity: Double = 0.4
-
-    @State private var isCloseRippling = false
 
     var internalDismiss: (() -> Void)?
 
@@ -455,19 +452,20 @@ public struct EDTSDialog: View {
     }
 
     private var closeButton: some View {
-        Button(action: handleClose) {
-            Image("ic_close")
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .frame(width: CGFloat(btnCloseSize), height: CGFloat(btnCloseSize))
-                .foregroundColor(btnCloseTintColor ?? EDTSColor.grey50)
-                .circularRippleEffect(size: closeHitSize, color: EDTSColor.grey30.opacity(closeRippleOpacity), trigger: $isCloseRippling)
-                .frame(width: CGFloat(closeHitSize), height: CGFloat(closeHitSize))
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(EDTSCloseButtonStyle(isPressed: $isCloseRippling))
-        .accessibility(label: Text("Close"))
+        Image("ic_close")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: CGFloat(btnCloseSize), height: CGFloat(btnCloseSize))
+            .foregroundColor(btnCloseTintColor ?? EDTSColor.grey50)
+            .frame(width: CGFloat(closeHitSize), height: CGFloat(closeHitSize))
+            .contentShape(Rectangle())
+            .circularRippleEffect(
+                size: CGFloat(closeHitSize),
+                color: EDTSColor.grey30.opacity(closeRippleOpacity),
+                onTap: handleClose
+            )
+            .accessibility(label: Text("Close"))
     }
 
     private func handleClose() {
@@ -537,41 +535,6 @@ private struct EDTSDialogModifier: ViewModifier {
                 value: isPresented
             )
         )
-    }
-}
-
-private struct EDTSCloseButtonStyle: ButtonStyle {
-    @Binding var isPressed: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .modifier(EDTSOnChangeModifier(value: configuration.isPressed) { newValue in
-                if isPressed != newValue {
-                    isPressed = newValue
-                }
-            })
-    }
-}
-
-private struct EDTSOnChangeModifier<Value: Equatable>: ViewModifier {
-    let value: Value
-    let action: (Value) -> Void
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 17.0, *) {
-            content.onChange(of: value) { _, newValue in
-                action(newValue)
-            }
-        } else if #available(iOS 14.0, *) {
-            content.onChange(of: value) { newValue in
-                action(newValue)
-            }
-        } else {
-            content.onReceive(Just(value)) { newValue in
-                action(newValue)
-            }
-        }
     }
 }
 
