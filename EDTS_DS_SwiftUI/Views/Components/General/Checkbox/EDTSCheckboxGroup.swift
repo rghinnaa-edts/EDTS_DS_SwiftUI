@@ -8,6 +8,7 @@
 import SwiftUI
 
 // MARK: - Enum
+
 public enum CheckboxGroupDisplayMode: Equatable {
     case vertical
     case horizontal
@@ -15,6 +16,7 @@ public enum CheckboxGroupDisplayMode: Equatable {
 }
 
 // MARK: - Preference Keys
+
 private struct CheckboxContainerWidthKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -23,8 +25,10 @@ private struct CheckboxContainerWidthKey: PreferenceKey {
 }
 
 // MARK: - Checkbox Group
+
 public struct EDTSCheckboxGroup: View {
     // MARK: - Properties
+    
     public let data: [String]
     public let dataAttributed: [AttributedString]
     @Binding public var selectedIndices: Set<Int>
@@ -34,6 +38,7 @@ public struct EDTSCheckboxGroup: View {
     public var verticalSpacing: CGFloat
 
     // MARK: - Private Variable
+    
     private let minimumColumns: Int = 1
     private let visibleOpacity: Double = 1
     private let hiddenOpacity: Double = 0
@@ -51,6 +56,7 @@ public struct EDTSCheckboxGroup: View {
     private var checkboxConfigurator: ((inout EDTSCheckbox) -> Void)?
 
     // MARK: - Initializers
+    
     public init(
         data: [String] = [],
         dataAttributed: [AttributedString] = [],
@@ -68,6 +74,7 @@ public struct EDTSCheckboxGroup: View {
     }
 
     // MARK: - Public Function
+    
     public func configureCheckbox(_ configure: @escaping (inout EDTSCheckbox) -> Void) -> EDTSCheckboxGroup {
         var copy = self
         copy.checkboxConfigurator = configure
@@ -75,6 +82,7 @@ public struct EDTSCheckboxGroup: View {
     }
 
     // MARK: - Setup & Styling
+    
     @ViewBuilder
     private var checkboxes: some View {
         ForEach(0..<itemCount, id: \.self) { index in
@@ -110,6 +118,7 @@ public struct EDTSCheckboxGroup: View {
     }
 
     // MARK: - Body
+    
     public var body: some View {
         switch displayMode {
         case .vertical:
@@ -164,6 +173,7 @@ public struct EDTSCheckboxGroup: View {
 }
 
 // MARK: - Preview
+
 #Preview("Preview") {
     struct PreviewWrapper: View {
         @State private var vertical: Set<Int> = [0]
@@ -189,7 +199,10 @@ public struct EDTSCheckboxGroup: View {
                     EDTSCheckboxGroup(data: items, selectedIndices: $twoColumns, displayMode: .spanGrid(2))
 
                     Text("Span grid (3 columns)").font(.caption)
-                    EDTSCheckboxGroup(data: items, selectedIndices: $threeColumns, displayMode: .spanGrid(3))
+                    EDTSCheckboxGroup(data: items, selectedIndices: $threeColumns, displayMode: .spanGrid(3)).configureCheckbox{ checkbox in
+                        checkbox.titleFontWeight = "light"
+                        
+                    }
                 }
                 .padding()
             }

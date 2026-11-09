@@ -1,6 +1,17 @@
 # EDTSCheckboxGroup
 
-`EDTSCheckboxGroup` is a SwiftUI container that renders a list of [`EDTSCheckbox`](https://github.com/rghinnaa-edts/EDTS_DS/blob/main/EDTS_DS/Documentation/EDTSCheckbox.md) items from a plain `[String]` or `[AttributedString]` data source and manages their multi-selection through a single `Binding<Set<Int>>` of selected indices. It supports three layouts — `vertical`, `horizontal`, and `spanGrid(Int)` (a fixed-column grid) — configurable horizontal/vertical spacing, and a `configureCheckbox(_:)` modifier to customize every checkbox in the group (type, state, colors, fonts, etc.) without rebuilding them manually.
+`EDTSCheckboxGroup` is a SwiftUI container that renders a list of [`EDTSCheckbox`](https://github.com/rghinnaa-edts/EDTS_DS/blob/main/EDTS_DS/Documentation/EDTSCheckbox.md) items.
+
+## Features
+
+- **Flexible data sources:** build the group from a plain `[String]` or an `[AttributedString]` array.
+- **Multi-selection:** manage selection through a single `Binding<Set<Int>>` of selected indices.
+- **Three layouts:**
+  - `vertical`
+  - `horizontal`
+  - `spanGrid(Int)` for a fixed-column grid
+- **Configurable spacing:** adjust horizontal and vertical spacing independently.
+- **Checkbox customization:** use the `configureCheckbox(_:)` modifier to style every checkbox in the group (type, state, colors, fonts, etc.) without rebuilding them manually.
 
 ---
 
@@ -125,7 +136,6 @@ EDTSCheckboxGroup(
 ### 7. Reading the Selection
 
 ```swift
-// Selected titles
 let selectedTitles = selected.sorted().map { items[$0] }
 ```
 
