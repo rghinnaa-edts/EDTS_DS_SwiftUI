@@ -9,6 +9,7 @@ import SwiftUI
 
 public struct EDTSCardMyCoupon: View {
     // MARK: - Properties
+    
     public let title: String?
     public let titleAttributed: AttributedString?
     public var titleColor: Color?
@@ -62,6 +63,7 @@ public struct EDTSCardMyCoupon: View {
     public var onTap: (() -> Void)?
 
     // MARK: - Private Variable
+    
     @State private var isPressed: Bool = false
     
     private let defaultTitleFontSize: CGFloat = 14
@@ -113,8 +115,8 @@ public struct EDTSCardMyCoupon: View {
         return .system(size: size, weight: setupFontWeight(from: weight))
     }
 
-
     // MARK: - Initializer
+    
     public init(
         title: String? = nil,
         titleAttributed: AttributedString? = nil,
@@ -208,6 +210,7 @@ public struct EDTSCardMyCoupon: View {
     }
 
     // MARK: - Body
+    
     public var body: some View {
         HStack(alignment: .center, spacing: iconSpacing) {
             leadingIconView
@@ -369,6 +372,7 @@ public struct EDTSCardMyCoupon: View {
 }
 
 // MARK: - Preview
+
 #Preview("Preview") {
     ZStack {
         LinearGradient(colors: [.blue, .purple], startPoint: .top, endPoint: .bottom)
