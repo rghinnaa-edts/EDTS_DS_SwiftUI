@@ -8,6 +8,7 @@
 import SwiftUI
 
 // MARK: - Enum
+
 public enum ChipGroupDisplayMode: Equatable {
     case vertical
     case horizontal
@@ -15,6 +16,7 @@ public enum ChipGroupDisplayMode: Equatable {
 }
 
 // MARK: - Preference Keys
+
 private struct ChipContainerWidthKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -23,8 +25,10 @@ private struct ChipContainerWidthKey: PreferenceKey {
 }
 
 // MARK: - Chip Group
+
 public struct EDTSChipGroup: View {
     // MARK: - Properties
+    
     public let data: [String]
     public let dataAttributed: [AttributedString]
     @Binding public var selectedIndices: Set<Int>
@@ -34,7 +38,7 @@ public struct EDTSChipGroup: View {
     public var verticalSpacing: CGFloat
     
     // MARK: - Private Variable
-    // MARK: - Private Variable
+    
     private let minimumColumns: Int = 1
     private let visibleOpacity: Double = 1
     private let hiddenOpacity: Double = 0
@@ -51,7 +55,7 @@ public struct EDTSChipGroup: View {
     private var chipConfigurator: ((inout EDTSChip) -> Void)?
     
     // MARK: - Initializers
-    public init(
+    private init(
         data: [String] = [],
         dataAttributed: [AttributedString] = [],
         selectedIndices: Binding<Set<Int>>,
@@ -67,14 +71,80 @@ public struct EDTSChipGroup: View {
         self.verticalSpacing = verticalSpacing
     }
     
+    public init(
+        data: [String] = [],
+        selectedIndices: Binding<Set<Int>>,
+        displayMode: ChipGroupDisplayMode = .spanGrid(),
+        horizontalSpacing: CGFloat = 8,
+        verticalSpacing: CGFloat = 8
+    ) {
+        self.init(
+            data: data,
+            dataAttributed: [],
+            selectedIndices: selectedIndices,
+            displayMode: displayMode,
+            horizontalSpacing: horizontalSpacing,
+            verticalSpacing: verticalSpacing
+        )
+    }
+
+    public init(
+        dataAttributed: [AttributedString] = [],
+        selectedIndices: Binding<Set<Int>>,
+        displayMode: ChipGroupDisplayMode = .spanGrid(),
+        horizontalSpacing: CGFloat = 8,
+        verticalSpacing: CGFloat = 8
+    ) {
+        self.init(
+            data: [],
+            dataAttributed: dataAttributed,
+            selectedIndices: selectedIndices,
+            displayMode: displayMode,
+            horizontalSpacing: horizontalSpacing,
+            verticalSpacing: verticalSpacing
+        )
+    }
+    
     // MARK: - Public Function
+    
     public func configureChip(_ configure: @escaping (inout EDTSChip) -> Void) -> EDTSChipGroup {
         var copy = self
         copy.chipConfigurator = configure
         return copy
     }
     
+    // MARK: - Body
+    
+    public var body: some View {
+        switch displayMode {
+        case .vertical:
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: verticalSpacing) {
+                    chips
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+        case .horizontal:
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: horizontalSpacing) {
+                    chips
+                }
+            }
+            
+        case .spanGrid(let fixedColumns):
+            ScrollView(.vertical, showsIndicators: false) {
+                if let fixedColumns {
+                    gridView(columns: fixedColumns)
+                } else {
+                    wrapGridView
+                }
+            }
+        }
+    }
+    
     // MARK: - Setup & Styling
+    
     @ViewBuilder
     private var chips: some View {
         ForEach(0..<itemCount, id: \.self) { index in
@@ -109,34 +179,7 @@ public struct EDTSChipGroup: View {
         .onPreferenceChange(ChipContainerWidthKey.self) { containerWidth = $0 }
     }
     
-    // MARK: - Body
-    public var body: some View {
-        switch displayMode {
-        case .vertical:
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: verticalSpacing) {
-                    chips
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            
-        case .horizontal:
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: horizontalSpacing) {
-                    chips
-                }
-            }
-            
-        case .spanGrid(let fixedColumns):
-            ScrollView(.vertical, showsIndicators: false) {
-                if let fixedColumns {
-                    gridView(columns: fixedColumns)
-                } else {
-                    wrapGridView
-                }
-            }
-        }
-    }
+    //MARK: Grid View
     
     private func gridView(columns: Int) -> some View {
         let columns = max(minimumColumns, columns)
@@ -191,6 +234,7 @@ public struct EDTSChipGroup: View {
 }
 
 // MARK: - Preview
+
 #Preview("Preview") {
     struct PreviewWrapper: View {
         @State private var vertical: Set<Int> = [0]
@@ -216,7 +260,12 @@ public struct EDTSChipGroup: View {
                     EDTSChipGroup(data: items, selectedIndices: $autoGrid, displayMode: .spanGrid())
                     
                     Text("Span grid (2 columns)").font(.caption)
-                    EDTSChipGroup(data: items, selectedIndices: $fixedGrid, displayMode: .spanGrid(2))
+                    EDTSChipGroup(data: items, selectedIndices: $fixedGrid, displayMode: .spanGrid(2)).configureChip{chip in
+                        
+                        chip.bgColorStart = EDTSColor.skyblueLeading
+                        chip.bgColorEnd = EDTSColor.skyblueTrailing
+                        chip.textColor = EDTSColor.white
+                    }
                 }
                 .padding()
             }

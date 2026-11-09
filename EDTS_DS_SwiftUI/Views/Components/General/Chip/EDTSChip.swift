@@ -386,7 +386,7 @@ public struct EDTSChip: View {
             y: values.shadowOffset.height
         )
         .rippleEffect(
-            color: Color.black.opacity(chipRippleOpacity),
+            color: EDTSColor.grey30.opacity(chipRippleOpacity),
             cornerRadius: cornerRadius != .zero ? cornerRadius : capsuleCornerRadius,
             onTap: onTapChip
         )
@@ -426,7 +426,7 @@ public struct EDTSChip: View {
 
         if isActionable {
             base
-                .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(iconRippleOpacity))
+                .circularRippleEffect(size: iconBadgeRippleSize, color: EDTSColor.grey30.opacity(iconRippleOpacity))
                 .highPriorityGesture(
                     DragGesture(minimumDistance: 0)
                         .onEnded { _ in
