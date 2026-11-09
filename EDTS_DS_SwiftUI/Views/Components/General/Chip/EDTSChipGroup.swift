@@ -27,6 +27,7 @@ private struct ChipContainerWidthKey: PreferenceKey {
 // MARK: - Chip Group
 
 public struct EDTSChipGroup: View {
+    
     // MARK: - Properties
     
     public let data: [String]
@@ -55,6 +56,7 @@ public struct EDTSChipGroup: View {
     private var chipConfigurator: ((inout EDTSChip) -> Void)?
     
     // MARK: - Initializers
+    
     private init(
         data: [String] = [],
         dataAttributed: [AttributedString] = [],
