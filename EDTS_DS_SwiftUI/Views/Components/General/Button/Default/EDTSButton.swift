@@ -26,6 +26,12 @@ public enum BtnSize: String {
     case large = "large"
 }
 
+public enum BtnIconAlignment: String {
+    case centered = "centered"
+    case horizontal = "horizontal"
+    case vertical = "vertical"
+}
+
 public struct EDTSButton: View {
     // MARK: - Properties
     public var btnType: BtnType
@@ -66,6 +72,7 @@ public struct EDTSButton: View {
     
     public var iconSpacing: Double
     public var iconSize: Double
+    public var iconAlignment: BtnIconAlignment
     
     public var borderWidth: Double
     public var borderColor: Color?
@@ -122,6 +129,7 @@ public struct EDTSButton: View {
         iconDisabledTintColorTrailing: Color? = nil,
         iconSpacing: Double = .zero,
         iconSize: Double = .zero,
+        iconAlignment: BtnIconAlignment = .centered,
         borderWidth: Double = .zero,
         borderColor: Color? = nil,
         borderDangerColor: Color? = nil,
@@ -169,6 +177,7 @@ public struct EDTSButton: View {
         self.iconDisabledTintColorTrailing = iconDisabledTintColorTrailing
         self.iconSpacing = iconSpacing
         self.iconSize = iconSize
+        self.iconAlignment = iconAlignment
         self.borderWidth = borderWidth
         self.borderColor = borderColor
         self.borderDangerColor = borderDangerColor
@@ -269,6 +278,7 @@ public struct EDTSButton: View {
             .padding(.leading, values.tempPaddingLeading)
             .padding(.trailing, values.tempPaddingTrailing)
             .frame(maxWidth: maxWidth.map { CGFloat($0) })
+            .overlay(horizontalIconsOverlay(values: values))
             .background(setupBackground(values: values))
             .overlay(
                 RoundedRectangle(cornerRadius: values.tempCornerRadius)
@@ -293,36 +303,83 @@ public struct EDTSButton: View {
     
     @ViewBuilder
     private func content(values: ResolvedValues) -> some View {
-        HStack(spacing: values.tempIconSpacing) {
-            if let iconLeading {
-                iconLeading
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: values.tempIconSize, height: values.tempIconSize)
-                    .foregroundColor(values.tempIconTintColorLeading)
-            }
-            
-            Group {
-                if let textAttributed {
-                    Text(textAttributed)
-                } else {
-                    Text(text ?? "Button")
+        switch iconAlignment {
+        case .centered:
+            HStack(spacing: values.tempIconSpacing) {
+                if let iconLeading {
+                    iconView(iconLeading, tint: values.tempIconTintColorLeading, size: values.tempIconSize)
+                }
+                labelView(values: values)
+                if let iconTrailing {
+                    iconView(iconTrailing, tint: values.tempIconTintColorTrailing, size: values.tempIconSize)
                 }
             }
-            .font(customFont ?? setupFontStyle)
-            .foregroundColor(values.tempTextColor)
-            .multilineTextAlignment(.center)
             
-            if let iconTrailing {
-                iconTrailing
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: values.tempIconSize, height: values.tempIconSize)
-                    .foregroundColor(values.tempIconTintColorTrailing)
+        case .horizontal:
+            let hasIcon = iconLeading != nil || iconTrailing != nil
+            HStack(spacing: values.tempIconSpacing) {
+                if hasIcon {
+                    Color.clear.frame(width: values.tempIconSize, height: values.tempIconSize)
+                }
+                labelView(values: values)
+                if hasIcon {
+                    Color.clear.frame(width: values.tempIconSize, height: values.tempIconSize)
+                }
+            }
+            
+        case .vertical:
+            VStack(spacing: values.tempIconSpacing) {
+                if let iconLeading {
+                    iconView(iconLeading, tint: values.tempIconTintColorLeading, size: values.tempIconSize)
+                }
+                labelView(values: values)
+                if let iconTrailing {
+                    iconView(iconTrailing, tint: values.tempIconTintColorTrailing, size: values.tempIconSize)
+                }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func horizontalIconsOverlay(values: ResolvedValues) -> some View {
+        if iconAlignment == .horizontal {
+            HStack(spacing: 0) {
+                if let iconLeading {
+                    iconView(iconLeading, tint: values.tempIconTintColorLeading, size: values.tempIconSize)
+                }
+                Spacer(minLength: 0)
+                if let iconTrailing {
+                    iconView(iconTrailing, tint: values.tempIconTintColorTrailing, size: values.tempIconSize)
+                }
+            }
+            .padding(.top, values.tempPaddingTop)
+            .padding(.bottom, values.tempPaddingBottom)
+            .padding(.leading, values.tempPaddingLeading)
+            .padding(.trailing, values.tempPaddingTrailing)
+            .allowsHitTesting(false)
+        }
+    }
+    
+    private func labelView(values: ResolvedValues) -> some View {
+        Group {
+            if let textAttributed {
+                Text(textAttributed)
+            } else {
+                Text(text ?? "Button")
+            }
+        }
+        .font(customFont ?? setupFontStyle)
+        .foregroundColor(values.tempTextColor)
+        .multilineTextAlignment(.center)
+    }
+    
+    private func iconView(_ image: Image, tint: Color?, size: Double) -> some View {
+        image
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .foregroundColor(tint)
     }
     
     // MARK: - Setup & Styling
