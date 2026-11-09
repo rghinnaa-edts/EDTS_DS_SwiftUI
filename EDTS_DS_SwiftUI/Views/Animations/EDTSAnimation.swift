@@ -7,7 +7,74 @@
 
 import SwiftUI
 
+// MARK: - Extension UIView
+
+extension View {
+    // MARK: - Animate Gradient Border
+    
+    public func animateGradientBorder(
+        isAnimating: Bool,
+        width: CGFloat = 2,
+        colors: [Color] = [EDTSColor.white, EDTSColor.blue30],
+        cornerRadius: CGFloat = 0,
+        duration: TimeInterval = 2.0,
+        stopDuration: TimeInterval = 0.5,
+        settleColor: Color = EDTSColor.blue30
+    ) -> some View {
+        modifier(EDTSGradientBorderModifier(
+            isAnimating: isAnimating,
+            width: width,
+            colors: colors,
+            cornerRadius: cornerRadius,
+            duration: duration,
+            stopDuration: stopDuration,
+            settleColor: settleColor
+        ))
+    }
+
+    // MARK: - Animate Neon Pulse
+    
+    public func animateNeonPulse(
+        isActive: Bool,
+        color: Color = EDTSColor.blue30,
+        duration: TimeInterval = 1.0
+    ) -> some View {
+        modifier(EDTSNeonPulseModifier(isActive: isActive, color: color, duration: duration))
+    }
+
+    // MARK: - Animate Card Selected
+    
+    public func animateCardSelected(
+        isSelected: Bool,
+        cornerRadius: CGFloat = 0,
+        tintColor: Color = EDTSColor.blue50,
+        unselectedBorderColor: Color = EDTSColor.grey30,
+        icon: UIImage? = UIImage(named: "ic_check"),
+        iconTintColor: Color = EDTSColor.white,
+        iconSize: CGFloat = 16,
+        triangleSize: CGFloat = 32,
+        borderWidth: CGFloat = 1,
+        durationAnimation: TimeInterval = 0.25,
+        animated: Bool = true
+    ) -> some View {
+        modifier(EDTSCardSelectedModifier(
+            isSelected: isSelected,
+            tintColor: tintColor,
+            unselectedBorderColor: unselectedBorderColor,
+            icon: icon,
+            iconTintColor: iconTintColor,
+            iconSize: iconSize,
+            triangleSize: triangleSize,
+            borderWidth: borderWidth,
+            cornerRadius: cornerRadius,
+            duration: durationAnimation,
+            animated: animated
+        ))
+    }
+}
+
 // MARK: - Gradient Border
+
 private struct EDTSGradientBorderModifier: ViewModifier {
     let isAnimating: Bool
     let width: CGFloat
@@ -31,6 +98,7 @@ private struct EDTSGradientBorderModifier: ViewModifier {
     }
 
     // MARK: Rendering
+    
     @ViewBuilder
     private var borderOverlay: some View {
         if hasStarted {
@@ -66,6 +134,7 @@ private struct EDTSGradientBorderModifier: ViewModifier {
     }
 
     // MARK: State changes
+    
     private func start() {
         generation += 1
         withAnimation(nil) {
@@ -92,6 +161,7 @@ private struct EDTSGradientBorderModifier: ViewModifier {
 }
 
 // MARK: - Neon Pulse
+
 private struct EDTSNeonPulseModifier: ViewModifier {
     let isActive: Bool
     let color: Color
@@ -118,6 +188,7 @@ private struct EDTSNeonPulseModifier: ViewModifier {
 }
 
 // MARK: - Card Selected
+
 private struct EDTSTriangle: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -188,67 +259,8 @@ private struct EDTSCardSelectedModifier: ViewModifier {
     }
 }
 
-// MARK: - Public API
-
-extension View {
-    public func animateGradientBorder(
-        isAnimating: Bool,
-        width: CGFloat = 2,
-        colors: [Color] = [EDTSColor.white, EDTSColor.blue30],
-        cornerRadius: CGFloat = 0,
-        duration: TimeInterval = 2.0,
-        stopDuration: TimeInterval = 0.5,
-        settleColor: Color = EDTSColor.blue30
-    ) -> some View {
-        modifier(EDTSGradientBorderModifier(
-            isAnimating: isAnimating,
-            width: width,
-            colors: colors,
-            cornerRadius: cornerRadius,
-            duration: duration,
-            stopDuration: stopDuration,
-            settleColor: settleColor
-        ))
-    }
-
-    public func animateNeonPulse(
-        isActive: Bool,
-        color: Color = EDTSColor.blue30,
-        duration: TimeInterval = 1.0
-    ) -> some View {
-        modifier(EDTSNeonPulseModifier(isActive: isActive, color: color, duration: duration))
-    }
-
-    public func animateCardSelected(
-        isSelected: Bool,
-        cornerRadius: CGFloat = 0,
-        tintColor: Color = EDTSColor.blue50,
-        unselectedBorderColor: Color = EDTSColor.grey30,
-        icon: UIImage? = UIImage(named: "ic_check"),
-        iconTintColor: Color = EDTSColor.white,
-        iconSize: CGFloat = 16,
-        triangleSize: CGFloat = 32,
-        borderWidth: CGFloat = 1,
-        durationAnimation: TimeInterval = 0.25,
-        animated: Bool = true
-    ) -> some View {
-        modifier(EDTSCardSelectedModifier(
-            isSelected: isSelected,
-            tintColor: tintColor,
-            unselectedBorderColor: unselectedBorderColor,
-            icon: icon,
-            iconTintColor: iconTintColor,
-            iconSize: iconSize,
-            triangleSize: triangleSize,
-            borderWidth: borderWidth,
-            cornerRadius: cornerRadius,
-            duration: durationAnimation,
-            animated: animated
-        ))
-    }
-}
-
 // MARK: - Previews
+
 private struct EDTSDemoCard: View {
     let title: String
     var body: some View {

@@ -16,7 +16,7 @@ public enum TrayHeightMode {
 
 public struct EDTSTrayConfiguration {
     public var dragHandleColor: Color = EDTSColor.grey30
-    public var sheetBgColor: Color = EDTSColor.white
+    public var bgColor: Color = EDTSColor.white
     public var cornerRadius: CGFloat = 16
     public var overlayColor: Color = EDTSColor.black.opacity(0.75)
 
@@ -32,27 +32,6 @@ public struct EDTSTrayConfiguration {
     public var onDismissAttempt: (() -> Void)?
 
     public init() {}
-}
-
-// MARK: - Extension
-public extension View {
-    func edtsTray<Content: View>(
-        isPresented: Binding<Bool>,
-        heightMode: TrayHeightMode = .wrapContent,
-        configuration: EDTSTrayConfiguration = EDTSTrayConfiguration(),
-        onDismiss: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping () -> Content
-    ) -> some View {
-        background(
-            EDTSTrayPresenter(isPresented: isPresented,
-                              heightMode: heightMode,
-                              configuration: configuration,
-                              onDismiss: onDismiss,
-                              content: content)
-                .frame(width: 0, height: 0)
-                .allowsHitTesting(false)
-        )
-    }
 }
 
 // MARK: - Presenter
@@ -281,19 +260,19 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     private var isOverlayVisible: Bool { isHasOverlay && overlayColor.cgColor.alpha > 0 }
     private var shouldShowShadow: Bool { !isOverlayVisible }
 
-    func apply(_ c: EDTSTrayConfiguration) {
-        dragHandleColor = UIColor(c.dragHandleColor)
-        sheetBgColor = UIColor(c.sheetBgColor)
-        cornerRadius = c.cornerRadius
-        overlayColor = UIColor(c.overlayColor)
-        shadowColor = UIColor(c.shadowColor)
-        shadowOpacity = c.shadowOpacity
-        shadowRadius = c.shadowRadius
-        shadowOffset = c.shadowOffset
-        isHasDragHandle = c.isHasDragHandle
-        isHasOverlay = c.isHasOverlay
-        canDismiss = c.canDismiss
-        onDismissAttempt = c.onDismissAttempt
+    func apply(_ config: EDTSTrayConfiguration) {
+        dragHandleColor = UIColor(config.dragHandleColor)
+        sheetBgColor = UIColor(config.bgColor)
+        cornerRadius = config.cornerRadius
+        overlayColor = UIColor(config.overlayColor)
+        shadowColor = UIColor(config.shadowColor)
+        shadowOpacity = config.shadowOpacity
+        shadowRadius = config.shadowRadius
+        shadowOffset = config.shadowOffset
+        isHasDragHandle = config.isHasDragHandle
+        isHasOverlay = config.isHasOverlay
+        canDismiss = config.canDismiss
+        onDismissAttempt = config.onDismissAttempt
     }
 
     func updateContentHeight(_ height: CGFloat) {
@@ -414,6 +393,12 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
         }
     }
 
+    // MARK: Gesture
+    fileprivate func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let presented = presentedView else { return false }
+        return touch.location(in: presented).y <= Self.dragAreaHeight
+    }
+    
     // MARK: Dismiss gestures
     private func dismissOffscreen() {
         guard let presented = presentedView else { return }
@@ -480,15 +465,30 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
             break
         }
     }
+}
 
-    // MARK: UIGestureRecognizerDelegate
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        guard let presented = presentedView else { return false }
-        return touch.location(in: presented).y <= Self.dragAreaHeight
+// MARK: - Extension
+public extension View {
+    func edtsTray<Content: View>(
+        isPresented: Binding<Bool>,
+        heightMode: TrayHeightMode = .wrapContent,
+        configuration: EDTSTrayConfiguration = EDTSTrayConfiguration(),
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        background(
+            EDTSTrayPresenter(isPresented: isPresented,
+                              heightMode: heightMode,
+                              configuration: configuration,
+                              onDismiss: onDismiss,
+                              content: content)
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+        )
     }
 }
 
-//  EDTSTrayPreviewExample.swift
+//MARK: Preview Example Model
 import Combine
 
 // MARK: - Variants
@@ -585,7 +585,7 @@ private struct TrayDemoButton: View {
 
         case .customized:
             config.dragHandleColor = Color.white.opacity(0.6)
-            config.sheetBgColor = Color(red: 0.10, green: 0.12, blue: 0.30)
+            config.bgColor = Color(red: 0.10, green: 0.12, blue: 0.30)
             config.cornerRadius = 32
             config.overlayColor = Color.indigo.opacity(0.45)
             config.isHasDragHandle = true
