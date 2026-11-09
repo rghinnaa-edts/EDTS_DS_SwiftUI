@@ -8,6 +8,7 @@
 import SwiftUI
 
 public struct EDTSCardMyCoupon: View {
+    
     // MARK: - Properties
     
     public let title: String?
