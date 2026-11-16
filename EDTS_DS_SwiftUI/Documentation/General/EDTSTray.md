@@ -29,12 +29,13 @@ struct ContentView: View {
                     Button("Close") { isPresented = false }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 28)
                 .padding(.bottom, 16)
             }
     }
 }
 ```
+
+> **Note:** The tray adds the top spacing for you (`28pt` with the drag handle, `16pt` without). You only need to add horizontal and bottom padding to your content.
 
 ### 2. Choose a Height Mode
 
@@ -48,7 +49,7 @@ struct ContentView: View {
 
 ```swift
 var config = EDTSTrayConfiguration()
-config.sheetBgColor = .white
+config.bgColor = .white
 config.cornerRadius = 24
 config.overlayColor = Color.black.opacity(0.5)
 config.isHasDragHandle = true
@@ -74,7 +75,7 @@ config.canDismiss = { [model] in !model.hasUnsavedChanges }
 config.onDismissAttempt = { [model] in model.showDiscardAlert = true }
 ```
 
-> **Note:** `heightMode` and `configuration` are read when the tray is presented. Changing them while the tray is visible has no effect until it is presented again. The tray `content` itself updates live.
+> **Note:** `heightMode` and `configuration` are read when the tray is presented. Changing them while the tray is visible has no effect until it is presented again (the drag handle visibility and color are the only exceptions, as they are refreshed together with the tray `content`). The tray `content` itself updates live.
 
 ## `.edtsTray` Parameters
 
@@ -90,9 +91,11 @@ config.onDismissAttempt = { [model] in model.showDiscardAlert = true }
 
 | Mode | Description |
 | ---- | ----------- |
-| `.wrapContent` | Tray height fits the content (default) |
-| `.custom(CGFloat)` | Fixed tray height, clamped to the maximum allowed height |
+| `.wrapContent` | Tray height fits the content plus the bottom safe area inset (default). The content is placed in a vertical `ScrollView`, so it scrolls if it is taller than the maximum allowed height |
+| `.custom(CGFloat)` | Fixed tray height, clamped to the maximum allowed height (screen height minus the top inset) |
 | `.fullScreen` | Tray fills the screen below the status bar / top safe area |
+
+> **Note:** In `.custom` and `.fullScreen`, the content is **not** wrapped in a `ScrollView`. If your content can be taller than the tray, wrap it in a `ScrollView` yourself.
 
 **Example:**
 ```swift
@@ -105,7 +108,7 @@ config.onDismissAttempt = { [model] in model.showDiscardAlert = true }
 
 | Property Name | Type | Default | Description |
 | ------------- | ---- | ------- | ----------- |
-| `sheetBgColor` | `Color` | `EDTSColor.white` | Background color of the tray |
+| `bgColor` | `Color` | `EDTSColor.white` | Background color of the tray |
 | `cornerRadius` | `CGFloat` | `16` | Corner radius of the tray (applied to the top-left and top-right corners only) |
 
 ### Drag Handle Properties
@@ -148,19 +151,22 @@ The shadow is only rendered when the overlay is **not** visible (`isHasOverlay =
 | ------ | ----- |
 | Size | `36pt` × `4pt` |
 | Top offset | `8pt` |
-| Corner radius | `2pt` |
+| Shape | Capsule (fully rounded, `2pt` radius) |
 | Horizontal alignment | Centered in the tray |
+| Content top spacing | `28pt` when the handle is shown, `16pt` when it is hidden |
 | Drag area height | `56pt` (measured from the top of the tray) |
+
+> The drag handle itself does not receive touches. Swipe recognition is based on the drag area, not on the handle view.
 
 ## Dismiss Behavior
 
 | Gesture | Behavior |
 | ------- | -------- |
-| **Tap outside** | Tapping the dimmed area behind the tray dismisses it (subject to `canDismiss`) |
+| **Tap outside** | Tapping the area behind the tray dismisses it (subject to `canDismiss`). If blocked, `onDismissAttempt` is called and the tray stays in place |
 | **Swipe down** | Dragging the tray down follows the finger. Only drags that start within the top `56pt` (drag area) are recognized |
 | **Dismiss threshold** | On release, the tray dismisses if it was dragged more than `30%` of its height **or** the release velocity is greater than `900 pt/s` |
-| **Below threshold** | The tray springs back to its original position |
-| **Blocked by `canDismiss`** | The tray springs back to its original position and `onDismissAttempt` is called |
+| **Below threshold** | The tray springs back to its original position. `onDismissAttempt` is not called |
+| **Blocked by `canDismiss`** | If the swipe passes the dismiss threshold but `canDismiss` returns `false`, the tray springs back to its original position and `onDismissAttempt` is called |
 | **`isPresented = false`** | Dismisses the tray with the standard transition. Not affected by `canDismiss` |
 
 ## Animation Details
@@ -171,7 +177,7 @@ The shadow is only rendered when the overlay is **not** visible (`isHasOverlay =
 | `Dismiss` | Matches the dismissal transition | Slides the tray (and shadow) down and fades out the overlay |
 | `Drag / Tap Dismiss` | `200ms` | Slides the tray off-screen and fades out the overlay when a swipe passes the dismiss threshold or the overlay is tapped |
 | `Drag Reset` | `250ms` | Returns the tray to its original position when a swipe does not dismiss |
-| `Content Height Change` | `250ms` | In `.wrapContent`, animates the tray height when the content height changes (for example, rows added or removed) |
+| `Content Height Change` | `250ms` | In `.wrapContent`, animates the tray height when the content height changes (for example, rows added or removed). The height is not updated while the tray is being dragged |
 
 ## Notes
 

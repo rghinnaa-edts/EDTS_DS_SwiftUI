@@ -218,9 +218,12 @@ private struct TrayRootView<Content: View>: View {
                 onContentHeight(height)
             }
         } else {
-            content
-                .padding(.top, defaultTopSpacing)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            ScrollView(.vertical, showsIndicators: false) {
+                content
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    .padding(.top, defaultTopSpacing)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 }
@@ -652,12 +655,7 @@ private struct TrayDemoContent: View {
     private var secondary: Color { isDark ? Color.white.opacity(0.7) : .secondary }
 
     var body: some View {
-        switch heightMode {
-        case .wrapContent:
-            content
-        default:
-            ScrollView { content }
-        }
+        content
     }
 
     private var content: some View {
