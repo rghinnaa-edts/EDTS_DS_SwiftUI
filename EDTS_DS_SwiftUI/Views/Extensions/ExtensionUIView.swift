@@ -138,6 +138,7 @@ public struct GradientBackgroundModifier: ViewModifier {
 }
 
 extension View {
+    
     public func gradientBackground(
         _ gradient: [Color],
         orientation: Orientation = .horizontal,
@@ -188,6 +189,7 @@ extension View {
 }
 
 // MARK: - Ripple Animation
+
 private struct RippleInstance: Identifiable {
     let id = UUID()
     let point: CGPoint
@@ -317,6 +319,7 @@ private struct RippleShapeView: View {
 }
 
 // MARK: - Circular Ripple
+
 private struct CircularRippleInstance: Identifiable {
     let id = UUID()
 }
@@ -528,5 +531,18 @@ extension View {
         return self
             .background(shape.fill(fill))
             .clipShape(shape)
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func edtsScrollDisabled(_ disabled: Bool) -> some View {
+        if #available(iOS 16.0, *) {
+            self.scrollDisabled(disabled)
+        } else if disabled {
+            self.highPriorityGesture(DragGesture())
+        } else {
+            self
+        }
     }
 }
