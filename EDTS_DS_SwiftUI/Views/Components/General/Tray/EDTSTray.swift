@@ -8,6 +8,7 @@
 import SwiftUI
 
 // MARK: - Public API
+
 public enum TrayHeightMode {
     case fullScreen
     case wrapContent
@@ -35,6 +36,7 @@ public struct EDTSTrayConfiguration {
 }
 
 // MARK: - Presenter
+
 private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     let heightMode: TrayHeightMode
@@ -88,6 +90,7 @@ private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
             return TrayRootView(content: parent.content(),
                                 isWrapContent: isWrap,
                                 hasDragHandle: parent.configuration.isHasDragHandle,
+                                dragHandleColor: parent.configuration.dragHandleColor,
                                 onContentHeight: { [weak self] height in
                 (self?.hosting?.presentationController as? EDTSTrayPresentationController)?
                     .updateContentHeight(height)
@@ -137,6 +140,7 @@ private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
 }
 
 // MARK: - Hosting controller
+
 private protocol EDTSTraySizing: AnyObject {
     func fittingHeight(forWidth width: CGFloat) -> CGFloat
 }
@@ -159,6 +163,7 @@ private final class EDTSTrayHostingController<Content: View>: UIHostingControlle
 }
 
 // MARK: - Root view
+
 private struct TrayHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
@@ -168,13 +173,31 @@ private struct TrayRootView<Content: View>: View {
     let content: Content
     let isWrapContent: Bool
     let hasDragHandle: Bool
+    let dragHandleColor: Color
     let onContentHeight: (CGFloat) -> Void
 
     @State private var measuredHeight: CGFloat = 0
-    
+
     private var defaultTopSpacing: CGFloat { hasDragHandle ? 12 + 16 : 16 }
 
+    private var grabber: some View {
+        Capsule()
+            .fill(dragHandleColor)
+            .frame(width: 36, height: 4)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity, alignment: .top)
+            .allowsHitTesting(false)
+    }
+
     var body: some View {
+        ZStack(alignment: .top) {
+            bodyContent
+            if hasDragHandle { grabber }
+        }
+    }
+    
+    @ViewBuilder
+    private var bodyContent: some View {
         if isWrapContent {
             ScrollView(.vertical, showsIndicators: false) {
                 content
@@ -203,6 +226,7 @@ private struct TrayRootView<Content: View>: View {
 }
 
 // MARK: - Transitioning delegate
+
 private final class EDTSTrayTransitioningDelegate: NSObject, UIViewControllerTransitioningDelegate {
     private let heightMode: TrayHeightMode
     private let configuration: EDTSTrayConfiguration
@@ -223,6 +247,7 @@ private final class EDTSTrayTransitioningDelegate: NSObject, UIViewControllerTra
 }
 
 // MARK: - Presentation controller
+
 private final class EDTSTrayPresentationController: UIPresentationController, UIGestureRecognizerDelegate {
 
     var heightMode: TrayHeightMode = .wrapContent
@@ -256,13 +281,6 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
         return view
     }()
 
-    private let grabberView: UIView = {
-        let view = UIView(frame: CGRect(x: 0, y: 8, width: 36, height: 4))
-        view.layer.cornerRadius = 2
-        view.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin]
-        return view
-    }()
-
     private var isOverlayVisible: Bool { isHasOverlay && overlayColor.cgColor.alpha > 0 }
     private var shouldShowShadow: Bool { !isOverlayVisible }
 
@@ -292,6 +310,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     }
 
     // MARK: Frame
+    
     private func topInset(in container: UIView) -> CGFloat {
         let statusBar = container.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
         return max(container.safeAreaInsets.top, statusBar)
@@ -334,11 +353,11 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
             shadowView.frame = frame
             shadowView.layer.shadowPath = UIBezierPath(roundedRect: shadowView.bounds,
                                                        cornerRadius: cornerRadius).cgPath
-            grabberView.center.x = presented.bounds.midX
         }
     }
 
     // MARK: Transition
+    
     override func presentationTransitionWillBegin() {
         guard let container = containerView, let presented = presentedView else { return }
 
@@ -362,12 +381,6 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
         presented.layer.cornerRadius = cornerRadius
         presented.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         presented.layer.masksToBounds = true
-
-        if isHasDragHandle {
-            grabberView.backgroundColor = dragHandleColor
-            grabberView.center.x = presented.bounds.midX
-            presented.addSubview(grabberView)
-        }
 
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         pan.delegate = self
@@ -400,12 +413,14 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     }
 
     // MARK: Gesture
+    
     fileprivate func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         guard let presented = presentedView else { return false }
         return touch.location(in: presented).y <= Self.dragAreaHeight
     }
     
     // MARK: Dismiss gestures
+    
     private func dismissOffscreen() {
         guard let presented = presentedView else { return }
 
@@ -474,6 +489,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
 }
 
 // MARK: - Extension
+
 public extension View {
     func edtsTray<Content: View>(
         isPresented: Binding<Bool>,
@@ -495,9 +511,11 @@ public extension View {
 }
 
 //MARK: Preview Example Model
+
 import Combine
 
 // MARK: - Variants
+
 private enum TrayDemoVariant: String {
     case standard = "Default"
     case customized = "Full custom"
@@ -505,6 +523,7 @@ private enum TrayDemoVariant: String {
 }
 
 // MARK: - Demo model
+
 private final class TrayDemoModel: ObservableObject {
     @Published var allowDismiss = false
     @Published var blockedAttempts = 0
@@ -516,6 +535,7 @@ private final class TrayDemoModel: ObservableObject {
 }
 
 // MARK: - Screen
+
 public struct EDTSTrayDemoScreen: View {
     public init() {}
 
@@ -554,6 +574,7 @@ public struct EDTSTrayDemoScreen: View {
 }
 
 // MARK: - Button + tray
+
 private struct TrayDemoButton: View {
     let variant: TrayDemoVariant
     let heightMode: TrayHeightMode
@@ -578,7 +599,10 @@ private struct TrayDemoButton: View {
             TrayDemoContent(variant: variant,
                             heightMode: heightMode,
                             model: model,
-                            close: { isPresented = false })
+                            close: {
+                model.allowDismiss = true
+                isPresented = false
+            })
         }
     }
 
@@ -614,6 +638,7 @@ private struct TrayDemoButton: View {
 }
 
 // MARK: - Tray content
+
 private struct TrayDemoContent: View {
     let variant: TrayDemoVariant
     let heightMode: TrayHeightMode
@@ -688,7 +713,7 @@ private struct TrayDemoContent: View {
         case .standard:
             return "Default configuration. Swipe down from the top area, or tap the dimmed overlay, to dismiss."
         case .customized:
-            return "Custom colors, 32pt corners, tinted overlay. Swipe or tap outside is blocked until \"Allow dismiss\" is on; each blocked attempt is counted."
+            return "Custom colors, 32pt corners, tinted overlay. Swipe or tap outside is blocked until \"Allow dismiss\" is on; each blocked attempt is counted. The Close button always works."
         case .noOverlay:
             return "No overlay, so a shadow is drawn behind the tray instead. Taps outside still dismiss."
         }
@@ -696,6 +721,7 @@ private struct TrayDemoContent: View {
 }
 
 // MARK: - Preview
+
 struct EDTSTrayDemoScreen_Previews: PreviewProvider {
     static var previews: some View {
         EDTSTrayDemoScreen()
