@@ -26,6 +26,12 @@ public enum BtnSize: String {
     case large = "large"
 }
 
+public enum BtnIconAlignment: String {
+    case centered = "centered"
+    case horizontal = "horizontal"
+    case vertical = "vertical"
+}
+
 public struct EDTSButton: View {
     // MARK: - Properties
     public var btnType: BtnType
@@ -66,6 +72,7 @@ public struct EDTSButton: View {
     
     public var iconSpacing: Double
     public var iconSize: Double
+    public var iconAlignment: BtnIconAlignment
     
     public var borderWidth: Double
     public var borderColor: Color?
@@ -88,103 +95,6 @@ public struct EDTSButton: View {
     
     // MARK: - State
     @State private var tempResolvedButtonState: BtnState? = nil
-    
-    // MARK: - Initializers
-    public init(
-        btnType: BtnType = .primary,
-        btnSize: BtnSize = .large,
-        btnState: BtnState = .default,
-        text: String? = "Button",
-        textAttributed: AttributedString? = nil,
-        textColor: Color? = nil,
-        textDangerColor: Color? = nil,
-        textDisabledColor: Color? = nil,
-        fontStyle: Font? = nil,
-        fontName: String = "",
-        fontSize: Double = .zero,
-        fontWeight: String? = nil,
-        bgColor: Color? = nil,
-        bgDangerColor: Color? = nil,
-        bgDisabledColor: Color? = nil,
-        bgColorStart: Color? = nil,
-        bgColorEnd: Color? = nil,
-        bgColorOrientation: Orientation? = nil,
-        rippleColor: Color? = nil,
-        cornerRadius: Double? = nil,
-        maxWidth: Double? = nil,
-        iconLeading: Image? = nil,
-        iconTintColorLeading: Color? = nil,
-        iconDangerTintColorLeading: Color? = nil,
-        iconDisabledTintColorLeading: Color? = nil,
-        iconTrailing: Image? = nil,
-        iconTintColorTrailing: Color? = nil,
-        iconDangerTintColorTrailing: Color? = nil,
-        iconDisabledTintColorTrailing: Color? = nil,
-        iconSpacing: Double = .zero,
-        iconSize: Double = .zero,
-        borderWidth: Double = .zero,
-        borderColor: Color? = nil,
-        borderDangerColor: Color? = nil,
-        borderDisabledColor: Color? = nil,
-        shadowOpacity: Double = .zero,
-        shadowRadius: Double = .zero,
-        shadowOffset: CGSize = .zero,
-        shadowColor: Color? = nil,
-        shadowDangerColor: Color? = nil,
-        shadowDisabledColor: Color? = nil,
-        paddingTop: Double? = nil,
-        paddingBottom: Double? = nil,
-        paddingLeading: Double? = nil,
-        paddingTrailing: Double? = nil,
-        action: @escaping () -> Void
-    ) {
-        self.btnType = btnType
-        self.btnSize = btnSize
-        self.btnState = btnState
-        self.text = textAttributed == nil ? text : nil
-        self.textAttributed = textAttributed
-        self.textColor = textColor
-        self.textDangerColor = textDangerColor
-        self.textDisabledColor = textDisabledColor
-        self.fontStyle = fontStyle
-        self.fontName = fontName
-        self.fontSize = fontSize
-        self.fontWeight = fontWeight
-        self.bgColor = bgColor
-        self.bgDangerColor = bgDangerColor
-        self.bgDisabledColor = bgDisabledColor
-        self.bgColorStart = bgColorStart
-        self.bgColorEnd = bgColorEnd
-        self.bgColorOrientation = bgColorOrientation
-        self.rippleColor = rippleColor
-        self.cornerRadius = cornerRadius
-        self.maxWidth = maxWidth
-        self.iconLeading = iconLeading
-        self.iconTintColorLeading = iconTintColorLeading
-        self.iconDangerTintColorLeading = iconDangerTintColorLeading
-        self.iconDisabledTintColorLeading = iconDisabledTintColorLeading
-        self.iconTrailing = iconTrailing
-        self.iconTintColorTrailing = iconTintColorTrailing
-        self.iconDangerTintColorTrailing = iconDangerTintColorTrailing
-        self.iconDisabledTintColorTrailing = iconDisabledTintColorTrailing
-        self.iconSpacing = iconSpacing
-        self.iconSize = iconSize
-        self.borderWidth = borderWidth
-        self.borderColor = borderColor
-        self.borderDangerColor = borderDangerColor
-        self.borderDisabledColor = borderDisabledColor
-        self.shadowOpacity = shadowOpacity
-        self.shadowRadius = shadowRadius
-        self.shadowOffset = shadowOffset
-        self.shadowColor = shadowColor
-        self.shadowDangerColor = shadowDangerColor
-        self.shadowDisabledColor = shadowDisabledColor
-        self.paddingTop = paddingTop
-        self.paddingBottom = paddingBottom
-        self.paddingLeading = paddingLeading
-        self.paddingTrailing = paddingTrailing
-        self.action = action
-    }
     
     // MARK: - Private Variable
     private let defaultFontSize: Double = 16
@@ -260,6 +170,105 @@ public struct EDTSButton: View {
     
     private let dragCancelThreshold: Double = 44
     
+    // MARK: - Initializers
+    public init(
+        btnType: BtnType = .primary,
+        btnSize: BtnSize = .large,
+        btnState: BtnState = .default,
+        text: String? = "Button",
+        textAttributed: AttributedString? = nil,
+        textColor: Color? = nil,
+        textDangerColor: Color? = nil,
+        textDisabledColor: Color? = nil,
+        fontStyle: Font? = nil,
+        fontName: String = "",
+        fontSize: Double = .zero,
+        fontWeight: String? = nil,
+        bgColor: Color? = nil,
+        bgDangerColor: Color? = nil,
+        bgDisabledColor: Color? = nil,
+        bgColorStart: Color? = nil,
+        bgColorEnd: Color? = nil,
+        bgColorOrientation: Orientation? = nil,
+        rippleColor: Color? = nil,
+        cornerRadius: Double? = nil,
+        maxWidth: Double? = nil,
+        iconLeading: Image? = nil,
+        iconTintColorLeading: Color? = nil,
+        iconDangerTintColorLeading: Color? = nil,
+        iconDisabledTintColorLeading: Color? = nil,
+        iconTrailing: Image? = nil,
+        iconTintColorTrailing: Color? = nil,
+        iconDangerTintColorTrailing: Color? = nil,
+        iconDisabledTintColorTrailing: Color? = nil,
+        iconSpacing: Double = .zero,
+        iconSize: Double = .zero,
+        iconAlignment: BtnIconAlignment = .centered,
+        borderWidth: Double = .zero,
+        borderColor: Color? = nil,
+        borderDangerColor: Color? = nil,
+        borderDisabledColor: Color? = nil,
+        shadowOpacity: Double = .zero,
+        shadowRadius: Double = .zero,
+        shadowOffset: CGSize = .zero,
+        shadowColor: Color? = nil,
+        shadowDangerColor: Color? = nil,
+        shadowDisabledColor: Color? = nil,
+        paddingTop: Double? = nil,
+        paddingBottom: Double? = nil,
+        paddingLeading: Double? = nil,
+        paddingTrailing: Double? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.btnType = btnType
+        self.btnSize = btnSize
+        self.btnState = btnState
+        self.text = textAttributed == nil ? text : nil
+        self.textAttributed = textAttributed
+        self.textColor = textColor
+        self.textDangerColor = textDangerColor
+        self.textDisabledColor = textDisabledColor
+        self.fontStyle = fontStyle
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.fontWeight = fontWeight
+        self.bgColor = bgColor
+        self.bgDangerColor = bgDangerColor
+        self.bgDisabledColor = bgDisabledColor
+        self.bgColorStart = bgColorStart
+        self.bgColorEnd = bgColorEnd
+        self.bgColorOrientation = bgColorOrientation
+        self.rippleColor = rippleColor
+        self.cornerRadius = cornerRadius
+        self.maxWidth = maxWidth
+        self.iconLeading = iconLeading
+        self.iconTintColorLeading = iconTintColorLeading
+        self.iconDangerTintColorLeading = iconDangerTintColorLeading
+        self.iconDisabledTintColorLeading = iconDisabledTintColorLeading
+        self.iconTrailing = iconTrailing
+        self.iconTintColorTrailing = iconTintColorTrailing
+        self.iconDangerTintColorTrailing = iconDangerTintColorTrailing
+        self.iconDisabledTintColorTrailing = iconDisabledTintColorTrailing
+        self.iconSpacing = iconSpacing
+        self.iconSize = iconSize
+        self.iconAlignment = iconAlignment
+        self.borderWidth = borderWidth
+        self.borderColor = borderColor
+        self.borderDangerColor = borderDangerColor
+        self.borderDisabledColor = borderDisabledColor
+        self.shadowOpacity = shadowOpacity
+        self.shadowRadius = shadowRadius
+        self.shadowOffset = shadowOffset
+        self.shadowColor = shadowColor
+        self.shadowDangerColor = shadowDangerColor
+        self.shadowDisabledColor = shadowDisabledColor
+        self.paddingTop = paddingTop
+        self.paddingBottom = paddingBottom
+        self.paddingLeading = paddingLeading
+        self.paddingTrailing = paddingTrailing
+        self.action = action
+    }
+    
     // MARK: - Body
     public var body: some View {
         let values = setupBtnType()
@@ -269,6 +278,7 @@ public struct EDTSButton: View {
             .padding(.leading, values.tempPaddingLeading)
             .padding(.trailing, values.tempPaddingTrailing)
             .frame(maxWidth: maxWidth.map { CGFloat($0) })
+            .overlay(horizontalIconsOverlay(values: values))
             .background(setupBackground(values: values))
             .overlay(
                 RoundedRectangle(cornerRadius: values.tempCornerRadius)
@@ -293,36 +303,83 @@ public struct EDTSButton: View {
     
     @ViewBuilder
     private func content(values: ResolvedValues) -> some View {
-        HStack(spacing: values.tempIconSpacing) {
-            if let iconLeading {
-                iconLeading
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: values.tempIconSize, height: values.tempIconSize)
-                    .foregroundColor(values.tempIconTintColorLeading)
-            }
-            
-            Group {
-                if let textAttributed {
-                    Text(textAttributed)
-                } else {
-                    Text(text ?? "Button")
+        switch iconAlignment {
+        case .centered:
+            HStack(spacing: values.tempIconSpacing) {
+                if let iconLeading {
+                    iconView(iconLeading, tint: values.tempIconTintColorLeading, size: values.tempIconSize)
+                }
+                labelView(values: values)
+                if let iconTrailing {
+                    iconView(iconTrailing, tint: values.tempIconTintColorTrailing, size: values.tempIconSize)
                 }
             }
-            .font(customFont ?? setupFontStyle)
-            .foregroundColor(values.tempTextColor)
-            .multilineTextAlignment(.center)
             
-            if let iconTrailing {
-                iconTrailing
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: values.tempIconSize, height: values.tempIconSize)
-                    .foregroundColor(values.tempIconTintColorTrailing)
+        case .horizontal:
+            let hasIcon = iconLeading != nil || iconTrailing != nil
+            HStack(spacing: values.tempIconSpacing) {
+                if hasIcon {
+                    Color.clear.frame(width: values.tempIconSize, height: values.tempIconSize)
+                }
+                labelView(values: values)
+                if hasIcon {
+                    Color.clear.frame(width: values.tempIconSize, height: values.tempIconSize)
+                }
+            }
+            
+        case .vertical:
+            VStack(spacing: values.tempIconSpacing) {
+                if let iconLeading {
+                    iconView(iconLeading, tint: values.tempIconTintColorLeading, size: values.tempIconSize)
+                }
+                labelView(values: values)
+                if let iconTrailing {
+                    iconView(iconTrailing, tint: values.tempIconTintColorTrailing, size: values.tempIconSize)
+                }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func horizontalIconsOverlay(values: ResolvedValues) -> some View {
+        if iconAlignment == .horizontal {
+            HStack(spacing: 0) {
+                if let iconLeading {
+                    iconView(iconLeading, tint: values.tempIconTintColorLeading, size: values.tempIconSize)
+                }
+                Spacer(minLength: 0)
+                if let iconTrailing {
+                    iconView(iconTrailing, tint: values.tempIconTintColorTrailing, size: values.tempIconSize)
+                }
+            }
+            .padding(.top, values.tempPaddingTop)
+            .padding(.bottom, values.tempPaddingBottom)
+            .padding(.leading, values.tempPaddingLeading)
+            .padding(.trailing, values.tempPaddingTrailing)
+            .allowsHitTesting(false)
+        }
+    }
+    
+    private func labelView(values: ResolvedValues) -> some View {
+        Group {
+            if let textAttributed {
+                Text(textAttributed)
+            } else {
+                Text(text ?? "Button")
+            }
+        }
+        .font(customFont ?? setupFontStyle)
+        .foregroundColor(values.tempTextColor)
+        .multilineTextAlignment(.center)
+    }
+    
+    private func iconView(_ image: Image, tint: Color?, size: Double) -> some View {
+        image
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .foregroundColor(tint)
     }
     
     // MARK: - Setup & Styling
