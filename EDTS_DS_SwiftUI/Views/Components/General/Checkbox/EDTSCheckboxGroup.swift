@@ -57,7 +57,7 @@ public struct EDTSCheckboxGroup: View {
 
     // MARK: - Initializers
     
-    public init(
+    private init(
         data: [String] = [],
         dataAttributed: [AttributedString] = [],
         selectedIndices: Binding<Set<Int>>,
@@ -71,6 +71,26 @@ public struct EDTSCheckboxGroup: View {
         self.displayMode = displayMode
         self.horizontalSpacing = horizontalSpacing
         self.verticalSpacing = verticalSpacing
+    }
+    
+    public init(
+        data: [String] = [],
+        selectedIndices: Binding<Set<Int>>,
+        displayMode: CheckboxGroupDisplayMode = .vertical,
+        horizontalSpacing: CGFloat = 8,
+        verticalSpacing: CGFloat = 8
+    ) {
+        self.init(data: data, dataAttributed: [], selectedIndices: selectedIndices, displayMode: displayMode, horizontalSpacing: horizontalSpacing, verticalSpacing: verticalSpacing)
+    }
+    
+    public init(
+        dataAttributed: [AttributedString] = [],
+        selectedIndices: Binding<Set<Int>>,
+        displayMode: CheckboxGroupDisplayMode = .vertical,
+        horizontalSpacing: CGFloat = 8,
+        verticalSpacing: CGFloat = 8
+    ) {
+        self.init(data: [], dataAttributed: dataAttributed, selectedIndices: selectedIndices, displayMode: displayMode, horizontalSpacing: horizontalSpacing, verticalSpacing: verticalSpacing)
     }
 
     // MARK: - Public Function
