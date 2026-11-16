@@ -87,6 +87,7 @@ private struct EDTSTrayPresenter<Content: View>: UIViewControllerRepresentable {
             if case .wrapContent = parent.heightMode { isWrap = true } else { isWrap = false }
             return TrayRootView(content: parent.content(),
                                 isWrapContent: isWrap,
+                                hasDragHandle: parent.configuration.isHasDragHandle,
                                 onContentHeight: { [weak self] height in
                 (self?.hosting?.presentationController as? EDTSTrayPresentationController)?
                     .updateContentHeight(height)
@@ -166,15 +167,19 @@ private struct TrayHeightKey: PreferenceKey {
 private struct TrayRootView<Content: View>: View {
     let content: Content
     let isWrapContent: Bool
+    let hasDragHandle: Bool
     let onContentHeight: (CGFloat) -> Void
 
     @State private var measuredHeight: CGFloat = 0
+    
+    private var defaultTopSpacing: CGFloat { hasDragHandle ? 12 + 16 : 16 }
 
     var body: some View {
         if isWrapContent {
             ScrollView(.vertical, showsIndicators: false) {
                 content
                     .frame(maxWidth: .infinity, alignment: .top)
+                    .padding(.top, defaultTopSpacing)
                     .background(
                         GeometryReader { proxy in
                             Color.clear.preference(key: TrayHeightKey.self, value: proxy.size.height)
@@ -191,6 +196,7 @@ private struct TrayRootView<Content: View>: View {
             }
         } else {
             content
+                .padding(.top, defaultTopSpacing)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
@@ -222,7 +228,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
     var heightMode: TrayHeightMode = .wrapContent
 
     private var dragHandleColor: UIColor = UIColor(EDTSColor.grey30)
-    private var sheetBgColor: UIColor = .white
+    private var bgColor: UIColor = .white
     private var cornerRadius: CGFloat = 16
     private var overlayColor: UIColor = UIColor.black.withAlphaComponent(0.75)
     private var shadowColor: UIColor = .black
@@ -262,7 +268,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
 
     func apply(_ config: EDTSTrayConfiguration) {
         dragHandleColor = UIColor(config.dragHandleColor)
-        sheetBgColor = UIColor(config.bgColor)
+        bgColor = UIColor(config.bgColor)
         cornerRadius = config.cornerRadius
         overlayColor = UIColor(config.overlayColor)
         shadowColor = UIColor(config.shadowColor)
@@ -352,7 +358,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
             container.insertSubview(shadowView, aboveSubview: dimmingView)
         }
 
-        presented.backgroundColor = sheetBgColor
+        presented.backgroundColor = bgColor
         presented.layer.cornerRadius = cornerRadius
         presented.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         presented.layer.masksToBounds = true
@@ -674,7 +680,6 @@ private struct TrayDemoContent: View {
             .buttonStyle(.borderedProminent)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 28)
         .padding(.bottom, 16)
     }
 
