@@ -181,9 +181,11 @@ extension View {
     public func circularRippleEffect(
         size: CGFloat = 32,
         color: Color = Color.black.opacity(0.22),
-        trigger: Binding<Bool>? = nil
+        centerX: CGFloat? = nil,
+        isEnabled: Bool = true,
+        onTap: (() -> Void)? = nil
     ) -> some View {
-        modifier(CircularRippleModifier(size: size, color: color, trigger: trigger))
+        modifier(CircularRippleButtonModifier(size: size, color: color, centerX: centerX, isEnabled: isEnabled, onTap: onTap))
     }
     
     @ViewBuilder
@@ -209,15 +211,40 @@ public struct RippleModifier: ViewModifier {
     var cornerRadius: CGFloat = 0
     var onTap: (() -> Void)? = nil
 
+    public func body(content: Content) -> some View {
+        Button {
+            onTap?()
+        } label: {
+            content.contentShape(Rectangle())
+        }
+        .buttonStyle(RipplePressStyle(color: color, cornerRadius: cornerRadius))
+    }
+}
+
+private struct RipplePressStyle: ButtonStyle {
+    let color: Color
+    let cornerRadius: CGFloat
+
+    func makeBody(configuration: Configuration) -> some View {
+        RippleButtonBody(configuration: configuration, color: color, cornerRadius: cornerRadius)
+    }
+}
+
+private struct RippleButtonBody: View {
+    let configuration: ButtonStyle.Configuration
+    let color: Color
+    let cornerRadius: CGFloat
+
     @State private var ripples: [RippleInstance] = []
     @State private var containerSize: CGSize = .zero
-    @State private var isRippleActive: Bool = false
     @State private var activeRippleID: UUID?
     @State private var releasedRippleIDs: Set<UUID> = []
     @State private var rippleStartTime: Date?
 
-    public func body(content: Content) -> some View {
-        content
+    private let growDuration: Double = 0.40
+
+    var body: some View {
+        configuration.label
             .overlay(
                 GeometryReader { geo in
                     ZStack {
@@ -240,47 +267,28 @@ public struct RippleModifier: ViewModifier {
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
                 .allowsHitTesting(false)
             )
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        guard !isRippleActive else { return }
-                        isRippleActive = true
-                        addRipple(at: value.location)
-                    }
-                    .onEnded { _ in
-                        isRippleActive = false
-                        if let activeRippleID {
-                            let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
-                            let growDuration = 0.40
-                            let remaining = max(growDuration - elapsed, 0)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
-                                releasedRippleIDs.insert(activeRippleID)
-                            }
-                        }
-                        activeRippleID = nil
-                        onTap?()
-                    }
-            )
+            .onChange(of: configuration.isPressed) { pressed in
+                if pressed { addRipple() } else { releaseRipple() }
+            }
     }
 
-    private func addRipple(at point: CGPoint) {
-        let radius = maxCornerDistance(from: point, in: containerSize)
-        let ripple = RippleInstance(point: point, maxRadius: radius)
+    private func addRipple() {
+        let center = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
+        let radius = hypot(containerSize.width / 2, containerSize.height / 2)
+        let ripple = RippleInstance(point: center, maxRadius: radius)
         ripples.append(ripple)
         activeRippleID = ripple.id
         rippleStartTime = Date()
     }
 
-    private func maxCornerDistance(from point: CGPoint, in size: CGSize) -> CGFloat {
-        let corners = [
-            CGPoint(x: 0, y: 0),
-            CGPoint(x: size.width, y: 0),
-            CGPoint(x: 0, y: size.height),
-            CGPoint(x: size.width, y: size.height)
-        ]
-        return corners.map { hypot(point.x - $0.x, point.y - $0.y) }.max()
-            ?? max(size.width, size.height)
+    private func releaseRipple() {
+        guard let id = activeRippleID else { return }
+        let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
+        let remaining = max(growDuration - elapsed, 0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
+            releasedRippleIDs.insert(id)
+        }
+        activeRippleID = nil
     }
 }
 
@@ -325,81 +333,6 @@ private struct CircularRippleInstance: Identifiable {
     let id = UUID()
 }
 
-public struct CircularRippleModifier: ViewModifier {
-    var size: CGFloat = 32
-    var color: Color = Color.black.opacity(0.22)
-    var trigger: Binding<Bool>? = nil
-
-    @State private var ripples: [CircularRippleInstance] = []
-    @State private var isRippleActive: Bool = false
-    @State private var activeRippleID: UUID?
-    @State private var releasedRippleIDs: Set<UUID> = []
-    @State private var rippleStartTime: Date?
-
-    private let growDuration: Double = 0.40
-
-    public func body(content: Content) -> some View {
-        content
-            .overlay(
-                ZStack {
-                    ForEach(ripples) { ripple in
-                        CircularRippleShapeView(
-                            color: color,
-                            size: size,
-                            isReleased: releasedRippleIDs.contains(ripple.id),
-                            onFadeOutComplete: {
-                                ripples.removeAll { $0.id == ripple.id }
-                                releasedRippleIDs.remove(ripple.id)
-                            }
-                        )
-                    }
-                }
-                .allowsHitTesting(false)
-            )
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        guard !isRippleActive else { return }
-                        isRippleActive = true
-                        addRipple()
-                    }
-                    .onEnded { _ in
-                        releaseRipple()
-                    },
-                including: trigger == nil ? .all : .none
-            )
-            .onChange(of: trigger?.wrappedValue ?? false) { isPressed in
-                guard trigger != nil else { return }
-                if isPressed {
-                    guard !isRippleActive else { return }
-                    isRippleActive = true
-                    addRipple()
-                } else {
-                    releaseRipple()
-                }
-            }
-    }
-
-    private func addRipple() {
-        let ripple = CircularRippleInstance()
-        ripples.append(ripple)
-        activeRippleID = ripple.id
-        rippleStartTime = Date()
-    }
-
-    private func releaseRipple() {
-        isRippleActive = false
-        if let activeRippleID {
-            let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
-            let remaining = max(growDuration - elapsed, 0)
-            DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
-                releasedRippleIDs.insert(activeRippleID)
-            }
-        }
-        activeRippleID = nil
-    }
-}
-
 private struct CircularRippleShapeView: View {
     let color: Color
     let size: CGFloat
@@ -433,6 +366,121 @@ private struct CircularRippleShapeView: View {
                     onFadeOutComplete()
                 }
             }
+    }
+}
+
+// MARK: - Circular Ripple (ButtonStyle)
+public struct CircularRipplePressStyle: ButtonStyle {
+    let size: CGFloat
+    let color: Color
+    let centerX: CGFloat?
+    let isEnabled: Bool
+
+    public init(
+        size: CGFloat = 32,
+        color: Color = Color.black.opacity(0.22),
+        centerX: CGFloat? = nil,
+        isEnabled: Bool = true
+    ) {
+        self.size = size
+        self.color = color
+        self.centerX = centerX
+        self.isEnabled = isEnabled
+    }
+
+    public func makeBody(configuration: Configuration) -> some View {
+        CircularRippleButtonBody(
+            configuration: configuration,
+            size: size,
+            color: color,
+            centerX: centerX,
+            isEnabled: isEnabled
+        )
+    }
+}
+
+private struct CircularRippleButtonBody: View {
+    let configuration: ButtonStyle.Configuration
+    let size: CGFloat
+    let color: Color
+    let centerX: CGFloat?
+    let isEnabled: Bool
+
+    @State private var ripples: [CircularRippleInstance] = []
+    @State private var activeRippleID: UUID?
+    @State private var releasedRippleIDs: Set<UUID> = []
+    @State private var rippleStartTime: Date?
+
+    private let growDuration: Double = 0.40
+
+    var body: some View {
+        configuration.label
+            .overlay(
+                GeometryReader { geo in
+                    ZStack {
+                        ForEach(ripples) { ripple in
+                            CircularRippleShapeView(
+                                color: color,
+                                size: size,
+                                isReleased: releasedRippleIDs.contains(ripple.id),
+                                onFadeOutComplete: {
+                                    ripples.removeAll { $0.id == ripple.id }
+                                    releasedRippleIDs.remove(ripple.id)
+                                }
+                            )
+                            .position(x: centerX ?? geo.size.width / 2, y: geo.size.height / 2)
+                        }
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
+                }
+                .allowsHitTesting(false)
+            )
+            .onChange(of: configuration.isPressed) { pressed in
+                guard isEnabled else { return }
+                if pressed { addRipple() } else { releaseRipple() }
+            }
+    }
+
+    private func addRipple() {
+        let ripple = CircularRippleInstance()
+        ripples.append(ripple)
+        activeRippleID = ripple.id
+        rippleStartTime = Date()
+    }
+
+    private func releaseRipple() {
+        guard let id = activeRippleID else { return }
+        let elapsed = Date().timeIntervalSince(rippleStartTime ?? Date())
+        let remaining = max(growDuration - elapsed, 0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + remaining) {
+            releasedRippleIDs.insert(id)
+        }
+        activeRippleID = nil
+    }
+}
+
+public struct CircularRippleButtonModifier: ViewModifier {
+    var size: CGFloat
+    var color: Color
+    var centerX: CGFloat?
+    var isEnabled: Bool
+    var onTap: (() -> Void)?
+
+    public func body(content: Content) -> some View {
+        Button {
+            guard isEnabled else { return }
+            onTap?()
+        } label: {
+            content
+        }
+        .buttonStyle(
+            CircularRipplePressStyle(
+                size: size,
+                color: color,
+                centerX: centerX,
+                isEnabled: isEnabled
+            )
+        )
     }
 }
 

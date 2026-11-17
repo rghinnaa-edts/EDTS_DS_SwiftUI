@@ -427,12 +427,10 @@ public struct EDTSChip: View {
 
         if isActionable {
             base
-                .circularRippleEffect(size: iconBadgeRippleSize, color: Color.black.opacity(iconRippleOpacity))
-                .highPriorityGesture(
-                    DragGesture(minimumDistance: 0)
-                        .onEnded { _ in
-                            onTap?()
-                        }
+                .circularRippleEffect(
+                    size: iconBadgeRippleSize,
+                    color: Color.black.opacity(iconRippleOpacity),
+                    onTap: onTap
                 )
         } else {
             base

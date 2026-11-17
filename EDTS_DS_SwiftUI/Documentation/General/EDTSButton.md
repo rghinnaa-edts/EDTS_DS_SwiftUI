@@ -1,6 +1,6 @@
 # EDTSButton
 
-`EDTSButton` is a SwiftUI button built as a plain `View` (not `ButtonStyle`), combining a `DragGesture(minimumDistance: 0)` for press handling with a custom ripple effect, gradient/solid background support, and per-state (`default` / `danger` / `disabled`) color resolution across label, icon, border, and shadow. Its visual defaults are theme-aware, switching between `klikIDM` and `poinku` token sets via `EDTSColor.theme`.
+`EDTSButton` is a SwiftUI button built as a plain `View` (not `ButtonStyle`), combining a `DragGesture(minimumDistance: 0)` (attached via `.simultaneousGesture`) for press handling with a custom ripple effect (applied through the `.rippleEffect(color:cornerRadius:)` modifier), gradient/solid background support, three icon layouts (`centered` / `horizontal` / `vertical`), and per-state (`default` / `danger` / `disabled`) color resolution across label, icon, border, and shadow. Its visual defaults are theme-aware, switching between `klikIDM` and `poinku` token sets via `EDTSColor.theme`.
 
 ---
 
@@ -92,7 +92,29 @@ var attributed: AttributedString {
 EDTSButton(text: nil, textAttributed: attributed) {}
 ```
 
-When `textAttributed` is non-`nil`, it takes precedence and `text` is ignored (internally forced to `nil`).
+When `textAttributed` is non-`nil`, it takes precedence and `text` is ignored (internally forced to `nil`). If both end up `nil` (e.g. `text: nil` with no `textAttributed`), the label falls back to `"Button"`.
+
+### 6. Icon Alignment
+
+```swift
+// Icons stacked above / below the label
+EDTSButton(
+    text: "Share",
+    iconLeading: Image(systemName: "square.and.arrow.up"),
+    iconAlignment: .vertical
+) {}
+
+// Icons pinned to the left / right edges, label stays centered
+EDTSButton(
+    text: "Next",
+    iconLeading: Image(systemName: "star.fill"),
+    iconTrailing: Image(systemName: "chevron.right"),
+    iconAlignment: .horizontal,
+    maxWidth: .infinity
+) {}
+```
+
+`iconAlignment` defaults to `.centered` (icons sit next to the label in an `HStack`). See [Icon Layout](#icon-layout) for the behavior of each mode.
 
 ---
 
@@ -109,6 +131,10 @@ public enum BtnType: String {
 
 public enum BtnSize: String {
     case small, medium, large
+}
+
+public enum BtnIconAlignment: String {
+    case centered, horizontal, vertical
 }
 ```
 
@@ -159,7 +185,7 @@ public enum BtnSize: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `rippleColor` | `Color?` | auto-resolved | Ripple tint. If unset: `textColor` at 12% opacity when background is white/clear, otherwise `EDTSColor.grey70` at 12%. Forced to `.clear` when `btnState == .disabled`, and suppressed entirely for gradient backgrounds. Passing `.clear` explicitly disables ripple without opacity applied |
+| `rippleColor` | `Color?` | auto-resolved | Ripple tint. If unset: the resolved text color of the current state at 12% opacity when background is white/clear, otherwise `EDTSColor.grey70` at 12%. Forced to `.clear` when `btnState == .disabled`, and suppressed entirely for gradient backgrounds. A custom `rippleColor` (other than `.clear`) is also rendered at 12% opacity. Passing `.clear` explicitly disables ripple without opacity applied |
 
 ### Icon Leading
 
@@ -183,8 +209,17 @@ public enum BtnSize: String {
 
 | Property Name | Type | Default | Description |
 | -------------- | ---- | ------- | ----------- |
-| `iconSpacing` | `Double` | `8` (all sizes) | Spacing between icon(s) and label in the `HStack` |
+| `iconSpacing` | `Double` | `8` (all sizes) | Spacing between icon(s) and label in the `Stack` |
 | `iconSize` | `Double` | `16` (small/medium), `24` (large) | Width/height applied to both leading and trailing icons |
+| `iconAlignment` | `BtnIconAlignment` | `.centered` | How icons are laid out relative to the label (see below) |
+
+**`iconAlignment` modes**
+
+| Mode | Layout |
+| ---- | ------ |
+| `.centered` | `HStack`: `iconLeading` → label → `iconTrailing`, all grouped in the center |
+| `.horizontal` | `iconLeading` is pinned to the leading edge and `iconTrailing` to the trailing edge (drawn in a non-interactive overlay inside the padding); the label stays centered. If either icon is set, an empty `iconSize` × `iconSize` placeholder is reserved on **both** sides of the label so it remains centered |
+| `.vertical` | `VStack`: `iconLeading` above the label, `iconTrailing` below it |
 
 ### Border
 
@@ -217,7 +252,7 @@ public enum BtnSize: String {
 | `paddingLeading` | `Double?` | `nil` → size default | Leading content padding |
 | `paddingTrailing` | `Double?` | `nil` → size default | Trailing content padding |
 
-> `cornerRadius` and the four padding properties are resolved via nil-coalescing (`??`) against their size/theme defaults, rather than a numeric sentinel. `iconSize` and `iconSpacing` (Icon Layout section) still use `.zero` as their internal "unset" sentinel.
+> `maxWidth` is applied after the content padding, so it constrains the total width including padding.
 
 ---
 
@@ -255,7 +290,7 @@ For `secondary` and `tertiary` types, if a custom `textColor` is supplied but `i
 
 | Aspect | Value |
 | ------ | ----- |
-| Trigger | `tempResolvedButtonState` changing from `nil` → current state (press) or state → `nil` (release/cancel) |
+| Trigger | `tempResolvedButtonState` changing from `nil` → current state (press, `onChanged`) or state → `nil` (release, `onEnded`) |
 | Effect | `.scaleEffect(tempResolvedButtonState != nil ? 0.95 : 1.0)` |
 | Timing | `.animation(.easeInOut(duration: 0.1), value: tempResolvedButtonState)` |
 | Scope | Applied to the whole button view (text, icons, background, border, shadow all scale together) |
@@ -263,9 +298,11 @@ For `secondary` and `tertiary` types, if a custom `textColor` is supplied but `i
 
 ### Ripple Animation
 
+> The button only passes `color` and `cornerRadius` to `.rippleEffect`. `color` is `.clear` for gradient backgrounds, so no ripple is drawn there.
+
 | Aspect | Value |
 | ------ | ----- |
-| Trigger | `DragGesture(minimumDistance: 0).onEnded` — fires at the tap/release location |
+| Trigger | Provided by the `.rippleEffect(color:cornerRadius:)` modifier applied to the button, not by the button's own gesture. The modifier's implementation is defined outside `EDTSButton.swift`; the timings below could not be verified against this file |
 | Opacity in | `.easeOut(duration: 0.10)` → `opacity = 1` |
 | Scale out | `.easeOut(duration: 0.40)` → `scale` grows from `0.01` to `maxRadius` (distance from tap point to the farthest corner of the view) |
 | Opacity out | `.easeOut(duration: 0.22).delay(0.40)` → `opacity = 0`, starting as the scale animation finishes |
