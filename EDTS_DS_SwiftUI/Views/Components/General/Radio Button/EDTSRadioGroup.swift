@@ -100,19 +100,6 @@ public struct EDTSRadioGroup: View {
         )
     }
 
-    public init(
-        titles: [String],
-        selectedIndex: Binding<Int?>,
-        displayMode: EDTSSelectionDisplayMode = .vertical,
-        horizontalSpacing: CGFloat = 8,
-        verticalSpacing: CGFloat = 8
-    ) {
-        self.init(
-            data: titles.map { [$0] }, selectedIndex: selectedIndex, displayMode: displayMode,
-            horizontalSpacing: horizontalSpacing, verticalSpacing: verticalSpacing
-        )
-    }
-
     // MARK: - Public Function
 
     public func configureRadioButton(_ configure: @escaping (inout EDTSRadioButton) -> Void) -> EDTSRadioGroup {
@@ -232,8 +219,8 @@ public struct EDTSRadioGroup: View {
         @State private var threeColumns: Int? = nil
 
         private let items = [
-            "Fashion", "Electronics", "Groceries", "Home & Living",
-            "Beauty", "Sports", "Books", "Automotive", "Toys"
+            ["Fashion", ""], ["Electronics", ""], ["Groceries", ""], ["Home & Living", ""],
+            ["Beauty", ""], ["Sports", ""], ["Books", ""], ["Automotive", ""], ["Toys", ""]
         ]
 
         private let itemsWithDesc = [
@@ -249,13 +236,13 @@ public struct EDTSRadioGroup: View {
                     EDTSRadioGroup(data: itemsWithDesc, selectedIndex: $vertical, displayMode: .vertical)
 
                     Text("Horizontal").font(.caption)
-                    EDTSRadioGroup(titles: items, selectedIndex: $horizontal, displayMode: .horizontal)
+                    EDTSRadioGroup(data: items, selectedIndex: $horizontal, displayMode: .horizontal)
 
                     Text("Span grid (2 columns)").font(.caption)
-                    EDTSRadioGroup(titles: items, selectedIndex: $twoColumns, displayMode: .spanGrid(2))
+                    EDTSRadioGroup(data: items, selectedIndex: $twoColumns, displayMode: .spanGrid(2))
 
                     Text("Span grid (3 columns)").font(.caption)
-                    EDTSRadioGroup(titles: items, selectedIndex: $threeColumns, displayMode: .spanGrid(3))
+                    EDTSRadioGroup(data: items, selectedIndex: $threeColumns, displayMode: .spanGrid(3))
                         .configureRadioButton { radioButton in
                             radioButton.titleFontWeight = "light"
                         }

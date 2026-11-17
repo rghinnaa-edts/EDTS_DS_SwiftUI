@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Flexible data sources:** build the group from titles only (`[String]`), title and description pairs (`[[String]]`), or `[[AttributedString]]`.
+- **Flexible data sources:** build the group from title and description pairs (`[[String]]`), or `[[AttributedString]]`.
 - **Single selection:** manage selection through a single `Binding<Int?>`, where `nil` means no selection.
 - **Three layouts:**
   - `vertical`
@@ -49,15 +49,6 @@ struct ContentView: View {
 }
 ```
 
-### Titles Only
-
-```swift
-EDTSRadioGroup(
-    titles: ["Fashion", "Electronics", "Groceries"],
-    selectedIndex: $selected
-)
-```
-
 ### Attributed Text
 
 ```swift
@@ -74,16 +65,16 @@ EDTSRadioGroup(
 
 ```swift
 // Horizontally scrolling single row
-EDTSRadioGroup(titles: items, selectedIndex: $selected, displayMode: .horizontal)
+EDTSRadioGroup(data: items, selectedIndex: $selected, displayMode: .horizontal)
 
 // 2-column grid
-EDTSRadioGroup(titles: items, selectedIndex: $selected, displayMode: .spanGrid(2))
+EDTSRadioGroup(data: items, selectedIndex: $selected, displayMode: .spanGrid(2))
 ```
 
 ### Customize Radio Button Appearance Inside Group
 
 ```swift
-EDTSRadioGroup(titles: items, selectedIndex: $selected, displayMode: .spanGrid(3))
+EDTSRadioGroup(data: items, selectedIndex: $selected, displayMode: .spanGrid(3))
     .configureRadioButton { radioButton in
         radioButton.titleFontWeight = "light"
         radioButton.titleColorActive = .blue
@@ -105,7 +96,6 @@ EDTSRadioGroup(titles: items, selectedIndex: $selected, displayMode: .spanGrid(3
 | ----------- | ----------- |
 | `init(data:selectedIndex:displayMode:horizontalSpacing:verticalSpacing:)` | Items as `[[String]]` (`[title, description]` per item) |
 | `init(dataAttributed:selectedIndex:displayMode:horizontalSpacing:verticalSpacing:)` | Items as `[[AttributedString]]` (`[title, description]` per item) |
-| `init(titles:selectedIndex:displayMode:horizontalSpacing:verticalSpacing:)` | Items as `[String]`, titles only (no description) |
 
 ---
 
@@ -146,8 +136,8 @@ public enum EDTSSelectionDisplayMode: Equatable {
 
 | Property Name | Type | Default | Description |
 | ------------- | ---- | ------- | ----------- |
-| `data` | `[[String]]` | Required (or `[]`) | `[title, description]` string arrays, one per radio item. Set through `init(data:...)`. `init(titles:...)` converts each title into a single-element array |
-| `dataAttributed` | `[[AttributedString]]` | Required (or `[]`) | `[title, description]` attributed string arrays. Set through `init(dataAttributed:...)`. Takes priority over `data` when both are non-empty |
+| `data` | `[[String]]` | Required (or `[]`) | `[title, description]` string arrays, one per radio item. Set through `init(data:...)`. |
+| `dataAttributed` | `[[AttributedString]]` | Required (or `[]`) | `[title, description]` attributed string arrays. Set through `init(dataAttributed:...)`. |
 | `selectedIndex` | `Binding<Int?>` | Required | Index of the currently selected item. `nil` means no selection |
 | `displayMode` | `EDTSSelectionDisplayMode` | `.vertical` | Layout mode (`.vertical`, `.horizontal`, `.spanGrid(Int)`) |
 
@@ -188,27 +178,13 @@ public enum EDTSSelectionDisplayMode: Equatable {
 | `["Title", "Description"]` | Title and description |
 | `["Title"]` | Title only. The description is hidden (the radio button's default placeholder text is **not** used) |
 | `[]` | No title and no description |
-| Extra elements after the second | Ignored |
-
----
-
-## Animation Details
-
-The group adds no animation of its own. Each radio button animates its own state change (bullet scale and fade, color transition) and ripple. See [`EDTSRadioButton`](EDTSRadioButton_SwiftUI.md).
 
 ---
 
 ## Notes
 
-- `EDTSRadioGroup` is a plain SwiftUI `View`. Selection state lives in your own `@State` (or other source) and is passed in as a `Binding<Int?>`
-- Each display mode wraps the items in its own `ScrollView` with hidden scroll indicators
-- A small internal inset keeps the radio button ripple from being clipped at the edges of the scroll view. It is canceled out with negative padding, so it does not change the layout
-- In `.spanGrid`, the cell width is `(container width - horizontalSpacing × (columns - 1)) / columns`. The container width is measured first, so the grid is hidden for the first layout pass and then appears
-- Items are laid out left to right, then top to bottom
-- `.vertical` ignores `horizontalSpacing`, and `.horizontal` ignores `verticalSpacing`
 - Items are identified by their index, so reordering `data` changes which row is considered selected
 - The group applies one configuration to all radio buttons. It has no per-item disabled state. Setting `radioButton.radioButtonState = .disabled` in `configureRadioButton` disables every item
-- Unlike the UIKit version, `selectedIndex` is a `Binding<Int?>` (`nil` instead of `-1` for no selection), there is no `padding*` property for the container, the mode enum is `EDTSSelectionDisplayMode` instead of `ItemDisplayMode`, and `configureRadioButton` receives an `inout EDTSRadioButton` value instead of a class instance
 
 ---
 

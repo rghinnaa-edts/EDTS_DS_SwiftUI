@@ -266,10 +266,7 @@ The same rules apply to the description (default size `12`).
 - `EDTSRadioButton` is a plain SwiftUI `View`. It does not toggle `isActive` itself, so update your own state in `onTapRadioButton`
 - The whole row (box and text) is tappable. The ripple is centered on the box
 - When `iconActive` or `iconInactive` is set, the bullet is replaced by the custom icon, rendered as a template (tintable). If the icon for the current state is `nil`, no icon is shown in that state, so set both icons
-- `title`, `desc`, `titleAttributed`, `descAttributed`, `iconActive`, `iconInactive` and `iconPadding` are set through the initializer only
 - Passing `titleAttributed` or `descAttributed` discards the plain `title` or `desc`
-- The `disabled` state disables the tap, the ripple and hit testing on the box
-- Unlike the UIKit version, there is no delegate (use `onTapRadioButton`), the state type is `EDTSSelectionState` instead of a `String`, `paddingLeading` defaults to `0` instead of `2`, and the group container is documented separately in `EDTSRadioGroup_SwiftUI.md`
 
 ---
 
