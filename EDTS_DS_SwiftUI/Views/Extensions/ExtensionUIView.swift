@@ -107,27 +107,6 @@ public enum Position {
     case trailing
 }
 
-// MARK: - Rounded Corner Shape (per-corner radius, mirrors UIRectCorner)
-
-public struct RoundedCorner: Shape {
-    public var radius: CGFloat = 0
-    public var corners: UIRectCorner = .allCorners
-
-    public init(radius: CGFloat = 0, corners: UIRectCorner = .allCorners) {
-        self.radius = radius
-        self.corners = corners
-    }
-
-    public func path(in rect: CGRect) -> Path {
-        let bezierPath = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(bezierPath.cgPath)
-    }
-}
-
 // MARK: - Custom Shape for per-corner radius
 
 public struct UnevenRoundedShape: Shape {
@@ -221,6 +200,26 @@ public struct GradientBackgroundModifier: ViewModifier {
     }
 }
 
+// MARK: - Rounded Corner Shape (per-corner radius, mirrors UIRectCorner)
+
+public struct RoundedCorner: Shape {
+    public var radius: CGFloat = 0
+    public var corners: UIRectCorner = .allCorners
+
+    public init(radius: CGFloat = 0, corners: UIRectCorner = .allCorners) {
+        self.radius = radius
+        self.corners = corners
+    }
+
+    public func path(in rect: CGRect) -> Path {
+        let bezierPath = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(bezierPath.cgPath)
+    }
+}
 
 // MARK: - Ripple Animation
 
