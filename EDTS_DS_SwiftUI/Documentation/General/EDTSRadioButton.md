@@ -1,6 +1,16 @@
-# EDTSRadioButton (SwiftUI)
+# EDTSRadioButton
 
-`EDTSRadioButton` is a customizable single radio button `View` for SwiftUI featuring a bullet indicator (or custom icon), title, and description text with full active/inactive state styling. It supports two states (`default`, `disabled`), plain or attributed text, custom fonts, and a circular ripple on tap. Selection is controlled by the caller through `isActive` and `onTapRadioButton`.
+`EDTSRadioButton` is a customizable SwiftUI radio button with a bullet indicator (or custom icon), a title, and an optional description.
+
+## Features
+
+- **Two states:** `default` and `disabled`, each with its own active/inactive styling.
+- **Controlled selection:** the caller owns `isActive` and updates it in `onTapRadioButton`.
+- **Flexible text:** use plain `String` or `AttributedString` for both title and description.
+- **Custom icons:** replace the bullet with your own active/inactive icons, with tint and padding control.
+- **Font customization:** use a theme font, a SwiftUI `Font`, or a custom font name, size, and weight.
+- **Theme-aware styling:** colors adapt to the `klikIDM` and `poinku` themes, and can be overridden per property.
+- **Animation and ripple:** bullet scale/fade, box color transition, and a circular ripple on tap.
 
 ---
 

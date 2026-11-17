@@ -1,6 +1,17 @@
-# EDTSRadioGroup (SwiftUI)
+# EDTSRadioGroup
 
-`EDTSRadioGroup` is a SwiftUI container that renders a list of [`EDTSRadioButton`](EDTSRadioButton_SwiftUI.md) items and manages single selection automatically through a `Binding<Int?>`. It supports vertical, horizontal, and multi-column grid layouts, plain or attributed text, and a `configureRadioButton(_:)` modifier to style every radio button in the group.
+`EDTSRadioGroup` is a SwiftUI container that renders a list of [`EDTSRadioButton`](EDTSRadioButton_SwiftUI.md) items and manages single selection for you.
+
+## Features
+
+- **Flexible data sources:** build the group from titles only (`[String]`), title and description pairs (`[[String]]`), or `[[AttributedString]]`.
+- **Single selection:** manage selection through a single `Binding<Int?>`, where `nil` means no selection.
+- **Three layouts:**
+  - `vertical`
+  - `horizontal`
+  - `spanGrid(Int)` for a fixed-column grid
+- **Configurable spacing:** adjust horizontal and vertical spacing independently.
+- **Radio button customization:** use the `configureRadioButton(_:)` modifier to style every radio button in the group (colors, fonts, state, etc.) without rebuilding them manually.
 
 ---
 
