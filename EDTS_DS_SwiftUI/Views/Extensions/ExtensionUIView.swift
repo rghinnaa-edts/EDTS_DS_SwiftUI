@@ -7,7 +7,91 @@
 
 import SwiftUI
 
-// MARK: - Orientation
+extension View {
+    // MARK: - Gradient Background
+    
+    public func gradientBackground(
+        _ gradient: [Color],
+        orientation: Orientation = .horizontal,
+        cornerRadius: CGFloat = 0,
+        corners: UIRectCorner = .allCorners,
+        borderWidth: CGFloat = 0,
+        borderColor: Color? = nil
+    ) -> some View {
+        modifier(
+            GradientBackgroundModifier(
+                gradient: gradient,
+                orientation: orientation,
+                cornerRadius: cornerRadius,
+                corners: corners,
+                borderWidth: borderWidth,
+                borderColor: borderColor
+            )
+        )
+    }
+
+    // MARK: - Circular clip
+
+    public func applyCircular() -> some View {
+        clipShape(Circle())
+    }
+
+    // MARK: - Grayscale
+
+    public func applyGrayscale(_ isGrayscale: Bool) -> some View {
+        grayscale(isGrayscale ? 1.0 : 0.0)
+    }
+    
+    // MARK: - Ripple Animation
+    
+    public func rippleEffect(
+        color: Color = Color.black.opacity(0.12),
+        cornerRadius: CGFloat = 0,
+        onTap: (() -> Void)? = nil
+    ) -> some View {
+        modifier(RippleModifier(color: color, cornerRadius: cornerRadius, onTap: onTap))
+    }
+    
+    // MARK: - Circular Ripple Animation
+    
+    public func circularRippleEffect(
+        size: CGFloat = 32,
+        color: Color = Color.black.opacity(0.22),
+        centerX: CGFloat? = nil,
+        isEnabled: Bool = true,
+        onTap: (() -> Void)? = nil
+    ) -> some View {
+        modifier(CircularRippleButtonModifier(size: size, color: color, centerX: centerX, isEnabled: isEnabled, onTap: onTap))
+    }
+    
+    // MARK: - On Change Extension for lower iOS version
+    
+    @ViewBuilder
+    public func edtsOnChange<V: Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
+        if #available(iOS 17.0, *) {
+            self.onChange(of: value, initial: true) { _, newValue in action(newValue) }
+        } else {
+            self.onChange(of: value) { action($0) }
+                .onAppear { action(value) }
+        }
+    }
+    
+    // MARK: - Coupon Shape Background
+    
+    public func couponBackground(
+        notchRadius: CGFloat = 8,
+        notchPosition: CGFloat,
+        cornerRadius: CGFloat = 12,
+        fill: Color = Color(.systemBackground)
+    ) -> some View {
+        let shape = CouponShape(notchRadius: notchRadius, notchPosition: notchPosition, cornerRadius: cornerRadius)
+        return self
+            .background(shape.fill(fill))
+            .clipShape(shape)
+    }
+}
+
+// MARK: - Enum
 
 public enum Orientation: String {
     case horizontal = "horizontal"
@@ -137,69 +221,9 @@ public struct GradientBackgroundModifier: ViewModifier {
     }
 }
 
-extension View {
-    public func gradientBackground(
-        _ gradient: [Color],
-        orientation: Orientation = .horizontal,
-        cornerRadius: CGFloat = 0,
-        corners: UIRectCorner = .allCorners,
-        borderWidth: CGFloat = 0,
-        borderColor: Color? = nil
-    ) -> some View {
-        modifier(
-            GradientBackgroundModifier(
-                gradient: gradient,
-                orientation: orientation,
-                cornerRadius: cornerRadius,
-                corners: corners,
-                borderWidth: borderWidth,
-                borderColor: borderColor
-            )
-        )
-    }
-
-    // MARK: - Circular clip
-
-    public func applyCircular() -> some View {
-        clipShape(Circle())
-    }
-
-    // MARK: - Grayscale
-
-    public func applyGrayscale(_ isGrayscale: Bool) -> some View {
-        grayscale(isGrayscale ? 1.0 : 0.0)
-    }
-    
-    public func rippleEffect(
-        color: Color = Color.black.opacity(0.12),
-        cornerRadius: CGFloat = 0,
-        onTap: (() -> Void)? = nil
-    ) -> some View {
-        modifier(RippleModifier(color: color, cornerRadius: cornerRadius, onTap: onTap))
-    }
-    
-    public func circularRippleEffect(
-        size: CGFloat = 32,
-        color: Color = Color.black.opacity(0.22),
-        centerX: CGFloat? = nil,
-        isEnabled: Bool = true,
-        onTap: (() -> Void)? = nil
-    ) -> some View {
-        modifier(CircularRippleButtonModifier(size: size, color: color, centerX: centerX, isEnabled: isEnabled, onTap: onTap))
-    }
-    
-    @ViewBuilder
-    public func edtsOnChange<V: Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
-        if #available(iOS 17.0, *) {
-            self.onChange(of: value, initial: true) { _, newValue in action(newValue) }
-        } else {
-            self.onChange(of: value) { action($0) }
-                .onAppear { action(value) }
-        }
-    }
-}
 
 // MARK: - Ripple Animation
+
 private struct RippleInstance: Identifiable {
     let id = UUID()
     let point: CGPoint
@@ -328,7 +352,8 @@ private struct RippleShapeView: View {
     }
 }
 
-// MARK: - Circular Ripple
+// MARK: - Circular Ripple Animation
+
 private struct CircularRippleInstance: Identifiable {
     let id = UUID()
 }
@@ -369,7 +394,6 @@ private struct CircularRippleShapeView: View {
     }
 }
 
-// MARK: - Circular Ripple (ButtonStyle)
 public struct CircularRipplePressStyle: ButtonStyle {
     let size: CGFloat
     let color: Color
@@ -484,7 +508,7 @@ public struct CircularRippleButtonModifier: ViewModifier {
     }
 }
 
-// MARK: - Coupon Shape (replaces createCouponPath / applyCouponBackground)
+// MARK: - Coupon Shape Background
 
 public struct CouponShape: Shape {
     public var notchRadius: CGFloat
@@ -566,19 +590,5 @@ public struct CouponShape: Shape {
 
         path.closeSubpath()
         return path
-    }
-}
-
-extension View {
-    public func couponBackground(
-        notchRadius: CGFloat = 8,
-        notchPosition: CGFloat,
-        cornerRadius: CGFloat = 12,
-        fill: Color = Color(.systemBackground)
-    ) -> some View {
-        let shape = CouponShape(notchRadius: notchRadius, notchPosition: notchPosition, cornerRadius: cornerRadius)
-        return self
-            .background(shape.fill(fill))
-            .clipShape(shape)
     }
 }
