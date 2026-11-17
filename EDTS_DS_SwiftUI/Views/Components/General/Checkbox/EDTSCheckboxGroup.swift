@@ -7,14 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Enum
-
-public enum CheckboxGroupDisplayMode: Equatable {
-    case vertical
-    case horizontal
-    case spanGrid(Int)
-}
-
 // MARK: - Preference Keys
 
 private struct CheckboxContainerWidthKey: PreferenceKey {
@@ -32,7 +24,7 @@ public struct EDTSCheckboxGroup: View {
     public let data: [String]
     public let dataAttributed: [AttributedString]
     @Binding public var selectedIndices: Set<Int>
-    public var displayMode: CheckboxGroupDisplayMode
+    public var displayMode: EDTSSelectionDisplayMode
 
     public var horizontalSpacing: CGFloat
     public var verticalSpacing: CGFloat
@@ -61,7 +53,7 @@ public struct EDTSCheckboxGroup: View {
         data: [String] = [],
         dataAttributed: [AttributedString] = [],
         selectedIndices: Binding<Set<Int>>,
-        displayMode: CheckboxGroupDisplayMode = .vertical,
+        displayMode: EDTSSelectionDisplayMode = .vertical,
         horizontalSpacing: CGFloat = 8,
         verticalSpacing: CGFloat = 8
     ) {
@@ -76,7 +68,7 @@ public struct EDTSCheckboxGroup: View {
     public init(
         data: [String] = [],
         selectedIndices: Binding<Set<Int>>,
-        displayMode: CheckboxGroupDisplayMode = .vertical,
+        displayMode: EDTSSelectionDisplayMode = .vertical,
         horizontalSpacing: CGFloat = 8,
         verticalSpacing: CGFloat = 8
     ) {
@@ -86,7 +78,7 @@ public struct EDTSCheckboxGroup: View {
     public init(
         dataAttributed: [AttributedString] = [],
         selectedIndices: Binding<Set<Int>>,
-        displayMode: CheckboxGroupDisplayMode = .vertical,
+        displayMode: EDTSSelectionDisplayMode = .vertical,
         horizontalSpacing: CGFloat = 8,
         verticalSpacing: CGFloat = 8
     ) {
