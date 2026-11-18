@@ -46,7 +46,7 @@ public enum EDTSRingFill {
     case gradient(start: Color, end: Color, orientation: EDTSGradientOrientation = .horizontal)
 }
 
-public struct EDTSCircularLoadingView: View {
+public struct EDTSCircularLoading: View {
     // MARK: Properties
 
     public var value: CGFloat
@@ -554,25 +554,21 @@ public extension View {
         @State private var value: CGFloat = 65
         var body: some View {
             VStack(spacing: 24) {
-                EDTSCircularLoadingView(value: value)
+                EDTSCircularLoading(value: value)
 
-                EDTSCircularLoadingView(
+                EDTSCircularLoading(
                     value: value,
                     trackFillTintColorStart: .purple,
                     trackFillTintColorEnd: .pink,
                     trackFillColorOrientation: .diagonalUp,
                     trackSize: 80,
-                    trackThickness: 10,
-                    trackInnerShadowOpacity: 1,
-                    trackInnerShadowRadius: 8,
-                    trackInnerShadowOffset: CGSize(width: 4, height: 4),
-                    trackInnerShadowColor: EDTSColor.red50
+                    trackThickness: 10
                 )
 
                 HStack(spacing: 24) {
-                    EDTSCircularLoadingView(isIntermittentState: true, intermittentAnimationType: .stretch)
-                    EDTSCircularLoadingView(isIntermittentState: true, intermittentAnimationType: .fixed)
-                    EDTSCircularLoadingView(trackSize: 64, isIntermittentState: true, intermittentAnimationType: .doubleArc)
+                    EDTSCircularLoading(isIntermittentState: true, intermittentAnimationType: .stretch)
+                    EDTSCircularLoading(isIntermittentState: true, intermittentAnimationType: .fixed)
+                    EDTSCircularLoading(trackSize: 64, isIntermittentState: true, intermittentAnimationType: .doubleArc)
                 }
 
                 Slider(value: $value, in: 0...100).padding(.horizontal)
