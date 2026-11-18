@@ -28,7 +28,6 @@ public enum EDTSRingFill {
 }
 
 public struct EDTSRingShadow {
-
     public var color: Color?
     public var opacity: Double
     public var radius: CGFloat
@@ -47,25 +46,52 @@ public struct EDTSRingShadow {
 // MARK: - View
 
 public struct EDTSCircularLoadingView: View {
-    // MARK: Configuration (mirrors the old @IBInspectable properties)
-    
+    // MARK: Configuration (same names and order as the UIKit @IBInspectable properties)
+
+    // Value
     public var value: CGFloat
     public var maxValue: CGFloat
-    public var lineCap: CGLineCap
+
+    // Line cap / double arc
+    public var lineCapStyle: CGLineCap
     public var doubleArcGap: CGFloat
+
+    // Fill (the progress arc). `nil` colors -> sky-blue leading -> trailing gradient.
+    public var trackFillTintColor: Color?
+    public var trackFillTintColorStart: Color?
+    public var trackFillTintColorEnd: Color?
+    public var trackFillColorOrientation: EDTSGradientOrientation?
+
+    // Track (the background ring). `nil` colors -> EDTSColor.grey20.
     public var trackSize: CGFloat
-    public var trackThickness: CGFloat?
+    /// `-1` -> 6.
+    public var trackThickness: CGFloat
+    public var trackTintColor: Color?
+    public var trackTintColorStart: Color?
+    public var trackTintColorEnd: Color?
+    public var trackColorOrientation: EDTSGradientOrientation?
     public var trackPaddingTop: CGFloat
     public var trackPaddingBottom: CGFloat
-    public var trackFill: EDTSRingFill?
-    public var fill: EDTSRingFill?
-    public var trackShadow: EDTSRingShadow?
-    public var trackInnerShadow: EDTSRingShadow?
+
+    // Inner shadow. Default is 0.10 / radius 2 / zero offset / black.
+    // Set `trackInnerShadowOpacity: 0` to hide it.
+    public var trackInnerShadowOpacity: Float?
+    public var trackInnerShadowRadius: CGFloat?
+    public var trackInnerShadowOffset: CGSize?
+    public var trackInnerShadowColor: Color?
+
+    // Track shadow (off by default, like UIKit's opacity 0). `nil` color -> EDTSColor.black.
+    public var trackShadowOpacity: Float
+    public var trackShadowRadius: CGFloat
+    public var trackShadowOffset: CGSize
+    public var trackShadowColor: Color?
+
+    // States
     public var isIntermittentState: Bool
     public var intermittentAnimationType: EDTSIntermittentAnimationType
 
     // MARK: Timing constants
-    
+
     private let fillAnimationDuration: Double = 1.0
     private let stretchRotationDuration: Double = 2.4
     private let stretchSweepDuration: Double = 1.33
@@ -75,89 +101,165 @@ public struct EDTSCircularLoadingView: View {
     private let doubleArcSweepFraction: CGFloat = 0.75
 
     // MARK: State
-    
+
     @State private var displayedRatio: CGFloat = 0
     @State private var startDate = Date()
 
     public init(
         value: CGFloat = 0,
         maxValue: CGFloat = 100,
-        lineCap: CGLineCap = .round,
+        lineCapStyle: CGLineCap = .round,
         doubleArcGap: CGFloat = 4,
+        trackFillTintColor: Color? = nil,
+        trackFillTintColorStart: Color? = nil,
+        trackFillTintColorEnd: Color? = nil,
+        trackFillColorOrientation: EDTSGradientOrientation? = nil,
         trackSize: CGFloat = 50,
-        trackThickness: CGFloat? = nil,
+        trackThickness: CGFloat = -1,
+        trackTintColor: Color? = nil,
+        trackTintColorStart: Color? = nil,
+        trackTintColorEnd: Color? = nil,
+        trackColorOrientation: EDTSGradientOrientation? = nil,
         trackPaddingTop: CGFloat = 0,
         trackPaddingBottom: CGFloat = 0,
-        trackFill: EDTSRingFill? = nil,
-        fill: EDTSRingFill? = nil,
-        trackShadow: EDTSRingShadow? = nil,
-        trackInnerShadow: EDTSRingShadow? = .defaultInner,
+        trackInnerShadowOpacity: Float? = nil,
+        trackInnerShadowRadius: CGFloat? = nil,
+        trackInnerShadowOffset: CGSize? = nil,
+        trackInnerShadowColor: Color? = nil,
+        trackShadowOpacity: Float = 0,
+        trackShadowRadius: CGFloat = 0,
+        trackShadowOffset: CGSize = .zero,
+        trackShadowColor: Color? = nil,
         isIntermittentState: Bool = false,
         intermittentAnimationType: EDTSIntermittentAnimationType = .stretch
     ) {
         self.value = value
         self.maxValue = maxValue
-        self.lineCap = lineCap
+        self.lineCapStyle = lineCapStyle
         self.doubleArcGap = doubleArcGap
+        self.trackFillTintColor = trackFillTintColor
+        self.trackFillTintColorStart = trackFillTintColorStart
+        self.trackFillTintColorEnd = trackFillTintColorEnd
+        self.trackFillColorOrientation = trackFillColorOrientation
         self.trackSize = trackSize
         self.trackThickness = trackThickness
+        self.trackTintColor = trackTintColor
+        self.trackTintColorStart = trackTintColorStart
+        self.trackTintColorEnd = trackTintColorEnd
+        self.trackColorOrientation = trackColorOrientation
         self.trackPaddingTop = trackPaddingTop
         self.trackPaddingBottom = trackPaddingBottom
-        self.trackFill = trackFill
-        self.fill = fill
-        self.trackShadow = trackShadow
-        self.trackInnerShadow = trackInnerShadow
+        self.trackInnerShadowOpacity = trackInnerShadowOpacity
+        self.trackInnerShadowRadius = trackInnerShadowRadius
+        self.trackInnerShadowOffset = trackInnerShadowOffset
+        self.trackInnerShadowColor = trackInnerShadowColor
+        self.trackShadowOpacity = trackShadowOpacity
+        self.trackShadowRadius = trackShadowRadius
+        self.trackShadowOffset = trackShadowOffset
+        self.trackShadowColor = trackShadowColor
         self.isIntermittentState = isIntermittentState
         self.intermittentAnimationType = intermittentAnimationType
     }
 
     // MARK: Body
-    
+
     public var body: some View {
         Group {
             if isIntermittentState {
                 TimelineView(.animation) { context in
                     content(for: intermittentState(at: context.date))
                 }
-                .id(intermittentAnimationType)
+                .id(intermittentAnimationType) // restart when the type changes
                 .onAppear { startDate = Date() }
             } else {
-                content(for: RingState(start: 0, end: displayedRatio))
+                content(for: RingState(start: 0, end: displayedRatio, capCompensated: true))
                     .accessibilityElement(children: .ignore)
                     .accessibilityValue(Text("\(Int((ratio * 100).rounded())) percent"))
             }
         }
         .frame(width: trackSize, height: trackSize)
-        .onAppear { updateDisplayedRatio() }
-        .onChange(of: ratio) { _ in updateDisplayedRatio() }
+        .onAppear { updateDisplayedRatio(to: ratio) }
+        .onChange(of: ratio) { newRatio in updateDisplayedRatio(to: newRatio) }
     }
 
     // MARK: Progress
-    
+
     private var ratio: CGFloat {
         guard maxValue > 0 else { return 0 }
         let clamped = min(max(value, 0), maxValue)
         return min(max(clamped / maxValue, 0), 1)
     }
 
-    private func updateDisplayedRatio() {
+    private func updateDisplayedRatio(to target: CGFloat) {
         if isIntermittentState {
-            displayedRatio = ratio
+            displayedRatio = target
         } else {
             withAnimation(.easeInOut(duration: fillAnimationDuration)) {
-                displayedRatio = ratio
+                displayedRatio = target
             }
         }
     }
 
+    // MARK: Resolved values (UIKit's applyGradient + setupUI defaults)
+
+    private func resolveFill(
+        solid: Color?, start: Color?, end: Color?,
+        orientation: EDTSGradientOrientation?, fallback: EDTSRingFill
+    ) -> EDTSRingFill {
+        if start != nil || end != nil {
+            return .gradient(start: start ?? .clear, end: end ?? .clear, orientation: orientation ?? .horizontal)
+        }
+        if let solid { return .solid(solid) }
+        return fallback
+    }
+
+    /// `trackFill*` in UIKit is the progress arc.
+    private var resolvedFill: EDTSRingFill {
+        resolveFill(
+            solid: trackFillTintColor, start: trackFillTintColorStart, end: trackFillTintColorEnd,
+            orientation: trackFillColorOrientation,
+            fallback: .gradient(start: EDTSColor.skyblueLeading, end: EDTSColor.skyblueTrailing, orientation: .horizontal)
+        )
+    }
+
+    /// `track*` in UIKit is the background ring.
+    private var resolvedTrackFill: EDTSRingFill {
+        resolveFill(
+            solid: trackTintColor, start: trackTintColorStart, end: trackTintColorEnd,
+            orientation: trackColorOrientation,
+            fallback: .solid(EDTSColor.grey20)
+        )
+    }
+
+    private var resolvedInnerShadow: EDTSRingShadow {
+        EDTSRingShadow(
+            color: trackInnerShadowColor,
+            opacity: Double(trackInnerShadowOpacity ?? 0.10),
+            radius: trackInnerShadowRadius ?? 2,
+            offset: trackInnerShadowOffset ?? .zero
+        )
+    }
+
+    private var resolvedTrackShadow: EDTSRingShadow? {
+        guard trackShadowOpacity > 0 else { return nil }
+        return EDTSRingShadow(
+            color: trackShadowColor,
+            opacity: Double(trackShadowOpacity),
+            radius: trackShadowRadius,
+            offset: trackShadowOffset
+        )
+    }
+
     // MARK: Ring state
-    
+
     private struct RingState {
         var start: CGFloat = 0
         var end: CGFloat = 0
         var outerRotation: Angle = .zero
         var innerRotation: Angle = .zero
         var isDoubleArc = false
+        /// Progress mode only: shrink the arc by the line cap so the visible length equals the ratio.
+        var capCompensated = false
     }
 
     private func intermittentState(at date: Date) -> RingState {
@@ -168,7 +270,7 @@ public struct EDTSCircularLoadingView: View {
 
         switch intermittentAnimationType {
         case .stretch:
-
+            // Same keyframes as animateStretch(), eased like the group's easeInEaseOut.
             let u = Self.easeInOut(phase(stretchSweepDuration))
             let keyTimes: [Double] = [0, 0.25, 0.75, 1]
             let head = Self.interpolate(u, keyTimes: keyTimes, values: [0, 0, 0.75, 1])
@@ -190,14 +292,14 @@ public struct EDTSCircularLoadingView: View {
                 start: 0,
                 end: doubleArcSweepFraction,
                 outerRotation: .degrees(360 * p),
-                innerRotation: .degrees(-360 * p),
+                innerRotation: .degrees(-360 * p), // counter-clockwise
                 isDoubleArc: true
             )
         }
     }
 
     // MARK: Geometry
-    
+
     private struct Geometry {
         let diameter: CGFloat
         let thickness: CGFloat
@@ -205,7 +307,7 @@ public struct EDTSCircularLoadingView: View {
         let paddingBottom: CGFloat
         let gap: CGFloat
 
-        var radius: CGFloat { max(diameter - thickness, 0) / 2 }
+        var radius: CGFloat { max(diameter - thickness, 0) / 2 }       // track centerline
         var outerEdge: CGFloat { radius + thickness / 2 }
         var innerEdge: CGFloat { radius - thickness / 2 }
         private var fillOuterEdge: CGFloat { outerEdge - paddingTop }
@@ -218,7 +320,7 @@ public struct EDTSCircularLoadingView: View {
     private var geometry: Geometry {
         Geometry(
             diameter: trackSize,
-            thickness: trackThickness ?? 6,
+            thickness: trackThickness >= 0 ? trackThickness : 6,
             paddingTop: trackPaddingTop,
             paddingBottom: trackPaddingBottom,
             gap: doubleArcGap
@@ -226,27 +328,31 @@ public struct EDTSCircularLoadingView: View {
     }
 
     // MARK: Layers
-    
+
     @ViewBuilder
     private func content(for state: RingState) -> some View {
         let g = geometry
         ZStack {
+            // Track + inner shadow (hidden in double-arc mode, like the UIKit version)
             if !state.isDoubleArc {
                 track(g)
-                if let inner = trackInnerShadow, inner.opacity > 0 {
-                    ringInnerShadow(g, shadow: inner)
+                if resolvedInnerShadow.opacity > 0 {
+                    ringInnerShadow(g, shadow: resolvedInnerShadow)
                 }
             }
 
+            // Outer fill arc
             arc(
                 fill: resolvedFill,
                 radius: g.fillRadius,
                 lineWidth: g.fillThickness,
                 start: state.start,
                 end: state.end,
-                rotation: state.outerRotation
+                rotation: state.outerRotation,
+                capCompensated: state.capCompensated
             )
 
+            // Inner counter-rotating arc (double arc only)
             if state.isDoubleArc, g.doubleArcInnerRadius > 0 {
                 arc(
                     fill: resolvedFill,
@@ -264,9 +370,9 @@ public struct EDTSCircularLoadingView: View {
     private func track(_ g: Geometry) -> some View {
         paint(resolvedTrackFill)
             .mask(
-                EDTSRingArc(radius: g.radius, lineWidth: g.thickness, lineCap: lineCap, start: 0, end: 1)
+                EDTSRingArc(radius: g.radius, lineWidth: g.thickness, lineCap: lineCapStyle, start: 0, end: 1)
             )
-            .edtsShadow(trackShadow)
+            .edtsShadow(resolvedTrackShadow)
     }
 
     private func arc(
@@ -275,32 +381,43 @@ public struct EDTSCircularLoadingView: View {
         lineWidth: CGFloat,
         start: CGFloat,
         end: CGFloat,
-        rotation: Angle
+        rotation: Angle,
+        capCompensated: Bool = false
     ) -> some View {
+        // The gradient stays fixed while the masking arc rotates,
+        // matching the UIKit gradient-layer + mask setup.
         paint(fill)
             .mask(
                 EDTSRingArc(
                     radius: radius,
                     lineWidth: lineWidth,
-                    lineCap: lineCap,
+                    lineCap: lineCapStyle,
                     start: start,
                     end: end,
-                    rotation: rotation
+                    rotation: rotation,
+                    capCompensated: capCompensated
                 )
             )
     }
 
+    /// Soft inner shadow that wraps the ring like a donut: it hugs both the outer and
+    /// inner edge of the track and is clipped to the ring band.
     private func ringInnerShadow(_ g: Geometry, shadow: EDTSRingShadow) -> some View {
-        let color = (shadow.color ?? Self.defaultShadowColor).opacity(shadow.opacity)
+        let color = (shadow.color ?? EDTSColor.black).opacity(shadow.opacity)
+        // CALayer's shadowRadius is a blur diameter; SwiftUI's blur(radius:) is the
+        // gaussian sigma, which is roughly half of it.
         let sigma = max(shadow.radius / 2, 0.01)
+        // The shadow source must lie entirely *outside* each edge of the ring
+        // (a blurred half-plane), otherwise it darkens thin rings uniformly.
         let sourceWidth = max(sigma * 6, 4)
 
         return ZStack {
+            // Outside the outer edge: a band from outerEdge to outerEdge + sourceWidth.
             Circle()
                 .stroke(color, lineWidth: sourceWidth)
                 .frame(width: (g.outerEdge + sourceWidth / 2) * 2,
                        height: (g.outerEdge + sourceWidth / 2) * 2)
-
+            // Inside the inner edge: the hole itself casts a shadow onto the ring.
             if g.innerEdge > 0 {
                 Circle()
                     .fill(color)
@@ -318,73 +435,24 @@ public struct EDTSCircularLoadingView: View {
     }
 
     // MARK: Paint (solid / gradient)
-    
+
     @ViewBuilder
     private func paint(_ fill: EDTSRingFill) -> some View {
         switch fill {
         case .solid(let color):
             Rectangle().fill(color)
         case .gradient(let start, let end, let orientation):
-            let points = Self.gradientPoints(for: orientation)
+            // `unitPoints` comes from the EDTSGradientOrientation extension in the tracker section.
+            let p = orientation.unitPoints
             Rectangle().fill(
-                LinearGradient(colors: [start, end], startPoint: points.start, endPoint: points.end)
+                LinearGradient(colors: [start, end], startPoint: p.start, endPoint: p.end)
             )
         }
     }
 
-    private static func gradientPoints(for orientation: EDTSGradientOrientation) -> (start: UnitPoint, end: UnitPoint) {
-        switch orientation {
-        case .horizontal:
-            return (UnitPoint(x: 0, y: 0.5), UnitPoint(x: 1, y: 0.5))
-        case .vertical:
-            return (UnitPoint(x: 0.5, y: 0), UnitPoint(x: 0.5, y: 1))
-        case .diagonalUp:
-            return diagonalPoints(angleDegrees: 10)
-        case .diagonalDown:
-            let p = diagonalPoints(angleDegrees: 170)
-            return (p.end, p.start)
-        }
-    }
-
-    private static func diagonalPoints(angleDegrees: CGFloat) -> (start: UnitPoint, end: UnitPoint) {
-        let radians = angleDegrees * .pi / 180
-        let dx = cos(radians)
-        let dy = -sin(radians)
-        let half: CGFloat = 0.5
-
-        let scale: CGFloat
-        if dx == 0 {
-            scale = half / abs(dy)
-        } else if dy == 0 {
-            scale = half / abs(dx)
-        } else {
-            scale = min(half / abs(dx), half / abs(dy))
-        }
-
-        return (
-            UnitPoint(x: half - dx * scale, y: half - dy * scale),
-            UnitPoint(x: half + dx * scale, y: half + dy * scale)
-        )
-    }
-
-    // MARK: Resolved defaults
-    
-    private static var defaultShadowColor: Color { EDTSColor.black }
-
-    private var resolvedTrackFill: EDTSRingFill {
-        trackFill ?? .solid(EDTSColor.grey20)
-    }
-
-    private var resolvedFill: EDTSRingFill {
-        fill ?? .gradient(
-            start: EDTSColor.skyblueLeading,
-            end: EDTSColor.skyblueTrailing,
-            orientation: .horizontal
-        )
-    }
-
     // MARK: Easing helpers
 
+    /// cubic-bezier(0.42, 0, 0.58, 1) — CAMediaTimingFunction(name: .easeInEaseOut)
     private static func easeInOut(_ x: Double) -> Double {
         let (x1, y1, x2, y2) = (0.42, 0.0, 0.58, 1.0)
         func bezier(_ t: Double, _ a: Double, _ b: Double) -> Double {
@@ -411,6 +479,12 @@ public struct EDTSCircularLoadingView: View {
 
 // MARK: - Shapes
 
+/// A stroked arc, emitted as a filled outline so line caps are part of the path.
+/// `start`/`end` are fractions of the circle (like strokeStart/strokeEnd),
+/// measured clockwise from 12 o'clock. Both are animatable.
+/// A stroked arc, emitted as a filled outline so line caps are part of the path.
+/// `start`/`end` are fractions of the circle (like strokeStart/strokeEnd),
+/// measured clockwise from 12 o'clock. Both are animatable.
 struct EDTSRingArc: Shape {
     var radius: CGFloat
     var lineWidth: CGFloat
@@ -418,6 +492,9 @@ struct EDTSRingArc: Shape {
     var start: CGFloat = 0
     var end: CGFloat = 1
     var rotation: Angle = .zero
+    /// When true, the arc is pulled in by the cap size at both ends, so the *visible* length
+    /// (caps included) equals `end - start`. Nothing is drawn at 0 and a full ring at 1.
+    var capCompensated: Bool = false
 
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { AnimatablePair(start, end) }
@@ -428,25 +505,35 @@ struct EDTSRingArc: Shape {
     }
 
     func path(in rect: CGRect) -> Path {
-        let sweep = end - start
-        guard sweep > 0.0001, radius > 0, lineWidth > 0 else { return Path() }
+        guard radius > 0, lineWidth > 0 else { return Path() }
 
         let center = CGPoint(x: rect.midX, y: rect.midY)
         var path = Path()
 
-        if sweep >= 0.9999 {
+        if end - start >= (capCompensated ? 0.995 : 0.9999) {
+            // Full ring: a closed ellipse has no caps, so no seam.
             path.addEllipse(in: CGRect(
                 x: center.x - radius, y: center.y - radius,
                 width: radius * 2, height: radius * 2
             ))
         } else {
+            var s = start
+            var e = end
+            if capCompensated && lineCap != .butt {
+                // Each non-butt cap extends lineWidth / 2 past the arc end, as a fraction of the circle.
+                let capFraction = (lineWidth / 2) / (2 * .pi * radius)
+                s += capFraction
+                e -= capFraction
+            }
+            guard e - s > 0.0001 else { return Path() }
+
             let base = Angle.degrees(-90) + rotation
             path.addArc(
                 center: center,
                 radius: radius,
-                startAngle: base + .degrees(Double(360 * start)),
-                endAngle: base + .degrees(Double(360 * end)),
-                clockwise: false
+                startAngle: base + .degrees(Double(360 * s)),
+                endAngle: base + .degrees(Double(360 * e)),
+                clockwise: false // false == visually clockwise in SwiftUI's flipped space
             )
         }
 
@@ -454,6 +541,7 @@ struct EDTSRingArc: Shape {
     }
 }
 
+/// Outer circle (rect-sized) + inner circle; fill with `eoFill: true` for a ring.
 struct EDTSRingBand: Shape {
     var innerRadius: CGFloat
 
@@ -498,10 +586,15 @@ private extension View {
 
                 EDTSCircularLoadingView(
                     value: value,
+                    trackFillTintColorStart: .purple,
+                    trackFillTintColorEnd: .pink,
+                    trackFillColorOrientation: .diagonalUp,
                     trackSize: 80,
                     trackThickness: 10,
-                    fill: .gradient(start: .purple, end: .pink, orientation: .diagonalUp),
-                    trackInnerShadow: EDTSRingShadow(color: EDTSColor.red50, opacity: 100.0, radius: 8, offset: CGSize(width: 4, height: 4))
+                    trackInnerShadowOpacity: 1,
+                    trackInnerShadowRadius: 8,
+                    trackInnerShadowOffset: CGSize(width: 4, height: 4),
+                    trackInnerShadowColor: EDTSColor.red50
                 )
 
                 HStack(spacing: 24) {
