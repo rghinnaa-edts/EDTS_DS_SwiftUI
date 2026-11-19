@@ -44,6 +44,16 @@ public enum EDTSIntermittentAnimationType {
 public enum EDTSRingFill {
     case solid(Color)
     case gradient(start: Color, end: Color, orientation: EDTSGradientOrientation = .horizontal)
+    
+    var shapeStyle: AnyShapeStyle {
+        switch self {
+        case .solid(let color):
+            return AnyShapeStyle(color)
+        case .gradient(let start, let end, let orientation):
+            let p = orientation.unitPoints
+            return AnyShapeStyle(LinearGradient(colors: [start, end], startPoint: p.start, endPoint: p.end))
+        }
+    }
 }
 
 public struct EDTSCircularLoading: View {
@@ -186,20 +196,9 @@ public struct EDTSCircularLoading: View {
     }
 
     // MARK: Resolved values
-
-    private func resolveFill(
-        solid: Color?, start: Color?, end: Color?,
-        orientation: EDTSGradientOrientation?, fallback: EDTSRingFill
-    ) -> EDTSRingFill {
-        if start != nil || end != nil {
-            return .gradient(start: start ?? .clear, end: end ?? .clear, orientation: orientation ?? .horizontal)
-        }
-        if let solid { return .solid(solid) }
-        return fallback
-    }
-
+    
     private var resolvedFill: EDTSRingFill {
-        resolveFill(
+        edtsResolveFill(
             solid: trackFillTintColor, start: trackFillTintColorStart, end: trackFillTintColorEnd,
             orientation: trackFillColorOrientation,
             fallback: .gradient(start: EDTSColor.skyblueLeading, end: EDTSColor.skyblueTrailing, orientation: .horizontal)
@@ -207,7 +206,7 @@ public struct EDTSCircularLoading: View {
     }
 
     private var resolvedTrackFill: EDTSRingFill {
-        resolveFill(
+        edtsResolveFill(
             solid: trackTintColor, start: trackTintColorStart, end: trackTintColorEnd,
             orientation: trackColorOrientation,
             fallback: .solid(EDTSColor.grey20)
@@ -215,14 +214,10 @@ public struct EDTSCircularLoading: View {
     }
 
     private var resolvedInnerShadow: EDTSRingShadow {
-        EDTSRingShadow(
-            color: trackInnerShadowColor,
-            opacity: Double(trackInnerShadowOpacity ?? 0.10),
-            radius: trackInnerShadowRadius ?? 2,
-            offset: trackInnerShadowOffset ?? .zero
-        )
+        .inner(color: trackInnerShadowColor, opacity: trackInnerShadowOpacity,
+               radius: trackInnerShadowRadius, offset: trackInnerShadowOffset)
     }
-
+    
     private var resolvedTrackShadow: EDTSRingShadow? {
         guard trackShadowOpacity > 0 else { return nil }
         return EDTSRingShadow(
@@ -252,7 +247,7 @@ public struct EDTSCircularLoading: View {
 
         switch intermittentAnimationType {
         case .stretch:
-            let u = Self.easeInOut(phase(stretchSweepDuration))
+            let u = edtsEaseInOut(phase(stretchSweepDuration))
             let keyTimes: [Double] = [0, 0.25, 0.75, 1]
             let head = Self.interpolate(u, keyTimes: keyTimes, values: [0, 0, 0.75, 1])
             let tail = Self.interpolate(u, keyTimes: keyTimes, values: [0, 0.75, 1, 1])
@@ -403,37 +398,14 @@ public struct EDTSCircularLoading: View {
         .allowsHitTesting(false)
     }
 
-    // MARK: Paint
+    // MARK: Setup and Styling
 
-    @ViewBuilder
     private func setupBgColor(_ fill: EDTSRingFill) -> some View {
-        switch fill {
-        case .solid(let color):
-            Rectangle().fill(color)
-        case .gradient(let start, let end, let orientation):
-            let p = orientation.unitPoints
-            Rectangle().fill(
-                LinearGradient(colors: [start, end], startPoint: p.start, endPoint: p.end)
-            )
-        }
+        Rectangle().fill(fill.shapeStyle)
     }
 
     // MARK: Easing helpers
     
-    private static func easeInOut(_ x: Double) -> Double {
-        let (x1, y1, x2, y2) = (0.42, 0.0, 0.58, 1.0)
-        func bezier(_ t: Double, _ a: Double, _ b: Double) -> Double {
-            let mt = 1 - t
-            return 3 * mt * mt * t * a + 3 * mt * t * t * b + t * t * t
-        }
-        var lo = 0.0, hi = 1.0
-        for _ in 0..<24 {
-            let mid = (lo + hi) / 2
-            if bezier(mid, x1, x2) < x { lo = mid } else { hi = mid }
-        }
-        return bezier((lo + hi) / 2, y1, y2)
-    }
-
     private static func interpolate(_ x: Double, keyTimes: [Double], values: [Double]) -> Double {
         for i in 1..<keyTimes.count where x <= keyTimes[i] {
             let span = keyTimes[i] - keyTimes[i - 1]
@@ -529,6 +501,40 @@ public struct EDTSRingShadow {
     }
 
     public static let defaultInner = EDTSRingShadow(opacity: 0.10, radius: 2)
+
+    public static func inner(color: Color?, opacity: Float?, radius: CGFloat?, offset: CGSize?) -> EDTSRingShadow {
+        EDTSRingShadow(
+            color: color,
+            opacity: Double(opacity ?? 0.10),
+            radius: radius ?? 2,
+            offset: offset ?? .zero
+        )
+    }
+}
+
+public func edtsResolveFill(
+    solid: Color?, start: Color?, end: Color?,
+    orientation: EDTSGradientOrientation?, fallback: EDTSRingFill
+) -> EDTSRingFill {
+    if start != nil || end != nil {
+        return .gradient(start: start ?? .clear, end: end ?? .clear, orientation: orientation ?? .horizontal)
+    }
+    if let solid { return .solid(solid) }
+    return fallback
+}
+
+public func edtsEaseInOut(_ x: Double) -> Double {
+    let x1 = 0.42, y1 = 0.0, x2 = 0.58, y2 = 1.0
+    func bezier(_ t: Double, _ a: Double, _ b: Double) -> Double {
+        let mt = 1 - t
+        return 3 * mt * mt * t * a + 3 * mt * t * t * b + t * t * t
+    }
+    var lo = 0.0, hi = 1.0
+    for _ in 0..<24 {
+        let mid = (lo + hi) / 2
+        if bezier(mid, x1, x2) < x { lo = mid } else { hi = mid }
+    }
+    return bezier((lo + hi) / 2, y1, y2)
 }
 
 public extension View {
