@@ -11,29 +11,6 @@ import Combine
 public typealias EDTSTrackFill = EDTSRingFill
 public typealias EDTSTrackShadow = EDTSRingShadow
 
-// MARK: - Shared gradient points
-
-extension EDTSGradientOrientation {
-    var unitPoints: (start: UnitPoint, end: UnitPoint) {
-        switch self {
-        case .horizontal: return (UnitPoint(x: 0, y: 0.5), UnitPoint(x: 1, y: 0.5))
-        case .vertical:   return (UnitPoint(x: 0.5, y: 0), UnitPoint(x: 0.5, y: 1))
-        case .diagonalUp: return Self.diagonal(angleDegrees: 10)
-        case .diagonalDown:
-            let p = Self.diagonal(angleDegrees: 170)
-            return (p.end, p.start)
-        }
-    }
-
-    private static func diagonal(angleDegrees: CGFloat) -> (start: UnitPoint, end: UnitPoint) {
-        let r = angleDegrees * .pi / 180
-        let dx = cos(r), dy = -sin(r)
-        let scale = min(0.5 / max(abs(dx), 0.0001), 0.5 / max(abs(dy), 0.0001))
-        return (UnitPoint(x: 0.5 - dx * scale, y: 0.5 - dy * scale),
-                UnitPoint(x: 0.5 + dx * scale, y: 0.5 + dy * scale))
-    }
-}
-
 // MARK: - View
 
 public struct EDTSProgressTrackerView: View {
@@ -104,13 +81,21 @@ public struct EDTSProgressTrackerView: View {
     public var isIntermittentState: Bool
     public var intermittentAnimationType: EDTSIntermittentAnimationType
 
-    // MARK: State
+    // MARK: Private Variable
+
+    private let intermittentAnimationDuration: Double = 0.7
+    
+    private var isPoinku: Bool { EDTSColor.theme == .poinku }
+
+    private var defaultGradient: EDTSTrackFill {
+        .gradient(start: EDTSColor.skyblueLeading, end: EDTSColor.skyblueTrailing, orientation: .horizontal)
+    }
     
     @StateObject private var model = EDTSProgressTrackerModel()
     @State private var intermittentStart = Date()
 
-    private let intermittentAnimationDuration: Double = 0.7
-
+    // MARK: Initializers
+    
     public init(
         trackFillTintColor: Color? = nil,
         trackFillTintColorStart: Color? = nil,
@@ -231,7 +216,7 @@ public struct EDTSProgressTrackerView: View {
     
     public var body: some View {
         GeometryReader { geo in
-            tracker(width: geo.size.width)
+            progressTracker(width: geo.size.width)
                 .frame(width: geo.size.width, height: geo.size.height)
                 .onAppear { model.setTrackWidth(geo.size.width) }
                 .onChange(of: geo.size.width) { model.setTrackWidth($0) }
@@ -251,8 +236,6 @@ public struct EDTSProgressTrackerView: View {
 
     // MARK: Resolved values
     
-    private var isPoinku: Bool { EDTSColor.theme == .poinku }
-
     private func resolveFill(
         solid: Color?, start: Color?, end: Color?,
         orientation: EDTSGradientOrientation?, fallback: EDTSTrackFill
@@ -264,14 +247,16 @@ public struct EDTSProgressTrackerView: View {
         return fallback
     }
 
-    private var defaultGradient: EDTSTrackFill {
-        .gradient(start: EDTSColor.skyblueLeading, end: EDTSColor.skyblueTrailing, orientation: .horizontal)
-    }
 
     private var resolvedTrackFill: EDTSTrackFill {
         resolveFill(solid: trackTintColor, start: trackTintColorStart, end: trackTintColorEnd,
                     orientation: trackColorOrientation,
                     fallback: .solid(isPoinku ? EDTSColor.white : EDTSColor.grey20))
+    }
+    
+    private var resolvedFill: EDTSTrackFill {
+        resolveFill(solid: trackFillTintColor, start: trackFillTintColorStart, end: trackFillTintColorEnd,
+                    orientation: trackFillColorOrientation, fallback: defaultGradient)
     }
 
     private var resolvedFullTrackFill: EDTSTrackFill {
@@ -280,11 +265,6 @@ public struct EDTSProgressTrackerView: View {
             : .solid(EDTSColor.blue30)
         return resolveFill(solid: trackFullTintColor, start: trackFullTintColorStart, end: trackFullTintColorEnd,
                            orientation: trackFullColorOrientation, fallback: fallback)
-    }
-
-    private var resolvedFill: EDTSTrackFill {
-        resolveFill(solid: trackFillTintColor, start: trackFillTintColorStart, end: trackFillTintColorEnd,
-                    orientation: trackFillColorOrientation, fallback: defaultGradient)
     }
 
     private var resolvedIndicatorFill: EDTSTrackFill {
@@ -372,10 +352,25 @@ public struct EDTSProgressTrackerView: View {
         isIntermittentState && intermittentAnimationType != .doubleArc
     }
 
+    
+    // MARK: Setup and Styling
+    
+    @ViewBuilder
+    private func setupBgColor(_ fill: EDTSTrackFill, radius: CGFloat) -> some View {
+        let shape = RoundedRectangle(cornerRadius: radius)
+        switch fill {
+        case .solid(let color):
+            shape.fill(color)
+        case .gradient(let start, let end, let orientation):
+            let p = orientation.unitPoints
+            shape.fill(LinearGradient(colors: [start, end], startPoint: p.start, endPoint: p.end))
+        }
+    }
+    
     // MARK: Layers
     
     @ViewBuilder
-    private func tracker(width: CGFloat) -> some View {
+    private func progressTracker(width: CGFloat) -> some View {
         let pad = resolvedPadding
         let height = resolvedTrackHeight
         let fullHeight = max(height - pad.top - pad.bottom, 0)
@@ -385,7 +380,7 @@ public struct EDTSProgressTrackerView: View {
 
         ZStack(alignment: .topLeading) {
             // trackView
-            painted(resolvedTrackFill, radius: trackRadius)
+            setupBgColor(resolvedTrackFill, radius: trackRadius)
                 .edtsTrackShadow(resolvedTrackShadow)
 
             // innerShadowView / innerShadowViewContainer
@@ -397,7 +392,7 @@ public struct EDTSProgressTrackerView: View {
 
             // fullTrackView
             if model.isFullTrackVisible {
-                painted(resolvedFullTrackFill, radius: fullRadius)
+                setupBgColor(resolvedFullTrackFill, radius: fullRadius)
                     .frame(width: maxBarWidth, height: fullHeight)
                     .padding(.top, pad.top)
                     .padding(.leading, pad.leading)
@@ -405,7 +400,7 @@ public struct EDTSProgressTrackerView: View {
 
             // fillView
             if showsIntermittentBar {
-                intermittentBar(maxBarWidth: maxBarWidth, pad: pad, fullHeight: fullHeight, radius: fullRadius)
+                intermittentFill(maxBarWidth: maxBarWidth, pad: pad, fullHeight: fullHeight, radius: fullRadius)
             } else {
                 regularFill(pad: pad, fullHeight: fullHeight, radius: fullRadius)
             }
@@ -418,7 +413,7 @@ public struct EDTSProgressTrackerView: View {
     }
 
     private func regularFill(pad: EdgeInsets, fullHeight: CGFloat, radius: CGFloat) -> some View {
-        painted(resolvedFill, radius: radius)
+        setupBgColor(resolvedFill, radius: radius)
             .frame(width: model.fillWidth, height: fullHeight)
             .animation(model.fillAnimation, value: model.fillWidth)
             .opacity(model.isFillHidden ? 0 : model.fillOpacity)
@@ -428,6 +423,7 @@ public struct EDTSProgressTrackerView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
+    // MARK: Indicator
     @ViewBuilder
     private func indicator(pad: EdgeInsets, fullHeight: CGFloat) -> some View {
         if resolvedHasIndicator {
@@ -437,7 +433,7 @@ public struct EDTSProgressTrackerView: View {
                 : edge - indicatorSize / 2
             let y = pad.top + (fullHeight - indicatorSize) / 2
 
-            painted(resolvedIndicatorFill, radius: indicatorCornerRadius >= 0 ? indicatorCornerRadius : 10_000)
+            setupBgColor(resolvedIndicatorFill, radius: indicatorCornerRadius >= 0 ? indicatorCornerRadius : 10_000)
                 .frame(width: indicatorSize, height: indicatorSize)
                 .scaleEffect(model.showsIndicator ? 1 : 0.001)
                 .animation(model.indicatorAnimation, value: model.showsIndicator)
@@ -450,10 +446,10 @@ public struct EDTSProgressTrackerView: View {
 
     // MARK: Intermittent
     
-    private func intermittentBar(maxBarWidth: CGFloat, pad: EdgeInsets, fullHeight: CGFloat, radius: CGFloat) -> some View {
+    private func intermittentFill(maxBarWidth: CGFloat, pad: EdgeInsets, fullHeight: CGFloat, radius: CGFloat) -> some View {
         TimelineView(.animation) { context in
             let range = intermittentRange(elapsed: context.date.timeIntervalSince(intermittentStart))
-            painted(resolvedFill, radius: radius)
+            setupBgColor(resolvedFill, radius: radius)
                 .frame(width: max((range.end - range.start) * maxBarWidth, 0), height: fullHeight)
                 .padding(.top, pad.top)
                 .offset(x: pad.leading + range.start * maxBarWidth)
@@ -492,7 +488,7 @@ public struct EDTSProgressTrackerView: View {
                 badgeContent
                     .padding(resolvedBadgePadding)
                     .frame(minWidth: badgeSize, minHeight: badgeSize)
-                    .background(painted(resolvedBadgeFill, radius: badgeCornerRadius >= 0 ? badgeCornerRadius : 10_000))
+                    .background(setupBgColor(resolvedBadgeFill, radius: badgeCornerRadius >= 0 ? badgeCornerRadius : 10_000))
                     .scaleEffect(model.badgeScale)
                     .animation(.easeInOut(duration: 0.2), value: model.badgeScale)
                     .transition(.scale)
@@ -514,20 +510,7 @@ public struct EDTSProgressTrackerView: View {
         }
     }
 
-    // MARK: Painting
-    
-    @ViewBuilder
-    private func painted(_ fill: EDTSTrackFill, radius: CGFloat) -> some View {
-        let shape = RoundedRectangle(cornerRadius: radius)
-        switch fill {
-        case .solid(let color):
-            shape.fill(color)
-        case .gradient(let start, let end, let orientation):
-            let p = orientation.unitPoints
-            shape.fill(LinearGradient(colors: [start, end], startPoint: p.start, endPoint: p.end))
-        }
-    }
-
+    // MARK: Inner Shadow
     private func innerShadow(_ shadow: EDTSTrackShadow, size: CGSize, radius: CGFloat) -> some View {
         let color = (shadow.color ?? EDTSColor.black).opacity(shadow.opacity)
         let sigma = max(shadow.radius / 2, 0.01)
@@ -546,7 +529,7 @@ public struct EDTSProgressTrackerView: View {
     }
 }
 
-// MARK: - Model (lap logic, debounce, animation queue)
+// MARK: - Model
 
 @MainActor
 final class EDTSProgressTrackerModel: ObservableObject {
