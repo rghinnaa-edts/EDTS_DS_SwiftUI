@@ -13,7 +13,7 @@ public typealias EDTSTrackShadow = EDTSRingShadow
 
 // MARK: - View
 
-public struct EDTSProgressTrackerView: View {
+public struct EDTSProgressTracker: View {
     // MARK: Properties
 
     public var trackFillTintColor: Color?
@@ -26,6 +26,11 @@ public struct EDTSProgressTrackerView: View {
     public var trackFullTintColorEnd: Color?
     public var trackFullColorOrientation: EDTSGradientOrientation?
 
+    public var trackTintColor: Color?
+    public var trackTintColorStart: Color?
+    public var trackTintColorEnd: Color?
+    public var trackColorOrientation: EDTSGradientOrientation?
+    
     public var value: CGFloat
     public var maxValue: CGFloat
     public var limitValue: CGFloat?
@@ -54,17 +59,14 @@ public struct EDTSProgressTrackerView: View {
     public var badgePaddingLeading: CGFloat
     public var badgePaddingTrailing: CGFloat
 
-    public var trackTintColor: Color?
-    public var trackTintColorStart: Color?
-    public var trackTintColorEnd: Color?
-    public var trackColorOrientation: EDTSGradientOrientation?
     public var trackHeight: CGFloat
     public var trackCornerRadius: CGFloat
+    
     public var trackPaddingTop: CGFloat
     public var trackPaddingBottom: CGFloat
     public var trackPaddingLeading: CGFloat
     public var trackPaddingTrailing: CGFloat
-
+    
     public var trackInnerShadowOpacity: Float?
     public var trackInnerShadowRadius: CGFloat?
     public var trackInnerShadowOffset: CGSize?
@@ -236,45 +238,33 @@ public struct EDTSProgressTrackerView: View {
 
     // MARK: Resolved values
     
-    private func resolveFill(
-        solid: Color?, start: Color?, end: Color?,
-        orientation: EDTSGradientOrientation?, fallback: EDTSTrackFill
-    ) -> EDTSTrackFill {
-        if start != nil || end != nil {
-            return .gradient(start: start ?? .clear, end: end ?? .clear, orientation: orientation ?? .horizontal)
-        }
-        if let solid { return .solid(solid) }
-        return fallback
-    }
-
-
     private var resolvedTrackFill: EDTSTrackFill {
-        resolveFill(solid: trackTintColor, start: trackTintColorStart, end: trackTintColorEnd,
-                    orientation: trackColorOrientation,
-                    fallback: .solid(isPoinku ? EDTSColor.white : EDTSColor.grey20))
+        edtsResolveFill(solid: trackTintColor, start: trackTintColorStart, end: trackTintColorEnd,
+                        orientation: trackColorOrientation,
+                        fallback: .solid(isPoinku ? EDTSColor.white : EDTSColor.grey20))
     }
-    
+
     private var resolvedFill: EDTSTrackFill {
-        resolveFill(solid: trackFillTintColor, start: trackFillTintColorStart, end: trackFillTintColorEnd,
-                    orientation: trackFillColorOrientation, fallback: defaultGradient)
+        edtsResolveFill(solid: trackFillTintColor, start: trackFillTintColorStart, end: trackFillTintColorEnd,
+                        orientation: trackFillColorOrientation, fallback: defaultGradient)
     }
 
     private var resolvedFullTrackFill: EDTSTrackFill {
         let fallback: EDTSTrackFill = isPoinku
             ? (resolvedLimit > maxValue ? .solid(EDTSColor.blue10) : .solid(.clear))
             : .solid(EDTSColor.blue30)
-        return resolveFill(solid: trackFullTintColor, start: trackFullTintColorStart, end: trackFullTintColorEnd,
-                           orientation: trackFullColorOrientation, fallback: fallback)
+        return edtsResolveFill(solid: trackFullTintColor, start: trackFullTintColorStart, end: trackFullTintColorEnd,
+                               orientation: trackFullColorOrientation, fallback: fallback)
     }
 
     private var resolvedIndicatorFill: EDTSTrackFill {
-        resolveFill(solid: indicatorTintColor, start: indicatorTintColorStart, end: indicatorTintColorEnd,
-                    orientation: indicatorColorOrientation, fallback: defaultGradient)
+        edtsResolveFill(solid: indicatorTintColor, start: indicatorTintColorStart, end: indicatorTintColorEnd,
+                        orientation: indicatorColorOrientation, fallback: defaultGradient)
     }
 
     private var resolvedBadgeFill: EDTSTrackFill {
-        resolveFill(solid: badgeTintColor, start: badgeTintColorStart, end: badgeTintColorEnd,
-                    orientation: badgeColorOrientation, fallback: defaultGradient)
+        edtsResolveFill(solid: badgeTintColor, start: badgeTintColorStart, end: badgeTintColorEnd,
+                        orientation: badgeColorOrientation, fallback: defaultGradient)
     }
 
     private var resolvedTrackHeight: CGFloat { trackHeight >= 0 ? trackHeight : 6 }
@@ -311,12 +301,8 @@ public struct EDTSProgressTrackerView: View {
     private var resolvedInnerShadows: [EDTSTrackShadow] {
         if trackInnerShadowOpacity != nil || trackInnerShadowRadius != nil
             || trackInnerShadowOffset != nil || trackInnerShadowColor != nil {
-            return [EDTSTrackShadow(
-                color: trackInnerShadowColor,
-                opacity: Double(trackInnerShadowOpacity ?? 0.10),
-                radius: trackInnerShadowRadius ?? 2,
-                offset: trackInnerShadowOffset ?? .zero
-            )]
+            return [.inner(color: trackInnerShadowColor, opacity: trackInnerShadowOpacity,
+                           radius: trackInnerShadowRadius, offset: trackInnerShadowOffset)]
         }
         if isPoinku {
             return [
@@ -324,7 +310,7 @@ public struct EDTSProgressTrackerView: View {
                 EDTSTrackShadow(opacity: 0.10, radius: 2, offset: CGSize(width: 0, height: -4))
             ]
         }
-        return [EDTSTrackShadow(opacity: 0.10, radius: 2, offset: .zero)]
+        return [.defaultInner]
     }
 
     private var contentHeight: CGFloat {
@@ -355,16 +341,8 @@ public struct EDTSProgressTrackerView: View {
     
     // MARK: Setup and Styling
     
-    @ViewBuilder
     private func setupBgColor(_ fill: EDTSTrackFill, radius: CGFloat) -> some View {
-        let shape = RoundedRectangle(cornerRadius: radius)
-        switch fill {
-        case .solid(let color):
-            shape.fill(color)
-        case .gradient(let start, let end, let orientation):
-            let p = orientation.unitPoints
-            shape.fill(LinearGradient(colors: [start, end], startPoint: p.start, endPoint: p.end))
-        }
+        RoundedRectangle(cornerRadius: radius).fill(fill.shapeStyle)
     }
     
     // MARK: Layers
@@ -381,7 +359,7 @@ public struct EDTSProgressTrackerView: View {
         ZStack(alignment: .topLeading) {
             // trackView
             setupBgColor(resolvedTrackFill, radius: trackRadius)
-                .edtsTrackShadow(resolvedTrackShadow)
+                .edtsShadow(resolvedTrackShadow)
 
             // innerShadowView / innerShadowViewContainer
             ForEach(Array(resolvedInnerShadows.enumerated()), id: \.offset) { _, shadow in
@@ -666,7 +644,7 @@ final class EDTSProgressTrackerModel: ObservableObject {
         queue.append(step)
     }
 
-    private func startQueueIfNeeded() {
+    private func startQueue() {
         guard !isAnimating, !queue.isEmpty else { return }
         isAnimating = true
         let gen = queueGeneration
@@ -859,7 +837,7 @@ final class EDTSProgressTrackerModel: ObservableObject {
         if capped < previousValue {
             enqueueDecrease(from: previousValue, to: capped, maxWidth: maxW, minWidth: minW,
                             isSpam: compressed || abs(jumpRatio) > 2)
-            startQueueIfNeeded()
+            startQueue()
             return
         }
 
@@ -896,7 +874,7 @@ final class EDTSProgressTrackerModel: ObservableObject {
             }
         }
 
-        startQueueIfNeeded()
+        startQueue()
     }
 
     // MARK: Lap steps
@@ -1111,36 +1089,6 @@ struct EDTSInsetShadowShape: Shape {
     }
 }
 
-private func edtsEaseInOut(_ x: Double) -> Double {
-    let x1 = 0.42, y1 = 0.0, x2 = 0.58, y2 = 1.0
-    func bezier(_ t: Double, _ a: Double, _ b: Double) -> Double {
-        let mt = 1 - t
-        return 3 * mt * mt * t * a + 3 * mt * t * t * b + t * t * t
-    }
-    var lo = 0.0, hi = 1.0
-    for _ in 0..<24 {
-        let mid = (lo + hi) / 2
-        if bezier(mid, x1, x2) < x { lo = mid } else { hi = mid }
-    }
-    return bezier((lo + hi) / 2, y1, y2)
-}
-
-private extension View {
-    @ViewBuilder
-    func edtsTrackShadow(_ shadow: EDTSTrackShadow?) -> some View {
-        if let shadow, shadow.opacity > 0 {
-            self.shadow(
-                color: (shadow.color ?? EDTSColor.black).opacity(shadow.opacity),
-                radius: shadow.radius,
-                x: shadow.offset.width,
-                y: shadow.offset.height
-            )
-        } else {
-            self
-        }
-    }
-}
-
 // MARK: - Preview
 
 #Preview {
@@ -1150,9 +1098,9 @@ private extension View {
 
         var body: some View {
             VStack(spacing: 28) {
-                EDTSProgressTrackerView(value: value, limitValue: 300, trackTintColor: .black, isIntermittentState: intermittent)
+                EDTSProgressTracker(value: value, limitValue: 300, trackTintColor: .black, isIntermittentState: intermittent)
 
-                EDTSProgressTrackerView(
+                EDTSProgressTracker(
                     trackFillTintColorStart: .purple,
                     trackFillTintColorEnd: .pink,
                     trackFillColorOrientation: .horizontal,
@@ -1163,7 +1111,7 @@ private extension View {
                     intermittentAnimationType: .fixed
                 )
 
-                EDTSProgressTrackerView(value: min(value, 100), isLoadingState: true)
+                EDTSProgressTracker(value: min(value, 100), isLoadingState: true)
 
                 HStack {
                     Button("-25") { value -= 25 }
