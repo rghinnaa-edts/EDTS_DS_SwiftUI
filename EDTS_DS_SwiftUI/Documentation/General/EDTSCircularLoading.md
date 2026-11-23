@@ -6,11 +6,10 @@
 
 | Feature / Variation | Preview |
 | -------------------- | ------- |
-| **Loading (Determinate)** | *(add preview)* |
-| **Loading — Gradient Fill + Inner Shadow** | *(add preview)* |
-| **Intermittent — Stretch** | *(add preview)* |
-| **Intermittent — Fixed** | *(add preview)* |
-| **Intermittent — Double Arc** | *(add preview)* |
+| **Loading** | ![Loading](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1786505153/loading_ny8iez.gif) |
+| **Intermittent — Stretch** | ![Intermittent — Stretch](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1786505152/intermittent_stretch_egbqxc.gif) |
+| **Intermittent — Fixed** | ![Intermittent — Fixed](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1786505152/intermittent_fixed_wcmjed.gif) |
+| **Intermittent — Double Arc** | ![Intermittent — Double Arc](https://res.cloudinary.com/dacnnk5j4/image/upload/w_300,c_scale,q_auto,f_auto/v1786505152/intermittent_double_arc_hap1mq.gif) |
 
 ## Basic Usage
 
