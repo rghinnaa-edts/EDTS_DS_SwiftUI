@@ -360,30 +360,28 @@ public struct EDTSProgressTracker: View {
             // trackView
             setupBgColor(resolvedTrackFill, radius: trackRadius)
                 .edtsShadow(resolvedTrackShadow)
+                .edtsInnerShadow(in: RoundedRectangle(cornerRadius: trackRadius), shadows: resolvedInnerShadows)
 
-            // innerShadowView / innerShadowViewContainer
-            ForEach(Array(resolvedInnerShadows.enumerated()), id: \.offset) { _, shadow in
-                if shadow.opacity > 0 {
-                    innerShadow(shadow, size: CGSize(width: width, height: height), radius: trackRadius)
+            // fullTrackView and fillView
+            ZStack(alignment: .topLeading) {
+                if model.isFullTrackVisible {
+                    setupBgColor(resolvedFullTrackFill, radius: fullRadius)
+                        .frame(width: maxBarWidth, height: fullHeight)
+                        .padding(.top, pad.top)
+                        .padding(.leading, pad.leading)
+                }
+
+                if showsIntermittentBar {
+                    intermittentFill(maxBarWidth: maxBarWidth, pad: pad, fullHeight: fullHeight, radius: fullRadius)
+                } else {
+                    regularFill(pad: pad, fullHeight: fullHeight, radius: fullRadius)
                 }
             }
-
-            // fullTrackView
-            if model.isFullTrackVisible {
-                setupBgColor(resolvedFullTrackFill, radius: fullRadius)
-                    .frame(width: maxBarWidth, height: fullHeight)
-                    .padding(.top, pad.top)
-                    .padding(.leading, pad.leading)
-            }
-
-            // fillView
-            if showsIntermittentBar {
-                intermittentFill(maxBarWidth: maxBarWidth, pad: pad, fullHeight: fullHeight, radius: fullRadius)
-            } else {
-                regularFill(pad: pad, fullHeight: fullHeight, radius: fullRadius)
-            }
+            .frame(width: width, height: height, alignment: .topLeading)
+            .clipShape(RoundedRectangle(cornerRadius: trackRadius))
         }
         .frame(width: width, height: height)
+        // indicator and badge
         .overlay(alignment: .topLeading) {
             if !showsIntermittentBar { indicator(pad: pad, fullHeight: fullHeight) }
         }
@@ -486,24 +484,6 @@ public struct EDTSProgressTracker: View {
                 .font(resolvedBadgeFont)
                 .foregroundColor(badgeLabelColor ?? EDTSColor.white)
         }
-    }
-
-    // MARK: Inner Shadow
-    private func innerShadow(_ shadow: EDTSTrackShadow, size: CGSize, radius: CGFloat) -> some View {
-        let color = (shadow.color ?? EDTSColor.black).opacity(shadow.opacity)
-        let sigma = max(shadow.radius / 2, 0.01)
-        let expansion = max(abs(shadow.offset.width), abs(shadow.offset.height)) + sigma * 6 + 2
-
-        return EDTSInsetShadowShape(cornerRadius: radius, expansion: expansion)
-            .fill(color, style: FillStyle(eoFill: true))
-            .frame(width: size.width, height: size.height)
-            .blur(radius: sigma)
-            .offset(shadow.offset)
-            .mask {
-                RoundedRectangle(cornerRadius: radius)
-                    .frame(width: size.width, height: size.height)
-            }
-            .allowsHitTesting(false)
     }
 }
 
@@ -616,7 +596,7 @@ final class EDTSProgressTrackerModel: ObservableObject {
         if on { startIntermittent() } else { stopIntermittent() }
     }
 
-    // MARK: - State setters (each picks its animation explicitly)
+    // MARK: - State setters
     
     private func setFillWidth(_ width: CGFloat, animated: Bool) {
         fillAnimation = animated ? .easeInOut(duration: fillAnimationDuration) : nil
@@ -1051,7 +1031,7 @@ final class EDTSProgressTrackerModel: ObservableObject {
         calculateValue()
     }
 
-    // MARK: Layout changes (replaces layoutSubviews)
+    // MARK: Layout changes
     
     private func reflow() {
         let maxValue = config.maxValue
@@ -1077,14 +1057,26 @@ final class EDTSProgressTrackerModel: ObservableObject {
 // MARK: - Shapes & helpers
 
 struct EDTSInsetShadowShape: Shape {
-    var cornerRadius: CGFloat
     var expansion: CGFloat
+    var shapePath: @Sendable (CGRect) -> Path
+
+    init(cornerRadius: CGFloat, expansion: CGFloat) {
+        self.expansion = expansion
+        self.shapePath = { rect in
+            let r = min(cornerRadius, min(rect.width, rect.height) / 2)
+            return Path(roundedRect: rect, cornerSize: CGSize(width: r, height: r))
+        }
+    }
+
+    init(shapePath: @escaping @Sendable (CGRect) -> Path, expansion: CGFloat) {
+        self.expansion = expansion
+        self.shapePath = shapePath
+    }
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.addRect(rect.insetBy(dx: -expansion, dy: -expansion))
-        let r = min(cornerRadius, min(rect.width, rect.height) / 2)
-        path.addRoundedRect(in: rect, cornerSize: CGSize(width: r, height: r))
+        path.addPath(shapePath(rect))
         return path
     }
 }
@@ -1098,15 +1090,21 @@ struct EDTSInsetShadowShape: Shape {
 
         var body: some View {
             VStack(spacing: 28) {
-                EDTSProgressTracker(value: value, limitValue: 300, trackTintColor: .black, isIntermittentState: intermittent)
+                EDTSProgressTracker(value: value, limitValue: 300, isIntermittentState: intermittent)
 
                 EDTSProgressTracker(
                     trackFillTintColorStart: .purple,
                     trackFillTintColorEnd: .pink,
                     trackFillColorOrientation: .horizontal,
+                    trackFullTintColor: .purple,
                     value: value,
-                    limitValue: 300,
-                    trackHeight: 12,
+                    limitValue: 800,
+                    indicatorTintColorStart: .purple,
+                    indicatorTintColorEnd: .pink,
+                    indicatorColorOrientation: .horizontal,
+                    badgeTintColorStart: .purple,
+                    badgeTintColorEnd: .pink,
+                    badgeColorOrientation: .horizontal,
                     isIntermittentState: intermittent,
                     intermittentAnimationType: .fixed
                 )
