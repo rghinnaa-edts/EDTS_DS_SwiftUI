@@ -238,21 +238,6 @@ public struct EDTSRadioButton: View {
     }
 
     // MARK: - Setup & Styling
-    
-    private func setupFontWeight(from value: String) -> Font.Weight {
-        switch value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
-        case "ultralight": return .ultraLight
-        case "thin":       return .thin
-        case "light":      return .light
-        case "regular":    return .regular
-        case "medium":     return .medium
-        case "semibold":   return .semibold
-        case "bold":       return .bold
-        case "heavy":      return .heavy
-        case "black":      return .black
-        default:           return .semibold
-        }
-    }
 
     private func resolveStyle() -> ResolvedValues {
         let isPoinku = EDTSColor.theme == .poinku

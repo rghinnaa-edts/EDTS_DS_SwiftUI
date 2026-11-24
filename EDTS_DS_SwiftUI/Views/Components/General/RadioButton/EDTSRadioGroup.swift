@@ -195,7 +195,7 @@ public struct EDTSRadioGroup: View {
 
         return VStack(alignment: .leading, spacing: verticalSpacing) {
             ForEach(rows.indices, id: \.self) { rowIndex in
-                HStack(alignment: .top, spacing: horizontalSpacing) {
+                HStack(alignment: .center, spacing: horizontalSpacing) {
                     ForEach(rows[rowIndex], id: \.self) { index in
                         radioButtonView(at: index)
                             .frame(width: isContainerMeasured ? cellWidth : nil, alignment: .leading)
