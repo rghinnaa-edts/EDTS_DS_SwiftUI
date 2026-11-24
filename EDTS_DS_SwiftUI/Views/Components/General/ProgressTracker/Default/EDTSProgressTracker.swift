@@ -45,6 +45,7 @@ public struct EDTSProgressTracker: View {
     public var badgeLabel: String?
     public var badgeLabelAttributed: AttributedString?
     public var badgeLabelColor: Color?
+    public var badgeFontStyle: Font?
     public var badgeFontName: String
     public var badgeFontSize: CGFloat
     public var badgeFontWeight: Font.Weight
@@ -119,6 +120,7 @@ public struct EDTSProgressTracker: View {
         badgeLabel: String? = nil,
         badgeLabelAttributed: AttributedString? = nil,
         badgeLabelColor: Color? = nil,
+        badgeFontStyle: Font? = nil,
         badgeFontName: String = "",
         badgeFontSize: CGFloat = 8,
         badgeFontWeight: Font.Weight = .bold,
@@ -176,6 +178,7 @@ public struct EDTSProgressTracker: View {
         self.badgeLabel = badgeLabel
         self.badgeLabelAttributed = badgeLabelAttributed
         self.badgeLabelColor = badgeLabelColor
+        self.badgeFontStyle = badgeFontStyle
         self.badgeFontName = badgeFontName
         self.badgeFontSize = badgeFontSize
         self.badgeFontWeight = badgeFontWeight
@@ -288,6 +291,7 @@ public struct EDTSProgressTracker: View {
     }
 
     private var resolvedBadgeFont: Font {
+        if let badgeFontStyle { return badgeFontStyle }
         if !badgeFontName.isEmpty { return .custom(badgeFontName, size: badgeFontSize) }
         return .system(size: badgeFontSize, weight: badgeFontWeight)
     }
