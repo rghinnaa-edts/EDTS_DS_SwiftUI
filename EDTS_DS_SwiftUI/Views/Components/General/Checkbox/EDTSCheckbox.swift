@@ -8,10 +8,6 @@
 import SwiftUI
 
 // MARK: - Enums
-public enum EDTSCheckboxState: String {
-    case `default` = "default"
-    case disabled = "disabled"
-}
 
 public enum EDTSCheckboxType: String {
     case checked = "checked"
@@ -20,7 +16,8 @@ public enum EDTSCheckboxType: String {
 
 public struct EDTSCheckbox: View {
     // MARK: - Properties
-    public var checkboxState: EDTSCheckboxState
+    
+    public var checkboxState: EDTSSelectionState
     public var checkboxType: EDTSCheckboxType
 
     public let title: String?
@@ -69,6 +66,7 @@ public struct EDTSCheckbox: View {
     public var onTapCheckbox: (() -> Void)?
 
     // MARK: - Private Variable
+    
     private let defaultTitleFontSize: Double = 14
     private let defaultDescFontSize: Double = 12
     private let defaultSpacing: Double = 8
@@ -171,8 +169,9 @@ public struct EDTSCheckbox: View {
     }
 
     // MARK: - Initializers
+    
     public init(
-        checkboxState: EDTSCheckboxState = .default,
+        checkboxState: EDTSSelectionState = .default,
         checkboxType: EDTSCheckboxType = .checked,
         title: String? = "Title checkbox",
         titleAttributed: AttributedString? = nil,
@@ -252,6 +251,7 @@ public struct EDTSCheckbox: View {
     }
 
     // MARK: - Setup & Styling
+    
     private func resolveStyle() -> ResolvedValues {
         let isPoinku = EDTSColor.theme == .poinku
         let titleFont = customTitleFont ?? (isPoinku ? EDTSFont.Poinku.B2.Medium.font : EDTSFont.Klik.B2.Medium.font)
@@ -305,6 +305,7 @@ public struct EDTSCheckbox: View {
     }
 
     // MARK: - Body
+    
     public var body: some View {
         let values = resolvedStyle
 
@@ -388,6 +389,7 @@ public struct EDTSCheckbox: View {
 }
 
 // MARK: - Preview
+
 #Preview("Preview") {
     struct PreviewWrapper: View {
         @State private var isChecked1 = false
