@@ -202,27 +202,28 @@ private struct TrayRootView<Content: View>: View {
             ScrollView(.vertical, showsIndicators: false) {
                 content
                     .frame(maxWidth: .infinity, alignment: .top)
-                    .padding(.top, defaultTopSpacing)
                     .background(
                         GeometryReader { proxy in
                             Color.clear.preference(key: TrayHeightKey.self, value: proxy.size.height)
                         }
                     )
             }
+            .padding(.top, defaultTopSpacing)
             .frame(maxHeight: measuredHeight > 0 ? measuredHeight : nil)
             .fixedSize(horizontal: false, vertical: measuredHeight <= 0)
             .frame(maxWidth: .infinity, alignment: .top)
             .onPreferenceChange(TrayHeightKey.self) { height in
                 guard height > 0 else { return }
-                measuredHeight = height
-                onContentHeight(height)
+                let total = height + defaultTopSpacing
+                measuredHeight = total
+                onContentHeight(total)
             }
         } else {
             ScrollView(.vertical, showsIndicators: false) {
                 content
                     .frame(maxWidth: .infinity, alignment: .top)
-                    .padding(.top, defaultTopSpacing)
             }
+            .padding(.top, defaultTopSpacing)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
@@ -354,8 +355,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
             let frame = frameOfPresentedViewInContainerView
             presented.frame = frame
             shadowView.frame = frame
-            shadowView.layer.shadowPath = UIBezierPath(roundedRect: shadowView.bounds,
-                                                       cornerRadius: cornerRadius).cgPath
+            shadowView.layer.shadowPath = UIBezierPath(roundedRect: shadowView.bounds, cornerRadius: cornerRadius).cgPath
         }
     }
 
@@ -375,8 +375,7 @@ private final class EDTSTrayPresentationController: UIPresentationController, UI
             shadowView.layer.shadowOpacity = shadowOpacity
             shadowView.layer.shadowRadius = shadowRadius
             shadowView.layer.shadowOffset = shadowOffset
-            shadowView.layer.shadowPath = UIBezierPath(roundedRect: shadowView.bounds,
-                                                       cornerRadius: cornerRadius).cgPath
+            shadowView.layer.shadowPath = UIBezierPath(roundedRect: shadowView.bounds, cornerRadius: cornerRadius).cgPath
             container.insertSubview(shadowView, aboveSubview: dimmingView)
         }
 
