@@ -43,7 +43,6 @@ public struct EDTSRadioGroup: View {
     private let minimumColumns: Int = 1
     private let visibleOpacity: Double = 1
     private let hiddenOpacity: Double = 0
-    private let rippleBleed: CGFloat = 12
 
     private var itemCount: Int {
         dataAttributed.isEmpty ? data.count : dataAttributed.count
@@ -164,25 +163,22 @@ public struct EDTSRadioGroup: View {
                     radioButtons
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(rippleBleed)
+                .disableScrollClip()
             }
-            .padding(-rippleBleed)
 
         case .horizontal:
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: horizontalSpacing) {
                     radioButtons
                 }
-                .padding(rippleBleed)
+                .disableScrollClip()
             }
-            .padding(-rippleBleed)
 
         case .spanGrid(let columns):
             ScrollView(.vertical, showsIndicators: false) {
                 gridView(columns: columns)
-                    .padding(rippleBleed)
+                    .disableScrollClip()
             }
-            .padding(-rippleBleed)
         }
     }
 
@@ -252,4 +248,33 @@ public struct EDTSRadioGroup: View {
         }
     }
     return PreviewWrapper()
+}
+
+// MARK: - Scroll Clip Helper
+
+private struct ScrollClipDisabler: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        DispatchQueue.main.async {
+            var current: UIView? = uiView
+            while let view = current {
+                if let scrollView = view as? UIScrollView {
+                    scrollView.clipsToBounds = false
+                    return
+                }
+                current = view.superview
+            }
+        }
+    }
+}
+
+private extension View {
+    func disableScrollClip() -> some View {
+        background(ScrollClipDisabler())
+    }
 }
